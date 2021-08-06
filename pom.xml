@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>wadosm</groupId>
 	<artifactId>brewery-host</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.3-SNAPSHOT</version>
 	<name>brewery-host</name>
 	<description>Server side application for brewery machinery</description>
 	<properties>
@@ -50,8 +50,20 @@
             <version>1.14</version>
             <scope>test</scope>
         </dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.11.1</version>
+		</dependency>
 
-    </dependencies>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+
+
+	</dependencies>
 
 	<build>
 		<plugins>
@@ -59,6 +71,28 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<configuration>
+							<executable>python3</executable>
+							<arguments>
+								<argument>scripts/build_checksum.py</argument>
+							</arguments>
+						</configuration>
+						<id>python-build</id>
+						<phase>package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 

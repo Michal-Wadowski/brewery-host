@@ -1,4 +1,4 @@
-package wadosm.breweryhost;
+package wadosm.breweryhost.temperature;
 
 import java.util.List;
 

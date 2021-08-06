@@ -1,4 +1,4 @@
-package wadosm.breweryhost.utils;
+package wadosm.breweryhost.integrationtests.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,9 +7,9 @@ public class FakeSerialPortProvider {
 
     public static final String HOST_PORT_DEVICE = "/tmp/com1";
     public static final String CLIENT_PORT_DEVICE = "/tmp/com2";
-    
+
     private Process process;
-    
+
     public void createSerialPorts() {
         try {
             process = Runtime.getRuntime().exec(
@@ -35,9 +35,9 @@ public class FakeSerialPortProvider {
             }
         }
     }
-    
+
     public void releaseSerialPorts() {
         process.destroy();
     }
-    
+
 }

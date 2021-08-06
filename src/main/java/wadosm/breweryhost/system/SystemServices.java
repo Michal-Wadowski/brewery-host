@@ -1,4 +1,4 @@
-package wadosm.breweryhost;
+package wadosm.breweryhost.system;
 
 public interface SystemServices {
 

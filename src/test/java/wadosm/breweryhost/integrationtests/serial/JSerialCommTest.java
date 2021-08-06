@@ -1,4 +1,4 @@
-package wadosm.breweryhost;
+package wadosm.breweryhost.integrationtests.serial;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortEvent;
@@ -6,16 +6,14 @@ import com.fazecast.jSerialComm.SerialPortMessageListener;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import wadosm.breweryhost.utils.FakeSerialPortProvider;
+import wadosm.breweryhost.integrationtests.utils.FakeSerialPortProvider;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.Integer.min;
 import static org.assertj.core.api.Assertions.assertThat;
-import static wadosm.breweryhost.utils.FakeSerialPortProvider.CLIENT_PORT_DEVICE;
-import static wadosm.breweryhost.utils.FakeSerialPortProvider.HOST_PORT_DEVICE;
+import static wadosm.breweryhost.integrationtests.utils.FakeSerialPortProvider.CLIENT_PORT_DEVICE;
+import static wadosm.breweryhost.integrationtests.utils.FakeSerialPortProvider.HOST_PORT_DEVICE;
 
 class JSerialCommTest {
 

@@ -1,8 +1,8 @@
-package wadosm.breweryhost;
+package wadosm.breweryhost.driver;
 
 public interface DriverInterface {
 
-    boolean canUpdate();
+    boolean isReady();
 
     boolean lock();
 
@@ -18,6 +18,5 @@ public interface DriverInterface {
 
     void setMainsPower(int mainsNumber, int power);
 
-    BreweryStatus readBreweryStatus();
-
+    DriverInterfaceState readDriverInterfaceState();
 }

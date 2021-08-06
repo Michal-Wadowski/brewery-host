@@ -28,16 +28,16 @@ public class MavenWrapperDownloader {
         + WRAPPER_VERSION + "/maven-wrapper-" + WRAPPER_VERSION + ".jar";
 
     /**
-     * Path to the maven-wrapper.properties file, which might contain a downloadUrl property to
+     * String to the maven-wrapper.properties file, which might contain a downloadUrl property to
      * use instead of the default one.
      */
-    private static final String MAVEN_WRAPPER_PROPERTIES_PATH =
+    private static final String MAVEN_WRAPPER_PROPERTIES_String =
             ".mvn/wrapper/maven-wrapper.properties";
 
     /**
-     * Path where the maven-wrapper.jar will be saved to.
+     * String where the maven-wrapper.jar will be saved to.
      */
-    private static final String MAVEN_WRAPPER_JAR_PATH =
+    private static final String MAVEN_WRAPPER_JAR_String =
             ".mvn/wrapper/maven-wrapper.jar";
 
     /**
@@ -62,7 +62,7 @@ public class MavenWrapperDownloader {
                 mavenWrapperProperties.load(mavenWrapperPropertyFileInputStream);
                 url = mavenWrapperProperties.getProperty(PROPERTY_NAME_WRAPPER_URL, url);
             } catch (IOException e) {
-                System.out.println("- ERROR loading '" + MAVEN_WRAPPER_PROPERTIES_PATH + "'");
+                System.out.println("- ERROR loading '" + MAVEN_WRAPPER_PROPERTIES_String + "'");
             } finally {
                 try {
                     if(mavenWrapperPropertyFileInputStream != null) {

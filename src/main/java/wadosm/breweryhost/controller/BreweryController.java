@@ -1,6 +1,8 @@
-package wadosm.breweryhost;
+package wadosm.breweryhost.controller;
 
-public interface BreweryInterface {
+import wadosm.breweryhost.externalinterface.dto.BreweryStatusDTO;
+
+public interface BreweryController {
 
     void doReboot();
 
@@ -14,5 +16,5 @@ public interface BreweryInterface {
 
     void setMainsPower(int mainsNumber, int power);
 
-    BreweryStatus readBreweryStatus();
+    BreweryStatusDTO readBreweryStatus();
 }
