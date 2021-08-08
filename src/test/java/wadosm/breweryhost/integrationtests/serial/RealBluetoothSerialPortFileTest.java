@@ -15,7 +15,7 @@ class RealBluetoothSerialPortFileTest {
     BluetoothSerialPortFile serialPortFile;
 
     @Test
-    void echo_test() throws InterruptedException {
+    void real_bluetooth_echo_test() throws InterruptedException {
         serialPortFile.addDataListener(event -> {
             String received = new String(event.getReceivedData());
             System.out.println("received: " + received);

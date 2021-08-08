@@ -78,7 +78,12 @@ class TemperatureSensorsReaderImplTest {
         }
 
         @Override
-        public List<String> listFiles(String dirPath) {
+        public List<String> listFiles(String dirPath, String basename) {
+            return null;
+        }
+
+        @Override
+        public List<String> listFiles(String dirPath, String basename, String extension) {
             return null;
         }
 
@@ -90,5 +95,26 @@ class TemperatureSensorsReaderImplTest {
         public byte[] readFile(String path) {
             return mockedFiles.get(path);
         }
+
+        @Override
+        public boolean isFileChecksumValid(String srcFile) {
+            return false;
+        }
+
+        @Override
+        public void deleteFile(String filePath) {
+
+        }
+
+        @Override
+        public boolean copyFile(String source, String destination) {
+            return false;
+        }
+
+        @Override
+        public void deleteFiles(List<String> files) {
+
+        }
+
     }
 }
