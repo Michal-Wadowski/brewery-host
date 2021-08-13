@@ -1,4 +1,4 @@
-package wadosm.breweryhost.controller;
+package wadosm.breweryhost.controller.general;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -6,15 +6,12 @@ import org.springframework.stereotype.Service;
 import wadosm.breweryhost.filesystem.FilesManager;
 import wadosm.breweryhost.system.SystemServices;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Log4j2
-public class UpdateManager {
+// TODO: Implement application config updates
+public class UpdateService {
 
     private final String UPLOADS_PATH = "/bluetooth";
 
@@ -28,7 +25,7 @@ public class UpdateManager {
 
     SystemServices systemServices;
 
-    public UpdateManager(FilesManager filesManager, SystemServices systemServices) {
+    public UpdateService(FilesManager filesManager, SystemServices systemServices) {
         this.filesManager = filesManager;
         this.systemServices = systemServices;
     }

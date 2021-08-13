@@ -4,13 +4,8 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortEvent;
 import org.junit.jupiter.api.Test;
 import wadosm.breweryhost.BeanConfiguration;
-import wadosm.breweryhost.externalinterface.dto.BreweryStatusDTO;
 import wadosm.breweryhost.externalinterface.dto.CommandDTO;
-import wadosm.breweryhost.serial.SerialPortEventListener;
-import wadosm.breweryhost.serial.SerialPortFile;
-
-import java.util.ArrayList;
-import java.util.List;
+import wadosm.breweryhost.externalinterface.dto.ResponseDTO;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,13 +19,13 @@ class ExternalInterfaceImplTest {
         SpyCommandListener commandListener = getExternalInterfaceCommandListener(serialPortFile);
 
         // when
-        String commandJson = "{\"commandId\": 123, \"command\": \"Foo\"}";
+        String commandJson = "{\"commandId\": 123, \"command\": \"Power.powerOff\"}";
         sendCommand(serialPortFile, commandJson);
 
         // then
         assertThat(commandListener.commandDTO).isNotNull();
         assertThat(commandListener.commandDTO.getCommandId()).isEqualTo(123);
-        assertThat(commandListener.commandDTO.getCommand()).isEqualTo("Foo");
+        assertThat(commandListener.commandDTO.getCommand()).isEqualTo(CommandDTO.Command.Power_powerOff);
     }
 
     @Test
@@ -60,7 +55,7 @@ class ExternalInterfaceImplTest {
     }
 
     @Test
-    void should_send_breweryStatusDTO_as_json() {
+    void should_send_response_as_json() {
         // given
         FakeSerialPortFile serialPortFile = new FakeSerialPortFile();
 
@@ -70,12 +65,19 @@ class ExternalInterfaceImplTest {
         );
 
         // when
-        BreweryStatusDTO breweryStatusDTO = new BreweryStatusDTO(123, 456L, null, null);
-        externalInterface.sendBreweryStatus(breweryStatusDTO);
+        CustomResponse breweryStatusDTO = new CustomResponse(123, 456L);
+        externalInterface.sendResponse(breweryStatusDTO);
 
         // then
         assertThat(serialPortFile.dataWritten).isNotNull();
         assertThat(new String(serialPortFile.dataWritten)).contains("123").contains("456");
+    }
+
+    private static class CustomResponse extends ResponseDTO {
+
+        public CustomResponse(Integer commandId, Long time) {
+            super(commandId, time);
+        }
     }
 
     private void sendCommand(FakeSerialPortFile serialPortFile, String commandJson) {
@@ -97,24 +99,4 @@ class ExternalInterfaceImplTest {
         }
     }
 
-    private static class FakeSerialPortFile implements SerialPortFile {
-
-        private final List<SerialPortEventListener> listeners = new ArrayList<>();
-
-        byte[] dataWritten;
-
-        public List<SerialPortEventListener> getListeners() {
-            return listeners;
-        }
-
-        @Override
-        public void addDataListener(SerialPortEventListener listener) {
-            listeners.add(listener);
-        }
-
-        @Override
-        public void writeBytes(byte[] data) {
-            dataWritten = data;
-        }
-    }
 }

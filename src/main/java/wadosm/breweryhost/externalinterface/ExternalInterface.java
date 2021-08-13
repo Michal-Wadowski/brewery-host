@@ -1,6 +1,6 @@
 package wadosm.breweryhost.externalinterface;
 
-import wadosm.breweryhost.externalinterface.dto.BreweryStatusDTO;
+import wadosm.breweryhost.externalinterface.dto.ResponseDTO;
 
 public interface ExternalInterface {
 
@@ -8,5 +8,5 @@ public interface ExternalInterface {
 
     void removeCommandListener(CommandListener commandListener);
 
-    void sendBreweryStatus(BreweryStatusDTO breweryStatusDTO);
+    void sendResponse(ResponseDTO responseDTO);
 }
