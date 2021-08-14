@@ -70,24 +70,32 @@ public class UpdateService {
         List<String> files = getUpdaterFiles();
         log.info("Cleanup: {}", files);
         filesManager.deleteFiles(files);
+
+        systemServices.synchronize();
     }
 
     private void cleanControllerFiles() {
         List<String> files = getBreweryFiles();
         log.info("Cleanup: {}", files);
         filesManager.deleteFiles(files);
+
+        systemServices.synchronize();
     }
 
     private void cleanDriverFiles() {
         List<String> files = getDriverFiles();
         log.info("Cleanup: {}", files);
         filesManager.deleteFiles(files);
+
+        systemServices.synchronize();
     }
 
     private void cleanBluetoothConfigFile() {
         List<String> files = getBluetoothConfigFiles();
         log.info("Cleanup: {}", files);
         filesManager.deleteFiles(files);
+
+        systemServices.synchronize();
     }
 
     private boolean updateService(String srcFile, String dstFile) {
@@ -164,8 +172,6 @@ public class UpdateService {
         if (bluetoothConfigFiles.size() > 0) {
             updateBluetoothConfigFile(bluetoothConfigFiles.get(0));
         }
-
-        systemServices.synchronize();
     }
 
     private List<String> getBreweryFiles() {
