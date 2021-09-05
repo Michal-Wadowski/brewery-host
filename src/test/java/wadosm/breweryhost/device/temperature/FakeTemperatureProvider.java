@@ -7,6 +7,11 @@ public class FakeTemperatureProvider implements TemperatureProvider {
     public Integer currentTemperature;
 
     @Override
+    public void readPeriodicallySensors() {
+
+    }
+
+    @Override
     public List<TemperatureSensor> getTemperatureSensors() {
         return null;
     }

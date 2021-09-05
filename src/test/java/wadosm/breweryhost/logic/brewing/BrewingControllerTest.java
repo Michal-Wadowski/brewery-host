@@ -307,7 +307,8 @@ class BrewingControllerTest {
 
         @Override
         public BrewingState getBrewingState() {
-            return new BrewingState(enabled, 123.0f, destinationTemperature, maxPower, powerTemperatureCorrelation, timer, motorEnabled, temperatureAlarm);
+            return new BrewingState(enabled, 123.0f, destinationTemperature, maxPower, powerTemperatureCorrelation,
+                    timer, motorEnabled, temperatureAlarm, 70);
         }
     }
 }

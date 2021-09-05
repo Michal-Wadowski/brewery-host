@@ -151,12 +151,14 @@ class BrewingServiceImplTest {
 
     @ParameterizedTest
     @CsvSource({
-            "false, 75.0, true, 50, 100.0, true, 71.0",
-            "true, , true, , , true, "
+            "false, 75.0, true, 50, 100.0, true, 71.0, 0",
+            "true, 75.0, true, 50, 100.0, true, 30.0, 49",
+            "true, 75.0, true, 100, 100.0, true, 30.0, 100",
+            "true, , true, , , true, , 0"
     })
     void getBrewingState(
             boolean enable, Float destinationTemperature, boolean temperatureAlarm, Integer maxPower,
-            Float powerTemperatureCorrelation, boolean motorEnable, Float currentTemperature
+            Float powerTemperatureCorrelation, boolean motorEnable, Float currentTemperature, Integer heatingPower
     ) {
         // given
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
@@ -177,6 +179,7 @@ class BrewingServiceImplTest {
         }
 
         // when
+        service.processStep();
         BrewingState brewingState = service.getBrewingState();
 
         // then
@@ -188,6 +191,8 @@ class BrewingServiceImplTest {
         assertThat(brewingState.getMaxPower()).isEqualTo(maxPower);
         assertThat(brewingState.getPowerTemperatureCorrelation()).isEqualTo(powerTemperatureCorrelation);
         assertThat(brewingState.isMotorEnabled()).isEqualTo(motorEnable);
+
+        assertThat(brewingState.getHeatingPower()).isEqualTo(heatingPower);
 
         assertThat(brewingState.getCurrentTemperature()).isEqualTo(currentTemperature);
     }

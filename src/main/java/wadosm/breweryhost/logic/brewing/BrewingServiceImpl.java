@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.driver.DriverInterface;
+import wadosm.breweryhost.device.driver.DriverInterfaceState;
 import wadosm.breweryhost.device.externalinterface.ExternalInterface;
 import wadosm.breweryhost.device.temperature.TemperatureProvider;
 
@@ -111,8 +112,13 @@ public class BrewingServiceImpl implements BrewingService {
     public BrewingState getBrewingState() {
         return new BrewingState(
                 enabled, getCurrentTemperature(), destinationTemperature, maxPower, getPowerTemperatureCorrelation(),
-                null, motorEnabled, temperatureAlarmEnabled
+                null, motorEnabled, temperatureAlarmEnabled, getHeatingPower()
         );
+    }
+
+    private Integer getHeatingPower() {
+        DriverInterfaceState driverInterfaceState = driverInterface.readDriverInterfaceState();
+        return (int) (driverInterfaceState.getMains(1) * 100.0 / 0xff);
     }
 
     private Float getPowerTemperatureCorrelation() {
@@ -142,8 +148,8 @@ public class BrewingServiceImpl implements BrewingService {
 
             driveMotor();
 
-            soundEnabled =
-                    enabled && temperatureAlarmEnabled && destinationTemperature != null && currentTemperature >= destinationTemperature;
+            soundEnabled = enabled && temperatureAlarmEnabled && destinationTemperature != null
+                    && currentTemperature != null && currentTemperature >= destinationTemperature;
 
             driverInterface.unlock();
         }

@@ -3,6 +3,7 @@ package wadosm.breweryhost.device.serial;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortEvent;
 import com.fazecast.jSerialComm.SerialPortMessageListener;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Log4j2
 public class BluetoothSerialPortFile implements SerialPortFile {
 
     private final SerialPort serialPort;
@@ -40,7 +42,15 @@ public class BluetoothSerialPortFile implements SerialPortFile {
 
     @Scheduled(fixedRate = 1000)
     public void periodicallyCheckSerial() {
-        serialPort.openPort();
+        boolean portOpened = serialPort.openPort();
+
+        if (portOpened && serialPort.bytesAvailable() > 0) {
+            log.warn("Serial buffer overflow, clearing");
+            byte[] buffer = new byte[serialPort.bytesAvailable()];
+            serialPort.readBytes(buffer, serialPort.bytesAvailable());
+            serialPort.closePort();
+        }
+
     }
 
     private static class CommonSerialPortMessageListener implements SerialPortMessageListener {

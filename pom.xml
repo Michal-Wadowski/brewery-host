@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>wadosm</groupId>
 	<artifactId>brewery-host</artifactId>
-	<version>0.0.4-SNAPSHOT</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<name>brewery-host</name>
 	<description>Server side application for brewery machinery</description>
 	<properties>

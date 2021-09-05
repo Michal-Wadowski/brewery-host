@@ -27,7 +27,6 @@ public class BrewingController implements CommandListener {
 
     @Override
     public void commandReceived(CommandDTO commandDTO) {
-        log.info(commandDTO);
         if (commandDTO.getCommand() == CommandDTO.Command.Brewing_getBrewingState) {
             sendStateResponse(commandDTO);
         }

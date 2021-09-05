@@ -3,6 +3,7 @@ package wadosm.breweryhost.logic.general;
 import org.junit.jupiter.api.Test;
 import wadosm.breweryhost.device.externalinterface.FakeExternalInterface;
 import wadosm.breweryhost.device.externalinterface.dto.CommandDTO;
+import wadosm.breweryhost.device.system.SystemServices;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -12,7 +13,10 @@ class PowerControllerTest {
     void receive_restart_command() {
         // given
         FakePowerService fakePowerService = new FakePowerService();
-        PowerController powerController = new PowerController(new FakeExternalInterface(), fakePowerService);
+        FakeSystemServices fakeSystemServices = new FakeSystemServices();
+        PowerController powerController = new PowerController(
+                new FakeExternalInterface(), fakePowerService, fakeSystemServices
+        );
 
         // when
         powerController.commandReceived(
@@ -30,7 +34,10 @@ class PowerControllerTest {
     void receive_powerOff_command() {
         // given
         FakePowerService fakePowerService = new FakePowerService();
-        PowerController powerController = new PowerController(new FakeExternalInterface(), fakePowerService);
+        FakeSystemServices fakeSystemServices = new FakeSystemServices();
+        PowerController powerController = new PowerController(
+                new FakeExternalInterface(), fakePowerService, fakeSystemServices
+        );
 
         // when
         powerController.commandReceived(
@@ -48,7 +55,10 @@ class PowerControllerTest {
     void ignore_other_command() {
         // given
         FakePowerService fakePowerService = new FakePowerService();
-        PowerController powerController = new PowerController(new FakeExternalInterface(), fakePowerService);
+        FakeSystemServices fakeSystemServices = new FakeSystemServices();
+        PowerController powerController = new PowerController(
+                new FakeExternalInterface(), fakePowerService, fakeSystemServices
+        );
 
         // when
         powerController.commandReceived(
@@ -76,6 +86,48 @@ class PowerControllerTest {
         @Override
         public void restart() {
             restart = true;
+        }
+    }
+
+    private class FakeSystemServices implements SystemServices {
+        @Override
+        public void doReboot() {
+
+        }
+
+        @Override
+        public void doPowerOff() {
+
+        }
+
+        @Override
+        public void stopService(String serviceName) {
+
+        }
+
+        @Override
+        public void startService(String serviceName) {
+
+        }
+
+        @Override
+        public void restartService(String serviceName) {
+
+        }
+
+        @Override
+        public String getServiceInfo(String serviceName) {
+            return null;
+        }
+
+        @Override
+        public void synchronize() {
+
+        }
+
+        @Override
+        public void heartBeat(boolean enable) {
+
         }
     }
 }

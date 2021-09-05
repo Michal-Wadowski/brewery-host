@@ -187,6 +187,6 @@ public class UpdateService {
     }
 
     private List<String> getBluetoothConfigFiles() {
-        return filesManager.listFiles(UPLOADS_PATH, "bluetooth-pins.cfg");
+        return filesManager.listFiles(UPLOADS_PATH, "bluetooth-pins", "txt");
     }
 }

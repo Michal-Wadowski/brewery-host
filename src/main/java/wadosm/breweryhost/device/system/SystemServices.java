@@ -15,4 +15,6 @@ public interface SystemServices {
     String getServiceInfo(String serviceName);
 
     void synchronize();
+
+    void heartBeat(boolean enable);
 }

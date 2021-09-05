@@ -2,6 +2,7 @@ package wadosm.breweryhost.device.driver;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import static wadosm.breweryhost.device.driver.DriverInterfaceImpl.Lock.CONTROLLER_LOCK;
@@ -9,6 +10,7 @@ import static wadosm.breweryhost.device.driver.DriverInterfaceImpl.Lock.IDLE;
 import static wadosm.breweryhost.device.driver.DriverInterfaceImpl.Offsets.*;
 
 @Component
+@Scope("prototype")
 public class DriverInterfaceImpl implements DriverInterface {
 
     private final int FILE_LENGTH = 9;
@@ -64,32 +66,32 @@ public class DriverInterfaceImpl implements DriverInterface {
     }
 
     @Override
-    public boolean isReady() {
+    public synchronized boolean isReady() {
         if (isNotValid()) return false;
 
         driverFile.seek(LOCK.getOffset());
         byte[] data = driverFile.read(LOCK.getSize());
 
-        return data[0] == IDLE.getCode() || data[0] == CONTROLLER_LOCK.getCode();
+        return data != null && data.length > 0 && (data[0] == IDLE.getCode() || data[0] == CONTROLLER_LOCK.getCode());
     }
 
-    private boolean isNotValid() {
+    private synchronized boolean isNotValid() {
         driverFile.open();
         return driverFile.length() != FILE_LENGTH;
     }
 
     @Override
-    public boolean isLocked() {
+    public synchronized boolean isLocked() {
         if (isNotValid()) return false;
 
         driverFile.seek(LOCK.getOffset());
         byte[] data = driverFile.read(LOCK.getSize());
 
-        return data[0] == CONTROLLER_LOCK.getCode();
+        return data != null && data.length > 0 && data[0] == CONTROLLER_LOCK.getCode();
     }
 
     @Override
-    public boolean lock() {
+    public synchronized boolean lock() {
         if (isReady()) {
             driverFile.seek(LOCK.getOffset());
             driverFile.write(new byte[]{CONTROLLER_LOCK.getCode()});
@@ -99,7 +101,7 @@ public class DriverInterfaceImpl implements DriverInterface {
     }
 
     @Override
-    public void unlock() {
+    public synchronized void unlock() {
         if (isReady()) {
             driverFile.seek(LOCK.getOffset());
             driverFile.write(new byte[]{IDLE.getCode()});
@@ -108,7 +110,7 @@ public class DriverInterfaceImpl implements DriverInterface {
     }
 
     @Override
-    public void powerEnable(boolean enable) {
+    public synchronized void powerEnable(boolean enable) {
         if (isLocked()) {
             driverFile.seek(POWER.getOffset());
             driverFile.write(new byte[]{State.fromBoolean(enable).getEnabled()});
@@ -116,7 +118,7 @@ public class DriverInterfaceImpl implements DriverInterface {
     }
 
     @Override
-    public void motorEnable(int motorNumber, boolean enable) {
+    public synchronized void motorEnable(int motorNumber, boolean enable) {
         if (isLocked()) {
             if (motorNumber >= 1 && motorNumber <= MOTOR.getCount()) {
                 driverFile.seek(MOTOR.getOffset(motorNumber));
@@ -126,7 +128,7 @@ public class DriverInterfaceImpl implements DriverInterface {
     }
 
     @Override
-    public void playSound(int period) {
+    public synchronized void playSound(int period) {
         if (isLocked()) {
             if (period >= 0 && period <= 0xffff) {
                 driverFile.seek(SOUND.getOffset());
@@ -140,7 +142,7 @@ public class DriverInterfaceImpl implements DriverInterface {
     }
 
     @Override
-    public void setMainsPower(int mainsNumber, int power) {
+    public synchronized void setMainsPower(int mainsNumber, int power) {
         if (isLocked()) {
             if (mainsNumber >= 1 && mainsNumber <= MAINS.getCount()) {
                 if (power >= 0 && power <= 0xff) {
@@ -154,7 +156,7 @@ public class DriverInterfaceImpl implements DriverInterface {
     }
 
     @Override
-    public DriverInterfaceState readDriverInterfaceState() {
+    public synchronized DriverInterfaceState readDriverInterfaceState() {
         if (isReady()) {
             driverFile.seek(POWER.getOffset());
             boolean power = State.toBoolean(driverFile.read(POWER.getSize())[0]);

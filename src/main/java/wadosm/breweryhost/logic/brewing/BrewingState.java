@@ -22,4 +22,6 @@ public class BrewingState {
     private final boolean motorEnabled;
 
     private final boolean temperatureAlarm;
+
+    private final Integer heatingPower;
 }

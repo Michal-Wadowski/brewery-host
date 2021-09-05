@@ -1,5 +1,6 @@
 package wadosm.breweryhost.device.driver;
 
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
@@ -7,6 +8,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 @Component
+@Scope("prototype")
 public class DriverFileImpl implements DriverFile {
 
     private RandomAccessFile file;
@@ -17,6 +19,7 @@ public class DriverFileImpl implements DriverFile {
 
     @Override
     public void write(byte[] b) {
+
         if (file == null) {
             return;
         }
@@ -25,6 +28,7 @@ public class DriverFileImpl implements DriverFile {
             file.write(b);
         } catch (IOException e) {
             e.printStackTrace();
+            close();
         }
     }
 
@@ -38,6 +42,7 @@ public class DriverFileImpl implements DriverFile {
             file.seek(pos);
         } catch (IOException e) {
             e.printStackTrace();
+            close();
         }
     }
 
@@ -53,6 +58,7 @@ public class DriverFileImpl implements DriverFile {
             return buffer;
         } catch (IOException e) {
             e.printStackTrace();
+            close();
             return null;
         }
     }
@@ -65,6 +71,7 @@ public class DriverFileImpl implements DriverFile {
         try {
             return file.length();
         } catch (IOException e) {
+            close();
             return null;
         }
     }
@@ -85,8 +92,10 @@ public class DriverFileImpl implements DriverFile {
     @Override
     public void close() {
         try {
-            file.close();
-            file = null;
+            if (file != null) {
+                file.close();
+                file = null;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

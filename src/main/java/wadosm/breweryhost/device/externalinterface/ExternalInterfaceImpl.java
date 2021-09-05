@@ -32,7 +32,6 @@ public class ExternalInterfaceImpl implements ExternalInterface {
     private void onReceivedData(byte[] data) {
         for (CommandListener commandListener : commandListeners) {
             try {
-                log.info("data: {}", new String(data));
                 CommandDTO commandDTO = objectMapper.readValue(data, CommandDTO.class);
                 commandListener.commandReceived(commandDTO);
             } catch (IOException e) {
@@ -55,18 +54,14 @@ public class ExternalInterfaceImpl implements ExternalInterface {
     public void sendResponse(ResponseDTO responseDTO) {
         try {
             byte[] data = objectMapper.writeValueAsBytes(responseDTO);
-            serialPortFile.writeBytes(data);
+            byte[] newData = new byte[data.length + 1];
+            for (int i = 0; i < data.length; i++) {
+                newData[i] = data[i];
+            }
+            newData[newData.length-1] = '\n';
+            serialPortFile.writeBytes(newData);
         } catch (JsonProcessingException e) {
         }
     }
-
-//    @Override
-//    public void sendBreweryStatus(BreweryStatusDTO breweryStatusDTO) {
-//        try {
-//            byte[] data = objectMapper.writeValueAsBytes(breweryStatusDTO);
-//            serialPortFile.writeBytes(data);
-//        } catch (JsonProcessingException e) {
-//        }
-//    }
 
 }

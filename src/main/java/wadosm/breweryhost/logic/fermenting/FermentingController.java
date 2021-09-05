@@ -29,7 +29,6 @@ public class FermentingController implements CommandListener {
 
     @Override
     public void commandReceived(CommandDTO commandDTO) {
-        log.info(commandDTO);
         if (commandDTO.getCommand() == CommandDTO.Command.Fermenting_getFermentingState) {
             sendStateResponse(commandDTO);
         }

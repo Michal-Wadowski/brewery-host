@@ -1,5 +1,7 @@
 package wadosm.breweryhost.device.temperature;
 
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -8,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@EnableAsync
 public class TemperatureProviderImpl implements TemperatureProvider {
 
     private List<TemperatureSensor> temperatureSensors = new ArrayList<>();
@@ -18,7 +21,9 @@ public class TemperatureProviderImpl implements TemperatureProvider {
         this.temperatureSensorsReader = temperatureSensorsReader;
     }
 
-    @Scheduled(fixedRate = 1000)
+    @Scheduled(fixedDelay = 1000)
+    @Async
+    @Override
     public void readPeriodicallySensors() {
         temperatureSensors = temperatureSensorsReader.readSensors();
     }

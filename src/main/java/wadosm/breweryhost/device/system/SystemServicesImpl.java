@@ -3,6 +3,8 @@ package wadosm.breweryhost.device.system;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 @Component
@@ -11,7 +13,7 @@ public class SystemServicesImpl implements SystemServices {
 
     @Override
     public void doReboot() {
-        runAndWait("sudo systemctl restart");
+        runAndWait("sudo systemctl reboot");
     }
 
     @Override
@@ -51,6 +53,22 @@ public class SystemServicesImpl implements SystemServices {
     @Override
     public void synchronize() {
         runAndWait("sync");
+    }
+
+    @Override
+    public void heartBeat(boolean enable) {
+        File file = new File("/sys/class/leds/orangepi:red:status/trigger");
+        try {
+            FileWriter fw = new FileWriter(file);
+            if (enable) {
+                fw.write("heartbeat");
+            } else {
+                fw.write("none");
+            }
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void runAndWait(String command) {
