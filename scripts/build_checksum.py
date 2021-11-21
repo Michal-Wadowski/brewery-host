@@ -1,13 +1,20 @@
 import zlib
 from os import listdir, rename
 from os.path import isfile, join
+import sys
+
+if len(sys.argv) < 2:
+    raise Exception('No target name specified')
+
+target = sys.argv[1]
 
 curr_dir = './target'
 target_files = [
     f for f
     in listdir(curr_dir)
-    if isfile(join(curr_dir, f)) and f.startswith('brewery-host') and f.endswith('.jar')
+    if isfile(join(curr_dir, f)) and f.startswith(target) and f.endswith('.jar')
 ]
+
 for filename in target_files:
     with open(join(curr_dir, filename), 'rb') as f:
         content = f.read()
