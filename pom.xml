@@ -6,7 +6,8 @@
 	<modules>
 		<module>updater</module>
 		<module>brewery-host</module>
-	</modules>
+        <module>common</module>
+    </modules>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
