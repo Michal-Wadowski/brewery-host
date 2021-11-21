@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>host</artifactId>
+    <artifactId>brewery-host</artifactId>
     <packaging>bundle</packaging>
 
 

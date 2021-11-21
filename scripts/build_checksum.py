@@ -1,7 +1,7 @@
+import sys
 import zlib
 from os import listdir, rename
 from os.path import isfile, join
-import sys
 
 if len(sys.argv) < 2:
     raise Exception('No target name specified')
