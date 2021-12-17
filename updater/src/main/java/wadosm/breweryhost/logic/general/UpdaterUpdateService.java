@@ -52,6 +52,7 @@ public class UpdaterUpdateService implements UpdateService {
     protected void updateDriverService(String srcFile) {
         systemServices.stopService("driver");
 
+        log.error("updating from {} to {}", srcFile, DRIVER_DESTINATION);
         if (updateService(srcFile, DRIVER_DESTINATION)) {
             cleanDriverFiles();
         }
@@ -101,22 +102,16 @@ public class UpdaterUpdateService implements UpdateService {
 
     private boolean updateService(String srcFile, String dstFile) {
         if (!filesManager.isFileAccessible(srcFile)) {
-            return false;
-        }
-
-        if (!filesManager.isFileAccessible(dstFile)) {
-            log.error("Can't write to {}", dstFile);
-
-            filesManager.deleteFile(srcFile);
+            log.error("not accessible {}", srcFile);
             return false;
         }
 
         if (filesManager.isFileChecksumValid(srcFile)) {
-            log.info("Updating from {} to {}", srcFile, dstFile);
+            log.error("Updating from {} to {}", srcFile, dstFile);
 
-            boolean result = filesManager.copyFile(srcFile, dstFile);
+            boolean result = filesManager.moveFile(srcFile, dstFile);
 
-            log.info("Done: {}", result);
+            log.error("Done: {}", result);
             return true;
         }
 
@@ -128,17 +123,10 @@ public class UpdaterUpdateService implements UpdateService {
             return false;
         }
 
-        if (!filesManager.isFileAccessible(dstFile)) {
-            log.error("Can't write to {}", dstFile);
-
-            filesManager.deleteFile(srcFile);
-            return false;
-        }
-
         if (checkBluetoothConfigFile(srcFile)) {
             log.info("Updating from {} to {}", srcFile, dstFile);
 
-            boolean result = filesManager.copyFile(srcFile, dstFile);
+            boolean result = filesManager.moveFile(srcFile, dstFile);
 
             log.info("Done: {}", result);
             return true;

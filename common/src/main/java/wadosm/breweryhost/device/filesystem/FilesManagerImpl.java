@@ -1,5 +1,6 @@
 package wadosm.breweryhost.device.filesystem;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
@@ -12,6 +13,7 @@ import java.util.stream.Stream;
 import java.util.zip.CRC32;
 
 @Component
+@Log4j2
 public class FilesManagerImpl implements FilesManager {
 
     @Override
@@ -22,14 +24,24 @@ public class FilesManagerImpl implements FilesManager {
 
     @Override
     public boolean moveFile(String source, String destination) {
-        boolean result = copyFile(source, destination);
-        if (result) {
-            try {
-                Files.delete(Path.of(source));
-            } catch (IOException e) {
+        log.error("move from {} to {}", source, destination);
+        if (isFileAccessible(destination)) {
+            log.error("isFileAccessible({})", destination);
+            boolean result = copyFile(source, destination);
+            log.error("result {}", result);
+            if (result) {
+                try {
+                    Files.delete(Path.of(source));
+                } catch (IOException e) {
+                }
             }
+            return result;
+        } else {
+            log.error("not isFileAccessible({})", destination);
+            File file = new File(source);
+            log.error("rename {} to {}", file, destination);
+            return file.renameTo(new File(destination));
         }
-        return result;
     }
 
     private void copyContent(File a, File b) throws IOException {

@@ -47,17 +47,10 @@ public class HostUpdateService implements UpdateService {
             return false;
         }
 
-        if (!filesManager.isFileAccessible(dstFile)) {
-            log.error("Can't write to {}", dstFile);
-
-            filesManager.deleteFile(srcFile);
-            return false;
-        }
-
         if (filesManager.isFileChecksumValid(srcFile)) {
             log.info("Updating from {} to {}", srcFile, dstFile);
 
-            boolean result = filesManager.copyFile(srcFile, dstFile);
+            boolean result = filesManager.moveFile(srcFile, dstFile);
 
             log.info("Done: {}", result);
             return true;
@@ -71,17 +64,10 @@ public class HostUpdateService implements UpdateService {
             return false;
         }
 
-        if (!filesManager.isFileAccessible(dstFile)) {
-            log.error("Can't write to {}", dstFile);
-
-            filesManager.deleteFile(srcFile);
-            return false;
-        }
-
         if (checkBluetoothConfigFile(srcFile)) {
             log.info("Updating from {} to {}", srcFile, dstFile);
 
-            boolean result = filesManager.copyFile(srcFile, dstFile);
+            boolean result = filesManager.moveFile(srcFile, dstFile);
 
             log.info("Done: {}", result);
             return true;
