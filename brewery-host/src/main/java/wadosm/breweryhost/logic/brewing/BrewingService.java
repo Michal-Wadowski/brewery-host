@@ -1,5 +1,9 @@
 package wadosm.breweryhost.logic.brewing;
 
+import wadosm.breweryhost.logic.DeviceCommand;
+
+import java.util.List;
+
 public interface BrewingService {
 
     void enable(boolean enable);

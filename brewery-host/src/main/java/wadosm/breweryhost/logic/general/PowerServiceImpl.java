@@ -5,20 +5,21 @@ import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.driver.DriverInterface;
 import wadosm.breweryhost.device.driver.DriverInterfaceState;
 import wadosm.breweryhost.device.system.SystemServices;
+import wadosm.breweryhost.logic.DeviceCommand;
+
+import java.util.List;
 
 @Service
 @Log4j2
 public class PowerServiceImpl implements PowerService {
 
-    private final SystemServices systemServices;
-
     private final DriverInterface driverInterface;
 
-    public PowerServiceImpl(
-            SystemServices systemServices, DriverInterface driverInterface
-    ) {
-        this.systemServices = systemServices;
+    private final SystemServices systemServices;
+
+    public PowerServiceImpl(DriverInterface driverInterface, SystemServices systemServices) {
         this.driverInterface = driverInterface;
+        this.systemServices = systemServices;
 
         tryEnablePower(driverInterface);
     }
@@ -29,34 +30,23 @@ public class PowerServiceImpl implements PowerService {
             if (interfaceState.getPower()) {
                 break;
             }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {}
 
-            if (driverInterface.lock()) {
-                driverInterface.powerEnable(true);
-                driverInterface.unlock();
-            } else {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                }
-            }
+            driverInterface.powerEnable(true);
         }
     }
 
     @Override
     public void powerOff() {
-        if (driverInterface.lock()) {
-            driverInterface.powerEnable(false);
-            driverInterface.unlock();
-        }
+        driverInterface.powerEnable(false);
         systemServices.doPowerOff();
     }
 
     @Override
     public void restart() {
-        if (driverInterface.lock()) {
-            driverInterface.powerEnable(false);
-            driverInterface.unlock();
-        }
+        driverInterface.powerEnable(false);
         systemServices.doReboot();
     }
 }

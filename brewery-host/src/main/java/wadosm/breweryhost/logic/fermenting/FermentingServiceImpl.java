@@ -8,8 +8,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.driver.DriverInterface;
 import wadosm.breweryhost.device.driver.DriverInterfaceState;
-import wadosm.breweryhost.device.externalinterface.ExternalInterface;
 import wadosm.breweryhost.device.temperature.TemperatureProvider;
+import wadosm.breweryhost.logic.DeviceCommand;
+
+import java.util.ArrayList;
+import java.util.List;
 
 // TODO: Implement saving task on disk
 @Service
@@ -29,16 +32,16 @@ public class FermentingServiceImpl implements FermentingService {
     private boolean enabled;
     private Float destinationTemperature;
 
-    private final TemperatureProvider temperatureProvider;
-
     private final DriverInterface driverInterface;
 
+    private final TemperatureProvider temperatureProvider;
+
     public FermentingServiceImpl(
-            TemperatureProvider temperatureProvider, DriverInterface driverInterface,
-            ExternalInterface externalInterface
+            DriverInterface driverInterface,
+            TemperatureProvider temperatureProvider
     ) {
-        this.temperatureProvider = temperatureProvider;
         this.driverInterface = driverInterface;
+        this.temperatureProvider = temperatureProvider;
     }
 
     @Override
@@ -70,13 +73,11 @@ public class FermentingServiceImpl implements FermentingService {
     @Scheduled(fixedRateString = "${fermenting.checkingPeriod}")
     public void processStep() {
         Float currentTemperature = getCurrentTemperature();
-        if (driverInterface.lock()) {
-            if (enabled && currentTemperature != null && destinationTemperature != null) {
-                driverInterface.motorEnable(motorNumber, currentTemperature < destinationTemperature);
-            } else {
-                driverInterface.motorEnable(motorNumber, false);
-            }
-            driverInterface.unlock();
+
+        if (enabled && currentTemperature != null && destinationTemperature != null) {
+            driverInterface.motorEnable(motorNumber, currentTemperature < destinationTemperature);
+        } else {
+            driverInterface.motorEnable(motorNumber, false);
         }
     }
 

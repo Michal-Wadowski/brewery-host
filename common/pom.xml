@@ -7,8 +7,10 @@
         <groupId>wadosm</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
+    <packaging>jar</packaging>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>common</artifactId>
+
 
 </project>

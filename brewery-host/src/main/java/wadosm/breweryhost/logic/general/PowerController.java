@@ -2,8 +2,9 @@ package wadosm.breweryhost.logic.general;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import wadosm.breweryhost.device.driver.DriverInterfaceImpl;
 import wadosm.breweryhost.device.externalinterface.CommandListener;
-import wadosm.breweryhost.device.externalinterface.ExternalInterface;
+import wadosm.breweryhost.device.externalinterface.Session;
 import wadosm.breweryhost.device.externalinterface.dto.CommandDTO;
 import wadosm.breweryhost.device.system.SystemServices;
 
@@ -13,24 +14,21 @@ import javax.annotation.PreDestroy;
 @Log4j2
 public class PowerController implements CommandListener {
 
-    private final PowerService powerService;
-
     private final SystemServices systemServices;
 
-    public PowerController(
-            ExternalInterface externalInterface,
-            PowerService powerService,
-            SystemServices systemServices
-    ) {
-        this.powerService = powerService;
+    public PowerController(PowerService powerService, SystemServices systemServices) {
         this.systemServices = systemServices;
-        externalInterface.addCommandListener(this);
 
         systemServices.heartBeat(true);
     }
 
     @Override
-    public void commandReceived(CommandDTO commandDTO) {
+    public void commandReceived(CommandDTO commandDTO, Session session) {
+        PowerService powerService = new PowerServiceImpl(
+                new DriverInterfaceImpl(session),
+                systemServices
+        );
+
         if (commandDTO.getCommand() == CommandDTO.Command.Power_powerOff) {
             powerService.powerOff();
         }

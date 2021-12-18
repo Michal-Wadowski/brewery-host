@@ -8,8 +8,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.driver.DriverInterface;
 import wadosm.breweryhost.device.driver.DriverInterfaceState;
-import wadosm.breweryhost.device.externalinterface.ExternalInterface;
 import wadosm.breweryhost.device.temperature.TemperatureProvider;
+import wadosm.breweryhost.logic.DeviceCommand;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Log4j2
@@ -29,16 +32,6 @@ public class BrewingServiceImpl implements BrewingService {
     @Setter
     private Integer motorNumber;
 
-    @Value("${brewing.alarmHi}")
-    @Getter
-    @Setter
-    private Integer alarmHi;
-
-    @Value("${brewing.alarmLo}")
-    @Getter
-    @Setter
-    private Integer alarmLo;
-
     private boolean enabled;
     private Float destinationTemperature;
     private Integer maxPower;
@@ -50,8 +43,7 @@ public class BrewingServiceImpl implements BrewingService {
 
     public BrewingServiceImpl(
             DriverInterface driverInterface,
-            TemperatureProvider temperatureProvider,
-            ExternalInterface externalInterface
+            TemperatureProvider temperatureProvider
     ) {
         this.driverInterface = driverInterface;
         this.temperatureProvider = temperatureProvider;
@@ -141,44 +133,20 @@ public class BrewingServiceImpl implements BrewingService {
 
     @Scheduled(fixedRateString = "${brewing.checkingPeriod}")
     public void processStep() {
+        List<DeviceCommand> commands = new ArrayList<>();
+
         Float currentTemperature = getCurrentTemperature();
 
-        if (driverInterface.lock()) {
-            setMainsPower(currentTemperature);
+        setMainsPower(currentTemperature);
 
-            driveMotor();
+        driveMotor();
 
-            soundEnabled = enabled && temperatureAlarmEnabled && destinationTemperature != null
-                    && currentTemperature != null && currentTemperature >= destinationTemperature;
-
-            driverInterface.unlock();
-        }
-    }
-
-    @Scheduled(fixedRateString = "${brewing.soundPeriod}")
-    public void soundStep() {
-        if (driverInterface.lock()) {
-            playSound();
-            driverInterface.unlock();
-        }
+        soundEnabled = enabled && temperatureAlarmEnabled && destinationTemperature != null
+                && currentTemperature != null && currentTemperature >= destinationTemperature;
     }
 
     private void driveMotor() {
         driverInterface.motorEnable(motorNumber, enabled && motorEnabled);
-    }
-
-    private void playSound() {
-        if (soundEnabled) {
-            if (soundTone == 0) {
-                soundTone = 1;
-                driverInterface.playSound(alarmHi);
-            } else {
-                soundTone = 0;
-                driverInterface.playSound(alarmLo);
-            }
-        } else {
-            driverInterface.playSound(0);
-        }
     }
 
     private void setMainsPower(Float currentTemperature) {

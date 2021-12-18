@@ -1,20 +1,16 @@
 package wadosm.breweryhost.device.driver;
 
+import wadosm.breweryhost.logic.DeviceCommand;
+
+import java.util.List;
+
 public interface DriverInterface {
 
-    boolean isReady();
-
-    boolean lock();
-
-    void unlock();
-
-    boolean isLocked();
+    void init();
 
     void powerEnable(boolean enable);
 
     void motorEnable(int motorNumber, boolean enable);
-
-    void playSound(int period);
 
     void setMainsPower(int mainsNumber, int power);
 
