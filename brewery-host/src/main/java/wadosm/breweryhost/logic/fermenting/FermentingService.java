@@ -1,8 +1,7 @@
 package wadosm.breweryhost.logic.fermenting;
 
-import wadosm.breweryhost.logic.DeviceCommand;
-
-import java.util.List;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 
 public interface FermentingService {
 
@@ -12,4 +11,7 @@ public interface FermentingService {
 
     FermentingState getFermentingState();
 
+    @Async
+    @Scheduled(fixedRateString = "${fermenting.checkingPeriod}")
+    void processStep();
 }

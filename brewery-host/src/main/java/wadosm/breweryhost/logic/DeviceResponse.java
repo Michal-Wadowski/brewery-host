@@ -2,13 +2,16 @@ package wadosm.breweryhost.logic;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 public class DeviceResponse {
-    private final String function;
-    private final List<Object> arguments;
-    private final Object response;
+    private String function;
+    private List<Object> arguments;
+    private Object response;
 }

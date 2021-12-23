@@ -1,53 +1,68 @@
 package wadosm.breweryhost;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import wadosm.breweryhost.device.driver.DriverInterface;
+import wadosm.breweryhost.device.SocketWrapperImpl;
+import wadosm.breweryhost.device.externalinterface.DriverSessionImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
 import java.net.Socket;
 
+@Log4j2
+@SpringBootTest
 public class ConnectionPoolTest {
 
-    @Test
-    void javaConnectionPool() throws IOException {
-        ServerSocket serverSocket = new ServerSocket(4444);
-        while (true) {
-            new EchoClientHandler(serverSocket.accept()).start();
+    @Autowired
+    DriverInterface driverInterface;
+
+    @Autowired
+    ObjectMapper objectMapper;
+
+    class DriverConnector {
+        public void tryConnect() {
+            try {
+                log.info("Try to connect");
+                Socket socket = new Socket("localhost", 1111);
+
+                log.info("connected");
+
+                SocketWrapperImpl socketWrapper = new SocketWrapperImpl(socket);
+                DriverSessionImpl driverSession = new DriverSessionImpl(socketWrapper, objectMapper);
+                driverInterface.setSession(driverSession);
+
+                while (driverSession.isConnected()) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+
+                driverInterface.removeSession();
+
+            } catch (IOException ignored) {
+
+            }
         }
     }
 
-    private static class EchoClientHandler extends Thread {
+    @Test
+    @Disabled
+    void connectToDriver() {
+        DriverConnector driverConnector = new DriverConnector();
 
-        private Socket clientSocket;
-        private PrintWriter out;
-        private BufferedReader in;
+        while (true) {
+            driverConnector.tryConnect();
 
-        public EchoClientHandler(Socket socket) {
-            clientSocket = socket;
-        }
-
-        public void run() {
             try {
-                out = new PrintWriter(clientSocket.getOutputStream(), true);
-                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    if (".".equals(inputLine)) {
-                        out.println("bye");
-                        break;
-                    }
-                    out.println(inputLine);
-                }
-
-                in.close();
-                out.close();
-                clientSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+                Thread.sleep(1000);
+            } catch (InterruptedException ignored) {
             }
         }
     }

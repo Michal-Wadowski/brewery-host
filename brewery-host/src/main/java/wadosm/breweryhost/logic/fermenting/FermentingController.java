@@ -2,54 +2,49 @@ package wadosm.breweryhost.logic.fermenting;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Service;
-import wadosm.breweryhost.device.driver.DriverInterfaceImpl;
-import wadosm.breweryhost.device.externalinterface.CommandListener;
-import wadosm.breweryhost.device.externalinterface.Session;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import wadosm.breweryhost.device.externalinterface.dto.CommandDTO;
 import wadosm.breweryhost.device.externalinterface.dto.ResponseDTO;
-import wadosm.breweryhost.device.temperature.TemperatureProvider;
 
 import java.time.Instant;
 
-@Service
+@RequestMapping("/fermenting")
 @Log4j2
-public class FermentingController implements CommandListener {
+public class FermentingController {
 
-    private final TemperatureProvider temperatureProvider;
+    private final FermentingService fermentingService;
 
-    public FermentingController(TemperatureProvider temperatureProvider) {
-        this.temperatureProvider = temperatureProvider;
+    public FermentingController(FermentingService fermentingService) {
+        this.fermentingService = fermentingService;
     }
 
-    @Override
-    public void commandReceived(CommandDTO commandDTO, Session session) {
-        FermentingService fermentingService = new FermentingServiceImpl(
-                new DriverInterfaceImpl(session), temperatureProvider
-        );
-
-        if (commandDTO.getCommand() == CommandDTO.Command.Fermenting_getFermentingState) {
-            sendStateResponse(commandDTO, session, fermentingService);
-        }
-
-        if (commandDTO.getCommand() == CommandDTO.Command.Fermenting_setDestinationTemperature) {
-            Float value = commandDTO.getFloatValue();
-            fermentingService.setDestinationTemperature(value);
-            sendStateResponse(commandDTO, session, fermentingService);
-        }
-
-        if (commandDTO.getCommand() == CommandDTO.Command.Fermenting_enable) {
-            Boolean enable = commandDTO.getEnable();
-            fermentingService.enable(enable);
-            sendStateResponse(commandDTO, session, fermentingService);
-        }
+    @PostMapping("/getFermentingState")
+    public FermentingStatusResponse getFermentingState(@RequestBody CommandDTO commandDTO) {
+        return sendStateResponse(commandDTO);
     }
 
-    private void sendStateResponse(CommandDTO commandDTO, Session session, FermentingService fermentingService) {
+    @PostMapping("/setDestinationTemperature")
+    public FermentingStatusResponse setDestinationTemperature(@RequestBody CommandDTO commandDTO) {
+        Float value = commandDTO.getFloatValue();
+        fermentingService.setDestinationTemperature(value);
+        return sendStateResponse(commandDTO);
+    }
+
+    @PostMapping("/enable")
+    public FermentingStatusResponse enable(@RequestBody CommandDTO commandDTO) {
+        Boolean enable = commandDTO.getEnable();
+        fermentingService.enable(enable);
+        return sendStateResponse(commandDTO);
+    }
+
+    private FermentingStatusResponse sendStateResponse(CommandDTO commandDTO) {
         FermentingState fermentingState = fermentingService.getFermentingState();
-        session.sendResponse( new FermentingStatusResponse(
+        return new FermentingStatusResponse(
                 commandDTO.getCommandId(), Instant.now().getEpochSecond(), fermentingState
-        ));
+        );
     }
 
     @Getter

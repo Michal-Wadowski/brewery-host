@@ -4,18 +4,17 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.driver.DriverInterface;
 import wadosm.breweryhost.device.driver.DriverInterfaceState;
 import wadosm.breweryhost.device.temperature.TemperatureProvider;
-import wadosm.breweryhost.logic.DeviceCommand;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Log4j2
+@EnableAsync
 public class BrewingServiceImpl implements BrewingService {
 
     private final DriverInterface driverInterface;
@@ -37,9 +36,7 @@ public class BrewingServiceImpl implements BrewingService {
     private Integer maxPower;
     private Float temperatureCorrelation;
     private boolean motorEnabled;
-    private int soundTone = 0;
     private boolean temperatureAlarmEnabled;
-    private boolean soundEnabled;
 
     public BrewingServiceImpl(
             DriverInterface driverInterface,
@@ -110,7 +107,10 @@ public class BrewingServiceImpl implements BrewingService {
 
     private Integer getHeatingPower() {
         DriverInterfaceState driverInterfaceState = driverInterface.readDriverInterfaceState();
-        return (int) (driverInterfaceState.getMains(1) * 100.0 / 0xff);
+        if (driverInterfaceState != null) {
+            return (int) (driverInterfaceState.getMains(1) * 100.0 / 0xff);
+        }
+        return null;
     }
 
     private Float getPowerTemperatureCorrelation() {
@@ -131,17 +131,20 @@ public class BrewingServiceImpl implements BrewingService {
         }
     }
 
+    @Async
     @Scheduled(fixedRateString = "${brewing.checkingPeriod}")
     public void processStep() {
-        List<DeviceCommand> commands = new ArrayList<>();
-
         Float currentTemperature = getCurrentTemperature();
 
         setMainsPower(currentTemperature);
 
         driveMotor();
 
-        soundEnabled = enabled && temperatureAlarmEnabled && destinationTemperature != null
+        driverInterface.setAlarm(isAlarmEnabled(currentTemperature));
+    }
+
+    private boolean isAlarmEnabled(Float currentTemperature) {
+        return enabled && temperatureAlarmEnabled && destinationTemperature != null
                 && currentTemperature != null && currentTemperature >= destinationTemperature;
     }
 

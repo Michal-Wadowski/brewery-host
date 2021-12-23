@@ -1,6 +1,8 @@
 package wadosm.breweryhost.logic.general;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.filesystem.FilesManager;
@@ -10,6 +12,7 @@ import java.util.List;
 
 @Service
 @Log4j2
+@EnableAsync
 // TODO: Implement application config updates
 public class HostUpdateService implements UpdateService {
 
@@ -81,7 +84,9 @@ public class HostUpdateService implements UpdateService {
         return new String(content).endsWith("\n\n");
     }
 
+    @Async
     @Scheduled(fixedRateString = "${update.checkingPeriod}")
+    @Override
     public void checkUpdates() {
         List<String> updaterFiles = getUpdaterFiles();
         if (updaterFiles.size() > 0) {

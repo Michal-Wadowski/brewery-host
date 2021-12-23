@@ -5,9 +5,6 @@ import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.driver.DriverInterface;
 import wadosm.breweryhost.device.driver.DriverInterfaceState;
 import wadosm.breweryhost.device.system.SystemServices;
-import wadosm.breweryhost.logic.DeviceCommand;
-
-import java.util.List;
 
 @Service
 @Log4j2
@@ -21,20 +18,36 @@ public class PowerServiceImpl implements PowerService {
         this.driverInterface = driverInterface;
         this.systemServices = systemServices;
 
-        tryEnablePower(driverInterface);
+        Thread powerTask = new EnablePowerTask(driverInterface);
+        powerTask.start();
     }
 
-    private void tryEnablePower(DriverInterface driverInterface) {
-        while (true) {
-            DriverInterfaceState interfaceState = driverInterface.readDriverInterfaceState();
-            if (interfaceState.getPower()) {
-                break;
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {}
+    private static class EnablePowerTask extends Thread {
 
-            driverInterface.powerEnable(true);
+        private final DriverInterface driverInterface;
+
+        private EnablePowerTask(DriverInterface driverInterface) {
+            super("PowerServiceImpl-Thread");
+            this.driverInterface = driverInterface;
+        }
+
+        public void run() {
+            tryEnablePower();
+        }
+
+        private void tryEnablePower() {
+            while (true) {
+                DriverInterfaceState interfaceState = driverInterface.readDriverInterfaceState();
+                if (driverInterface.isReady() && interfaceState != null && interfaceState.getPower()) {
+                    break;
+                }
+
+                driverInterface.powerEnable(true);
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {}
+            }
         }
     }
 

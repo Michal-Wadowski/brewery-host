@@ -1,41 +1,36 @@
 package wadosm.breweryhost.logic.general;
 
 import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Service;
-import wadosm.breweryhost.device.driver.DriverInterfaceImpl;
-import wadosm.breweryhost.device.externalinterface.CommandListener;
-import wadosm.breweryhost.device.externalinterface.Session;
-import wadosm.breweryhost.device.externalinterface.dto.CommandDTO;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import wadosm.breweryhost.device.system.SystemServices;
 
 import javax.annotation.PreDestroy;
 
-@Service
+@RequestMapping("/power")
 @Log4j2
-public class PowerController implements CommandListener {
+public class PowerController {
 
     private final SystemServices systemServices;
 
+    private final PowerService powerService;
+
     public PowerController(PowerService powerService, SystemServices systemServices) {
         this.systemServices = systemServices;
+        this.powerService = powerService;
 
         systemServices.heartBeat(true);
     }
 
-    @Override
-    public void commandReceived(CommandDTO commandDTO, Session session) {
-        PowerService powerService = new PowerServiceImpl(
-                new DriverInterfaceImpl(session),
-                systemServices
-        );
+    @PostMapping("/powerOff")
+    public void powerOff() {
+        powerService.powerOff();
+    }
 
-        if (commandDTO.getCommand() == CommandDTO.Command.Power_powerOff) {
-            powerService.powerOff();
-        }
-
-        if (commandDTO.getCommand() == CommandDTO.Command.Power_restart) {
-            powerService.restart();
-        }
+    @PostMapping("/restart")
+    public void restart() {
+        powerService.restart();
     }
 
     @PreDestroy

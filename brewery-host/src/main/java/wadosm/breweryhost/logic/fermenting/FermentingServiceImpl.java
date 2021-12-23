@@ -4,19 +4,18 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.driver.DriverInterface;
 import wadosm.breweryhost.device.driver.DriverInterfaceState;
 import wadosm.breweryhost.device.temperature.TemperatureProvider;
-import wadosm.breweryhost.logic.DeviceCommand;
-
-import java.util.ArrayList;
-import java.util.List;
 
 // TODO: Implement saving task on disk
 @Service
 @Log4j2
+@EnableAsync
 public class FermentingServiceImpl implements FermentingService {
 
     @Value("${fermenting.temperature_sensor.id}")
@@ -70,7 +69,9 @@ public class FermentingServiceImpl implements FermentingService {
         return driverInterfaceState.getMotor(motorNumber);
     }
 
+    @Async
     @Scheduled(fixedRateString = "${fermenting.checkingPeriod}")
+    @Override
     public void processStep() {
         Float currentTemperature = getCurrentTemperature();
 

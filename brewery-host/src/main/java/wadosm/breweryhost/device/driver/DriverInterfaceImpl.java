@@ -1,19 +1,24 @@
 package wadosm.breweryhost.device.driver;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import wadosm.breweryhost.device.externalinterface.Session;
+import org.springframework.stereotype.Service;
+import wadosm.breweryhost.device.externalinterface.DriverSession;
 import wadosm.breweryhost.logic.DeviceCommand;
 import wadosm.breweryhost.logic.DeviceResponse;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+@Service
 public class DriverInterfaceImpl implements DriverInterface {
 
     @Getter
     @AllArgsConstructor
-    enum Pin {
+    public enum Pin {
         // current setup
         SOUND(2),
         POWER(7),
@@ -46,50 +51,54 @@ public class DriverInterfaceImpl implements DriverInterface {
         ORANGE(21);
 
         private final int pinNumber;
-    }
 
-    @AllArgsConstructor
-    @Getter
-    enum State {
-        DISABLED((byte) 0x00), ENABLED((byte) 0x01);
-
-        private final byte enabled;
-
-        static State fromBoolean(boolean enabled) {
-            return enabled ? ENABLED : DISABLED;
-        }
-
-        static boolean toBoolean(byte enabled) {
-            return enabled != 0 ? true : false;
+        @JsonValue
+        public int toValue() {
+            return pinNumber;
         }
     }
 
-    private Session session;
+    private DriverSession driverSession;
 
-    public void setSession(Session session) {
-        this.session = session;
+    private boolean initialized = false;
+
+    @Override
+    public void setSession(DriverSession driverSession) {
+        this.driverSession = driverSession;
         init();
     }
 
     @Override
+    public void removeSession() {
+        setSession(null);
+    }
+
+    @Override
     public void init() {
-        if (session != null) {
-            session.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.POWER, 1)));
-            session.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.MOTOR_1, 1)));
-            session.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.MOTOR_2, 1)));
-            session.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.MOTOR_3, 1)));
+        if (driverSession != null) {
+            driverSession.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.POWER, 1)));
+            driverSession.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.MOTOR_1, 1)));
+            driverSession.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.MOTOR_2, 1)));
+            driverSession.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.MOTOR_3, 1)));
 
-            session.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.BLUE, 1)));
-            session.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.ALARM, 1)));
-            session.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.WHITE, 1)));
-            session.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.ORANGE, 1)));
+            driverSession.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.BLUE, 1)));
+            driverSession.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.ALARM, 1)));
+            driverSession.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.WHITE, 1)));
+            driverSession.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.ORANGE, 1)));
 
-            session.sendCommand(new DeviceCommand("softPwmCreate", Arrays.asList(Pin.MAINS_1, 0, 0x0a * 0xff)));
-            session.sendCommand(new DeviceCommand("softPwmCreate", Arrays.asList(Pin.MAINS_2, 0, 0x0a * 0xff)));
+            driverSession.sendCommand(new DeviceCommand("softPwmCreate", Arrays.asList(Pin.MAINS_1, 0, 0x0a * 0xff)));
+            driverSession.sendCommand(new DeviceCommand("softPwmCreate", Arrays.asList(Pin.MAINS_2, 0, 0x0a * 0xff)));
 
-            session.sendCommand(new DeviceCommand("displayInit", Arrays.asList(0, Pin.SPI1_CLK, Pin.SPI1_DIO)));
-            session.sendCommand(new DeviceCommand("displayInit", Arrays.asList(1, Pin.SPI2_CLK, Pin.SPI2_DIO)));
+            driverSession.sendCommand(new DeviceCommand("displayInit", Arrays.asList(0, Pin.SPI1_CLK, Pin.SPI1_DIO)));
+            driverSession.sendCommand(new DeviceCommand("displayInit", Arrays.asList(1, Pin.SPI2_CLK, Pin.SPI2_DIO)));
         }
+
+        initialized = driverSession != null;
+    }
+
+    @Override
+    public boolean isReady() {
+        return initialized;
     }
 
     private int boolToInt(boolean enable) {
@@ -98,14 +107,21 @@ public class DriverInterfaceImpl implements DriverInterface {
 
     @Override
     public void powerEnable(boolean enable) {
-        if (session != null) {
-            session.sendCommand(new DeviceCommand("digitalWrite", Arrays.asList(Pin.POWER, boolToInt(enable))));
+        if (isReady()) {
+            driverSession.sendCommand(new DeviceCommand("digitalWrite", Arrays.asList(Pin.POWER, boolToInt(enable))));
+        }
+    }
+
+    @Override
+    public void setAlarm(boolean alarmEnabled) {
+        if (isReady()) {
+            driverSession.sendCommand(new DeviceCommand("digitalWrite", Arrays.asList(Pin.POWER, boolToInt(alarmEnabled))));
         }
     }
 
     @Override
     public void motorEnable(int motorNumber, boolean enable) {
-        if (session != null) {
+        if (isReady()) {
             Pin pin = null;
             if (motorNumber == 1) {
                 pin = Pin.MOTOR_1;
@@ -115,14 +131,14 @@ public class DriverInterfaceImpl implements DriverInterface {
                 pin = Pin.MOTOR_3;
             }
             if (pin != null) {
-                session.sendCommand(new DeviceCommand("digitalWrite", Arrays.asList(pin, boolToInt(enable))));
+                driverSession.sendCommand(new DeviceCommand("digitalWrite", Arrays.asList(pin, boolToInt(enable))));
             }
         }
     }
 
     @Override
     public void setMainsPower(int mainsNumber, int power) {
-        if (session != null) {
+        if (isReady()) {
             Pin pin = null;
             if (mainsNumber == 1) {
                 pin = Pin.MAINS_1;
@@ -131,22 +147,27 @@ public class DriverInterfaceImpl implements DriverInterface {
             }
 
             if (pin != null) {
-                session.sendCommand(new DeviceCommand("softPwmWrite", Arrays.asList(pin, power)));
+                driverSession.sendCommand(new DeviceCommand("softPwmWrite", Arrays.asList(pin, power)));
             }
         }
     }
 
     @Override
     public DriverInterfaceState readDriverInterfaceState() {
-        if (session != null) {
-            List<DeviceResponse> deviceResponses = session.sendCommands(Arrays.asList(
-                    new DeviceCommand("digitalRead", Arrays.asList(Pin.POWER)),
-                    new DeviceCommand("digitalRead", Arrays.asList(Pin.MOTOR_1)),
-                    new DeviceCommand("digitalRead", Arrays.asList(Pin.MOTOR_2)),
-                    new DeviceCommand("digitalRead", Arrays.asList(Pin.MOTOR_3)),
-                    new DeviceCommand("digitalRead", Arrays.asList(Pin.MAINS_1)),
-                    new DeviceCommand("digitalRead", Arrays.asList(Pin.MAINS_2))
-            ));
+        if (isReady()) {
+            List<DeviceCommand> commandList = Arrays.asList(
+                    new DeviceCommand("digitalRead", List.of(Pin.POWER)),
+                    new DeviceCommand("digitalRead", List.of(Pin.MOTOR_1)),
+                    new DeviceCommand("digitalRead", List.of(Pin.MOTOR_2)),
+                    new DeviceCommand("digitalRead", List.of(Pin.MOTOR_3)),
+                    new DeviceCommand("softPwmRead", List.of(Pin.MAINS_1)),
+                    new DeviceCommand("softPwmRead", List.of(Pin.MAINS_2))
+            );
+            List<DeviceResponse> deviceResponses = driverSession.sendCommands(commandList);
+
+            if (deviceResponses.size() != commandList.size()) {
+                return null;
+            }
 
             Boolean power = null;
             Boolean motor1 = null;
@@ -172,7 +193,7 @@ public class DriverInterfaceImpl implements DriverInterface {
                     if ((Integer) response.getArguments().get(0) == Pin.MOTOR_3.pinNumber) {
                         motor3 = (Boolean) response.getResponse();
                     }
-
+                } else if (response.getFunction().equals("softPwmRead")) {
                     if ((Integer) response.getArguments().get(0) == Pin.MAINS_1.pinNumber) {
                         mains1 = (Integer) response.getResponse();
                     }
@@ -183,9 +204,9 @@ public class DriverInterfaceImpl implements DriverInterface {
                 }
             }
 
-            return new DriverInterfaceState(power, motor1, motor2, motor3, null, mains1, mains2);
+            return new DriverInterfaceState(power, motor1, motor2, motor3, mains1, mains2);
         } else {
-            return new DriverInterfaceState(null, null, null, null, null, null, null);
+            return null;
         }
     }
 }
