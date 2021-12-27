@@ -8,8 +8,6 @@ import wadosm.breweryhost.device.externalinterface.DriverSession;
 import wadosm.breweryhost.logic.DeviceCommand;
 import wadosm.breweryhost.logic.DeviceResponse;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -179,19 +177,19 @@ public class DriverInterfaceImpl implements DriverInterface {
             for (DeviceResponse response : deviceResponses) {
                 if (response.getFunction().equals("digitalRead")) {
                     if ((Integer) response.getArguments().get(0) == Pin.POWER.pinNumber) {
-                        power = (Boolean) response.getResponse();
+                        power = responseToBoolean(response.getResponse());
                     }
 
                     if ((Integer) response.getArguments().get(0) == Pin.MOTOR_1.pinNumber) {
-                        motor1 = (Boolean) response.getResponse();
+                        motor1 = responseToBoolean(response.getResponse());
                     }
 
                     if ((Integer) response.getArguments().get(0) == Pin.MOTOR_2.pinNumber) {
-                        motor2 = (Boolean) response.getResponse();
+                        motor2 = responseToBoolean(response.getResponse());
                     }
 
                     if ((Integer) response.getArguments().get(0) == Pin.MOTOR_3.pinNumber) {
-                        motor3 = (Boolean) response.getResponse();
+                        motor3 = responseToBoolean(response.getResponse());
                     }
                 } else if (response.getFunction().equals("softPwmRead")) {
                     if ((Integer) response.getArguments().get(0) == Pin.MAINS_1.pinNumber) {
@@ -208,5 +206,9 @@ public class DriverInterfaceImpl implements DriverInterface {
         } else {
             return null;
         }
+    }
+
+    private boolean responseToBoolean(Object response) {
+        return ((Integer) response) != 0;
     }
 }

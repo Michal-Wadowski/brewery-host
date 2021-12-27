@@ -1,9 +1,6 @@
 package wadosm.breweryhost.device;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
@@ -31,7 +28,14 @@ public class SocketWrapperImpl implements SocketWrapper {
         }
 
         try {
-            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            byte[] buffer = new byte[1024];
+            int read = inputStream.read(buffer, 0, 1024);
+            if (read > 0 ) {
+                String s = new String(buffer, 0, read, StandardCharsets.UTF_8);
+                return s;
+            } else {
+                return null;
+            }
         } catch (IOException e) {
             close();
         }
