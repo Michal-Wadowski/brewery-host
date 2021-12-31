@@ -1,5 +1,6 @@
 package wadosm.breweryhost.device.temperature;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import wadosm.breweryhost.device.filesystem.FilesManager;
 
@@ -9,11 +10,12 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
-public class TemperatureSensorsReaderImpl implements TemperatureSensorsReader {
+@Profile("!demo")
+public class TemperatureSensorsReaderReal implements TemperatureSensorsReader {
 
     FilesManager filesManager;
 
-    public TemperatureSensorsReaderImpl(FilesManager filesManager) {
+    public TemperatureSensorsReaderReal(FilesManager filesManager) {
         this.filesManager = filesManager;
     }
 

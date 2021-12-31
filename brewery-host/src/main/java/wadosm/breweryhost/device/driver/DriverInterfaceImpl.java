@@ -3,6 +3,9 @@ package wadosm.breweryhost.device.driver;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.extern.java.Log;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.externalinterface.DriverSession;
 import wadosm.breweryhost.logic.DeviceCommand;
@@ -12,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
+@Log4j2
 public class DriverInterfaceImpl implements DriverInterface {
 
     @Getter
@@ -129,7 +133,8 @@ public class DriverInterfaceImpl implements DriverInterface {
                 pin = Pin.MOTOR_3;
             }
             if (pin != null) {
-                driverSession.sendCommand(new DeviceCommand("digitalWrite", Arrays.asList(pin, boolToInt(enable))));
+                DeviceCommand command = new DeviceCommand("digitalWrite", Arrays.asList(pin, boolToInt(enable)));
+                driverSession.sendCommand(command);
             }
         }
     }

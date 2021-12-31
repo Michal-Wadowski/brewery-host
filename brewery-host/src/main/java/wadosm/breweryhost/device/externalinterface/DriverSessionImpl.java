@@ -2,6 +2,7 @@ package wadosm.breweryhost.device.externalinterface;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.log4j.Log4j2;
 import wadosm.breweryhost.device.SocketWrapper;
 import wadosm.breweryhost.device.externalinterface.dto.ResponseDTO;
 import wadosm.breweryhost.logic.DeviceCommand;
@@ -10,6 +11,7 @@ import wadosm.breweryhost.logic.DeviceResponse;
 import java.io.Closeable;
 import java.util.*;
 
+@Log4j2
 public class DriverSessionImpl implements DriverSession {
 
     private final SocketWrapper socketWrapper;
@@ -26,7 +28,7 @@ public class DriverSessionImpl implements DriverSession {
     }
 
     @Override
-    public void sendResponse(ResponseDTO responseDTO) {
+    public synchronized void sendResponse(ResponseDTO responseDTO) {
         try {
             Map<String, Object> container = new HashMap<>();
             container.put("responseDto", responseDTO);
@@ -38,7 +40,7 @@ public class DriverSessionImpl implements DriverSession {
     }
 
     @Override
-    public DeviceResponse sendCommand(DeviceCommand command) {
+    public synchronized DeviceResponse sendCommand(DeviceCommand command) {
         List<DeviceResponse> deviceResponses = sendCommands(List.of(command));
         if (deviceResponses.size() > 0) {
             return deviceResponses.get(0);
@@ -47,12 +49,13 @@ public class DriverSessionImpl implements DriverSession {
     }
 
     @Override
-    public List<DeviceResponse> sendCommands(List<DeviceCommand> commandList) {
+    public synchronized List<DeviceResponse> sendCommands(List<DeviceCommand> commandList) {
         try {
             Map<String, List<DeviceCommand>> container = new HashMap<>();
             List<DeviceCommand> commands = new ArrayList<>(commandList);
             container.put("commands", commands);
             String data = objectMapper.writeValueAsString(container);
+
             socketWrapper.write(data);
 
             String response = socketWrapper.read();

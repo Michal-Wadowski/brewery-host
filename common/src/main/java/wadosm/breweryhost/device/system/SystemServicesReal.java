@@ -1,6 +1,7 @@
 package wadosm.breweryhost.device.system;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -9,7 +10,8 @@ import java.io.IOException;
 
 @Component
 @Log4j2
-public class SystemServicesImpl implements SystemServices {
+@Profile("!demo")
+public class SystemServicesReal implements SystemServices {
 
     @Override
     public void doReboot() {

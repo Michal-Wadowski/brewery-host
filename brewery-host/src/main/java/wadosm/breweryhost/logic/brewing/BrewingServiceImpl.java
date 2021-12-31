@@ -99,9 +99,10 @@ public class BrewingServiceImpl implements BrewingService {
 
     @Override
     public BrewingState getBrewingState() {
+        Integer heatingPower = getHeatingPower();
         return new BrewingState(
                 enabled, getCurrentTemperature(), destinationTemperature, maxPower, getPowerTemperatureCorrelation(),
-                null, motorEnabled, temperatureAlarmEnabled, getHeatingPower()
+                null, motorEnabled, temperatureAlarmEnabled, heatingPower
         );
     }
 

@@ -8,6 +8,7 @@ import wadosm.breweryhost.device.system.SystemServices;
 
 import javax.annotation.PreDestroy;
 
+@RestController
 @RequestMapping("/power")
 @Log4j2
 public class PowerController {

@@ -1,5 +1,8 @@
 package wadosm.breweryhost.device.temperature;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -8,24 +11,36 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @EnableAsync
 public class TemperatureProviderImpl implements TemperatureProvider {
 
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
+
+
     private List<TemperatureSensor> temperatureSensors = new ArrayList<>();
 
     private final TemperatureSensorsReader temperatureSensorsReader;
 
+    private final AtomicBoolean ready = new AtomicBoolean(true);
+
     public TemperatureProviderImpl(TemperatureSensorsReader temperatureSensorsReader) {
+//        activeProfile;
         this.temperatureSensorsReader = temperatureSensorsReader;
     }
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 100)
     @Async
     @Override
     public void readPeriodicallySensors() {
-        temperatureSensors = temperatureSensorsReader.readSensors();
+        if (ready.get()) {
+            ready.set(false);
+            temperatureSensors = temperatureSensorsReader.readSensors();
+            ready.set(true);
+        }
     }
 
     @Override

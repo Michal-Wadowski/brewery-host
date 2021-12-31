@@ -2,6 +2,7 @@ package wadosm.breweryhost.logic.brewing;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,8 +13,9 @@ import wadosm.breweryhost.device.temperature.TemperatureProvider;
 
 import java.time.Instant;
 
-@RequestMapping("/brewing")
 @Log4j2
+@RestController
+@RequestMapping("/brewing")
 public class BrewingController {
 
     private final BrewingService brewingService;
@@ -24,7 +26,8 @@ public class BrewingController {
 
     @PostMapping("/getBrewingState")
     public BrewingStatusResponse getBrewingState(@RequestBody CommandDTO commandDTO) {
-        return sendStateResponse(commandDTO);
+        BrewingStatusResponse brewingStatusResponse = sendStateResponse(commandDTO);
+        return brewingStatusResponse;
     }
 
     @PostMapping("/setDestinationTemperature")

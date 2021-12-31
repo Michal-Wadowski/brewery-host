@@ -11,6 +11,7 @@ import wadosm.breweryhost.device.externalinterface.dto.ResponseDTO;
 
 import java.time.Instant;
 
+@RestController
 @RequestMapping("/fermenting")
 @Log4j2
 public class FermentingController {

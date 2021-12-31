@@ -1,9 +1,15 @@
 package wadosm.breweryhost.device;
 
+import lombok.extern.log4j.Log4j2;
+import wadosm.breweryhost.logic.general.PowerServiceImpl;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
+@Log4j2
 public class SocketWrapperImpl implements SocketWrapper {
 
     private final Socket socket;
@@ -22,7 +28,7 @@ public class SocketWrapperImpl implements SocketWrapper {
     }
 
     @Override
-    public synchronized String read() {
+    public String read() {
         if (isClosed()) {
             return null;
         }
@@ -31,8 +37,7 @@ public class SocketWrapperImpl implements SocketWrapper {
             byte[] buffer = new byte[1024];
             int read = inputStream.read(buffer, 0, 1024);
             if (read > 0 ) {
-                String s = new String(buffer, 0, read, StandardCharsets.UTF_8);
-                return s;
+                return new String(buffer, 0, read, StandardCharsets.UTF_8);
             } else {
                 return null;
             }
@@ -43,7 +48,7 @@ public class SocketWrapperImpl implements SocketWrapper {
     }
 
     @Override
-    public synchronized void write(String data) {
+    public void write(String data) {
         if (isClosed()) {
             return;
         } else {
@@ -55,7 +60,7 @@ public class SocketWrapperImpl implements SocketWrapper {
         }
     }
 
-    private synchronized void close() {
+    private void close() {
         try {
             socket.close();
         } catch (IOException ignored) {
