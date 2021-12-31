@@ -32,8 +32,7 @@ public class TemperatureSensorsReaderDemo implements TemperatureSensorsReader {
     public List<TemperatureSensor> readSensors() {
         try {
             Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (InterruptedException ignored) {
         }
         int temperature = (int)((Math.cos(((Instant.now().getNano() ) / 100000000.0 * 2 * Math.PI)) * 50 + 50) * 1000);
 
