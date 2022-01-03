@@ -163,7 +163,7 @@ class FilesManagerImplTest {
         FilesManager filesManager = new FilesManagerImpl();
 
         // when
-        List<String> paths = filesManager.listFiles("/tmp", "listFiles", ".jar");
+        List<String> paths = filesManager.listFiles("/tmp", "listFiles");
 
         // then
         assertThat(paths).hasSize(1).contains("/tmp/listFiles-part.jar");

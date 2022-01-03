@@ -10,15 +10,19 @@ public interface FilesManager {
 
     List<String> listFiles(String dirPath, String basename);
 
-    List<String> listFiles(String dirPath, String basename, String extension);
-
     byte[] readFile(String path);
 
     boolean isFileChecksumValid(String srcFile);
 
+    String getFileChecksumHex(String srcFile);
+
+    String getChecksumHex(byte[] content);
+
     void deleteFile(String filePath);
 
     boolean copyFile(String source, String destination);
+
+    boolean writeFile(byte[] content, String destination);
 
     void deleteFiles(List<String> files);
 }

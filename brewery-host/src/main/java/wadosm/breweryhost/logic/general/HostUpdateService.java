@@ -95,7 +95,7 @@ public class HostUpdateService implements UpdateService {
     }
 
     private List<String> getUpdaterFiles() {
-        return filesManager.listFiles(UPLOADS_PATH, "updater", ".jar");
+        return filesManager.listFiles(UPLOADS_PATH, "updater");
     }
 
 }

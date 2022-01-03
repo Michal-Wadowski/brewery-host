@@ -117,7 +117,7 @@ public class DriverInterfaceImpl implements DriverInterface {
     @Override
     public void setAlarm(boolean alarmEnabled) {
         if (isReady()) {
-            driverSession.sendCommand(new DeviceCommand("digitalWrite", Arrays.asList(Pin.POWER, boolToInt(alarmEnabled))));
+            driverSession.sendCommand(new DeviceCommand("digitalWrite", Arrays.asList(Pin.ALARM, boolToInt(alarmEnabled))));
         }
     }
 

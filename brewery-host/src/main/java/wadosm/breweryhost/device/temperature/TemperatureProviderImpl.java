@@ -17,10 +17,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @EnableAsync
 public class TemperatureProviderImpl implements TemperatureProvider {
 
-    @Value("${spring.profiles.active}")
-    private String activeProfile;
-
-
     private List<TemperatureSensor> temperatureSensors = new ArrayList<>();
 
     private final TemperatureSensorsReader temperatureSensorsReader;

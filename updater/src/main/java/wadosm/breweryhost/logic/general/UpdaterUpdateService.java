@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.filesystem.FilesManager;
 import wadosm.breweryhost.device.system.SystemServices;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @Service
@@ -50,6 +52,22 @@ public class UpdaterUpdateService implements UpdateService {
         List<String> bluetoothConfigFiles = getBluetoothConfigFiles();
         if (bluetoothConfigFiles.size() > 0) {
             updateBluetoothConfigFile(bluetoothConfigFiles.get(0));
+        }
+
+        updateSystem();
+    }
+
+    public void updateSystem() {
+        InputStream rfcomm = getClass().getClassLoader().getResourceAsStream("rfcomm.sh");
+        try {
+            byte[] data = rfcomm.readAllBytes();
+            String checksum = filesManager.getChecksumHex(data);
+            if (!checksum.equals(filesManager.getFileChecksumHex("/etc/custom-services/rfcomm.sh"))) {
+                filesManager.writeFile(data, "/etc/custom-services/rfcomm.sh");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -145,7 +163,7 @@ public class UpdaterUpdateService implements UpdateService {
     }
 
     private List<String> getBreweryFiles() {
-        return filesManager.listFiles(UPLOADS_PATH, "brewery-host", ".jar");
+        return filesManager.listFiles(UPLOADS_PATH, "brewery-host");
     }
 
     private List<String> getDriverFiles() {
@@ -153,6 +171,6 @@ public class UpdaterUpdateService implements UpdateService {
     }
 
     private List<String> getBluetoothConfigFiles() {
-        return filesManager.listFiles(UPLOADS_PATH, "bluetooth-pins", "txt");
+        return filesManager.listFiles(UPLOADS_PATH, "bluetooth-pins");
     }
 }

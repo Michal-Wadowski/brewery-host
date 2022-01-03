@@ -59,11 +59,6 @@ public class FilesManagerImpl implements FilesManager {
 
     @Override
     public List<String> listFiles(String dirPath, String basename) {
-        return listFiles(dirPath, basename, "");
-    }
-
-    @Override
-    public List<String> listFiles(String dirPath, String basename, String extension) {
         File[] files = new File(dirPath).listFiles();
 
         if (files != null) {
@@ -72,7 +67,7 @@ public class FilesManagerImpl implements FilesManager {
             return allFiles.filter(
                     x -> {
                         String filename = Path.of(x).getFileName().toString();
-                        return filename.startsWith(basename) && filename.endsWith(extension);
+                        return filename.startsWith(basename);
                     }
             ).collect(Collectors.toList());
         } else {
@@ -115,13 +110,27 @@ public class FilesManagerImpl implements FilesManager {
             return false;
         }
 
-        byte[] content = readFile(srcFile);
-        CRC32 crc32 = new CRC32();
-        crc32.update(content);
-        long value = crc32.getValue();
-        String srcChecksum = Long.toHexString(value);
+        String srcChecksum = getFileChecksumHex(srcFile);
 
         return srcChecksum.equals(dstChecksum);
+    }
+
+    @Override
+    public String getFileChecksumHex(String srcFile) {
+        byte[] content = readFile(srcFile);
+        return getChecksumHex(content);
+    }
+
+    @Override
+    public String getChecksumHex(byte[] content) {
+        CRC32 crc32 = new CRC32();
+        if (content != null) {
+            crc32.update(content);
+            long value = crc32.getValue();
+            return Long.toHexString(value);
+        } else {
+            return null;
+        }
     }
 
     private String getChecksumFromName(String filename) {
@@ -152,6 +161,23 @@ public class FilesManagerImpl implements FilesManager {
         try {
             copyContent(new File(source), new File(destination));
             return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean writeFile(byte[] content, String destination) {
+        try {
+            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(destination));
+
+            try {
+                log.error("write to {}", destination);
+                out.write(content);
+                return true;
+            } finally {
+                out.close();
+            }
         } catch (IOException e) {
             return false;
         }

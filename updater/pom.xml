@@ -27,27 +27,27 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-<!--            <plugin>-->
-<!--                <groupId>org.codehaus.mojo</groupId>-->
-<!--                <artifactId>exec-maven-plugin</artifactId>-->
-<!--                <version>3.0.0</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <configuration>-->
-<!--                            <executable>python3</executable>-->
-<!--                            <arguments>-->
-<!--                                <argument>../scripts/build_checksum.py</argument>-->
-<!--                                <argument>${project.artifactId}</argument>-->
-<!--                            </arguments>-->
-<!--                        </configuration>-->
-<!--                        <id>python-build</id>-->
-<!--                        <phase>package</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>exec</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <executable>python3</executable>
+                            <arguments>
+                                <argument>../scripts/build_checksum.py</argument>
+                                <argument>${project.artifactId}</argument>
+                            </arguments>
+                        </configuration>
+                        <id>python-build</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
         </plugins>
     </build>
