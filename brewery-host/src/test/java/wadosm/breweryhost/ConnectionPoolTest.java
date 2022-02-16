@@ -1,15 +1,14 @@
 package wadosm.breweryhost;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import wadosm.breweryhost.device.driver.DriverInterface;
 import wadosm.breweryhost.device.externalinterface.DriverConnector;
 import wadosm.breweryhost.device.externalinterface.DriverConnectorDemo;
-import wadosm.breweryhost.device.externalinterface.dto.CommandDTO;
 
 @Log4j2
 @SpringBootTest
@@ -22,7 +21,7 @@ public class ConnectionPoolTest {
     ObjectMapper objectMapper;
 
     @Test
-//    @Disabled
+    @Disabled
     void connectToDriver() {
         DriverConnector driverConnector = new DriverConnectorDemo(driverInterface, objectMapper);
 

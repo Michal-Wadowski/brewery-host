@@ -136,10 +136,10 @@ class DriverInterfaceImplTest {
     private static class FakeSession implements DriverSession {
 
         final List<DeviceResponse> expectedResponse = new LinkedList<>(List.of(
-                new DeviceResponse("digitalRead", List.of(DriverInterfaceImpl.Pin.POWER.getPinNumber()), true),
-                new DeviceResponse("digitalRead", List.of(DriverInterfaceImpl.Pin.MOTOR_1.getPinNumber()), true),
-                new DeviceResponse("digitalRead", List.of(DriverInterfaceImpl.Pin.MOTOR_2.getPinNumber()), false),
-                new DeviceResponse("digitalRead", List.of(DriverInterfaceImpl.Pin.MOTOR_3.getPinNumber()), false),
+                new DeviceResponse("digitalRead", List.of(DriverInterfaceImpl.Pin.POWER.getPinNumber()), 1),
+                new DeviceResponse("digitalRead", List.of(DriverInterfaceImpl.Pin.MOTOR_1.getPinNumber()), 1),
+                new DeviceResponse("digitalRead", List.of(DriverInterfaceImpl.Pin.MOTOR_2.getPinNumber()), 0),
+                new DeviceResponse("digitalRead", List.of(DriverInterfaceImpl.Pin.MOTOR_3.getPinNumber()), 0),
 
                 new DeviceResponse("softPwmRead", List.of(DriverInterfaceImpl.Pin.MAINS_1.getPinNumber()), 100),
                 new DeviceResponse("softPwmRead", List.of(DriverInterfaceImpl.Pin.MAINS_2.getPinNumber()), 50)
