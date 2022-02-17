@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.driver.DriverInterface;
 import wadosm.breweryhost.device.driver.DriverInterfaceState;
 import wadosm.breweryhost.device.temperature.TemperatureProvider;
+import wadosm.breweryhost.logic.general.ConfigProvider;
 
 @Service
 @Log4j2
@@ -40,8 +41,8 @@ public class BrewingServiceImpl implements BrewingService {
 
     public BrewingServiceImpl(
             DriverInterface driverInterface,
-            TemperatureProvider temperatureProvider
-    ) {
+            TemperatureProvider temperatureProvider,
+            ConfigProvider configProvider) {
         this.driverInterface = driverInterface;
         this.temperatureProvider = temperatureProvider;
     }
@@ -156,6 +157,11 @@ public class BrewingServiceImpl implements BrewingService {
         } else {
             driverInterface.displayClear(0);
         }
+    }
+
+    @Override
+    public void calibrateThermometer(Integer thermometerNumber, Integer side, Float value) {
+
     }
 
     private boolean isAlarmEnabled(Float currentTemperature) {
