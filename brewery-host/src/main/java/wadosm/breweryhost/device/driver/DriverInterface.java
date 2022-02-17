@@ -24,4 +24,8 @@ public interface DriverInterface {
     DriverInterfaceState readDriverInterfaceState();
 
     void setAlarm(boolean alarmEnabled);
+
+    void displayClear(int channel);
+
+    void displayShowNumberDecEx(int channel, int num, int dots, boolean leadingZero, int length, int pos);
 }

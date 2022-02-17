@@ -24,7 +24,6 @@ public class TemperatureProviderImpl implements TemperatureProvider {
     private final AtomicBoolean ready = new AtomicBoolean(true);
 
     public TemperatureProviderImpl(TemperatureSensorsReader temperatureSensorsReader) {
-//        activeProfile;
         this.temperatureSensorsReader = temperatureSensorsReader;
     }
 

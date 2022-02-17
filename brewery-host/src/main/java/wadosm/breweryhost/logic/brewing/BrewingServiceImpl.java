@@ -54,7 +54,7 @@ public class BrewingServiceImpl implements BrewingService {
 
     @Override
     public void setDestinationTemperature(Float temperature) {
-        if (temperature == null || temperature > 0 && temperature < 100) {
+        if (temperature == null || temperature >= 0 && temperature <= 100) {
             destinationTemperature = temperature;
             processStep();
         }
@@ -142,6 +142,20 @@ public class BrewingServiceImpl implements BrewingService {
         driveMotor();
 
         driverInterface.setAlarm(isAlarmEnabled(currentTemperature));
+
+        displayTemperature(currentTemperature);
+    }
+
+    private void displayTemperature(Float currentTemperature) {
+        if (enabled) {
+            if (currentTemperature < 100) {
+                driverInterface.displayShowNumberDecEx(0, (int) (currentTemperature * 100), 1 << 6, false, 4, 0);
+            } else {
+                driverInterface.displayShowNumberDecEx(0, (int) (currentTemperature * 10), 1 << 5, false, 4, 0);
+            }
+        } else {
+            driverInterface.displayClear(0);
+        }
     }
 
     private boolean isAlarmEnabled(Float currentTemperature) {

@@ -3,8 +3,6 @@ package wadosm.breweryhost.device.driver;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.extern.java.Log;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.externalinterface.DriverSession;
@@ -17,6 +15,8 @@ import java.util.List;
 @Service
 @Log4j2
 public class DriverInterfaceImpl implements DriverInterface {
+
+    private final int PWM_POWER_CORELATION = 0x0a;
 
     @Getter
     @AllArgsConstructor
@@ -88,14 +88,27 @@ public class DriverInterfaceImpl implements DriverInterface {
             driverSession.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.WHITE, 1)));
             driverSession.sendCommand(new DeviceCommand("pinMode", Arrays.asList(Pin.ORANGE, 1)));
 
-            driverSession.sendCommand(new DeviceCommand("softPwmCreate", Arrays.asList(Pin.MAINS_1, 0, 0x0a * 0xff)));
-            driverSession.sendCommand(new DeviceCommand("softPwmCreate", Arrays.asList(Pin.MAINS_2, 0, 0x0a * 0xff)));
+            driverSession.sendCommand(new DeviceCommand("softPwmCreate", Arrays.asList(Pin.MAINS_1, 0,
+                    toPwmPower(0xff))));
+            driverSession.sendCommand(new DeviceCommand("softPwmCreate", Arrays.asList(Pin.MAINS_2, 0,
+                    toPwmPower(0xff))));
 
             driverSession.sendCommand(new DeviceCommand("displayInit", Arrays.asList(0, Pin.SPI1_CLK, Pin.SPI1_DIO)));
             driverSession.sendCommand(new DeviceCommand("displayInit", Arrays.asList(1, Pin.SPI2_CLK, Pin.SPI2_DIO)));
+
+            driverSession.sendCommand(new DeviceCommand("setBrightness", Arrays.asList(0, 7, true)));
+            driverSession.sendCommand(new DeviceCommand("setBrightness", Arrays.asList(1, 7, true)));
         }
 
         initialized = driverSession != null;
+    }
+
+    private int toPwmPower(int rawPower) {
+        return PWM_POWER_CORELATION * rawPower;
+    }
+
+    private int fromPwmPower(int rawPower) {
+        return rawPower / PWM_POWER_CORELATION;
     }
 
     @Override
@@ -150,9 +163,21 @@ public class DriverInterfaceImpl implements DriverInterface {
             }
 
             if (pin != null) {
-                driverSession.sendCommand(new DeviceCommand("softPwmWrite", Arrays.asList(pin, power)));
+                driverSession.sendCommand(new DeviceCommand("softPwmWrite", Arrays.asList(pin, toPwmPower(power))));
             }
         }
+    }
+
+    @Override
+    public void displayClear(int channel) {
+        driverSession.sendCommand(new DeviceCommand("clear", Arrays.asList(channel)));
+    }
+
+    @Override
+    public void displayShowNumberDecEx(int channel, int num, int dots, boolean leadingZero, int length, int pos) {
+        driverSession.sendCommand(new DeviceCommand("showNumberDecEx", Arrays.asList(
+                channel, num, dots, leadingZero, length, pos
+        )));
     }
 
     @Override
@@ -198,11 +223,11 @@ public class DriverInterfaceImpl implements DriverInterface {
                     }
                 } else if (response.getFunction().equals("softPwmRead")) {
                     if ((Integer) response.getArguments().get(0) == Pin.MAINS_1.pinNumber) {
-                        mains1 = (Integer) response.getResponse();
+                        mains1 = fromPwmPower( (Integer) response.getResponse() );
                     }
 
                     if ((Integer) response.getArguments().get(0) == Pin.MAINS_2.pinNumber) {
-                        mains2 = (Integer) response.getResponse();
+                        mains2 = fromPwmPower( (Integer) response.getResponse() );
                     }
                 }
             }
