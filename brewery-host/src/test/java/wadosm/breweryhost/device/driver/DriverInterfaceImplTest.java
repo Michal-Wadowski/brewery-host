@@ -141,8 +141,8 @@ class DriverInterfaceImplTest {
                 new DeviceResponse("digitalRead", List.of(DriverInterfaceImpl.Pin.MOTOR_2.getPinNumber()), 0),
                 new DeviceResponse("digitalRead", List.of(DriverInterfaceImpl.Pin.MOTOR_3.getPinNumber()), 0),
 
-                new DeviceResponse("softPwmRead", List.of(DriverInterfaceImpl.Pin.MAINS_1.getPinNumber()), 100),
-                new DeviceResponse("softPwmRead", List.of(DriverInterfaceImpl.Pin.MAINS_2.getPinNumber()), 50)
+                new DeviceResponse("softPwmRead", List.of(DriverInterfaceImpl.Pin.MAINS_1.getPinNumber()), 0x0a * 100),
+                new DeviceResponse("softPwmRead", List.of(DriverInterfaceImpl.Pin.MAINS_2.getPinNumber()), 0x0a * 50)
         ));
         List<DeviceCommand> commandsSent = new ArrayList<>();
 

@@ -170,14 +170,18 @@ public class DriverInterfaceImpl implements DriverInterface {
 
     @Override
     public void displayClear(int channel) {
-        driverSession.sendCommand(new DeviceCommand("clear", Arrays.asList(channel)));
+        if (isReady()) {
+            driverSession.sendCommand(new DeviceCommand("clear", Arrays.asList(channel)));
+        }
     }
 
     @Override
     public void displayShowNumberDecEx(int channel, int num, int dots, boolean leadingZero, int length, int pos) {
-        driverSession.sendCommand(new DeviceCommand("showNumberDecEx", Arrays.asList(
-                channel, num, dots, leadingZero, length, pos
-        )));
+        if (isReady()) {
+            driverSession.sendCommand(new DeviceCommand("showNumberDecEx", Arrays.asList(
+                    channel, num, dots, leadingZero, length, pos
+            )));
+        }
     }
 
     @Override
