@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Log4j2
 @SpringBootTest
-@ActiveProfiles("test")
 public class ConfigurationProviderTest {
 
     @Autowired
@@ -94,5 +93,10 @@ public class ConfigurationProviderTest {
 
         // then
         Configuration storedConfig = mapper.readValue(new File(calibrationFile), Configuration.class);
+        assertThat(storedConfig)
+                .isNotNull()
+                .extracting("temperatureCalibrationMeasurements")
+                .extracting("example")
+                .asList().contains(null, null, 123f, 456f);
     }
 }
