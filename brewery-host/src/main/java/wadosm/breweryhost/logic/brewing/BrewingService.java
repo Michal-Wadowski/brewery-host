@@ -22,5 +22,5 @@ public interface BrewingService {
 
     void processStep();
 
-    void calibrateThermometer(Integer thermometerNumber, Integer side, Float value);
+    void calibrateTemperature(Integer side, Float value);
 }

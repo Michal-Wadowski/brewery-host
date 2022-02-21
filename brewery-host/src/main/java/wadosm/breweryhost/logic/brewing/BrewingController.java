@@ -85,12 +85,11 @@ public class BrewingController {
         return sendStateResponse(commandDTO);
     }
 
-    @PostMapping("/calibrateThermometer")
-    public BrewingStatusResponse calibrateThermometer(@RequestBody CommandDTO commandDTO) {
-        var thermometerNumber = commandDTO.getNumber();
-        var side = commandDTO.getIntValue();
+    @PostMapping("/calibrateTemperature")
+    public BrewingStatusResponse calibrateTemperature(@RequestBody CommandDTO commandDTO) {
+        var side = commandDTO.getNumber();
         var value = commandDTO.getFloatValue();
-        brewingService.calibrateThermometer(thermometerNumber, side, value);
+        brewingService.calibrateTemperature(side, value);
         return sendStateResponse(commandDTO);
     }
 

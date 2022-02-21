@@ -12,6 +12,9 @@ import wadosm.breweryhost.device.driver.DriverInterface;
 import wadosm.breweryhost.device.driver.DriverInterfaceState;
 import wadosm.breweryhost.device.temperature.TemperatureProvider;
 import wadosm.breweryhost.logic.general.ConfigProvider;
+import wadosm.breweryhost.logic.general.Configuration;
+
+import java.util.*;
 
 @Service
 @Log4j2
@@ -21,6 +24,7 @@ public class BrewingServiceImpl implements BrewingService {
     private final DriverInterface driverInterface;
 
     private final TemperatureProvider temperatureProvider;
+    private final ConfigProvider configProvider;
 
     @Value("${brewing.temperature_sensor.id}")
     @Getter
@@ -45,6 +49,7 @@ public class BrewingServiceImpl implements BrewingService {
             ConfigProvider configProvider) {
         this.driverInterface = driverInterface;
         this.temperatureProvider = temperatureProvider;
+        this.configProvider = configProvider;
     }
 
     @Override
@@ -69,16 +74,6 @@ public class BrewingServiceImpl implements BrewingService {
     @Override
     public void setMaxPower(Integer powerInPercents) {
         this.maxPower = powerInPercents;
-        processStep();
-    }
-
-    @Override
-    public void setPowerTemperatureCorrelation(Float percentagesPerDegree) {
-        if (percentagesPerDegree != null) {
-            this.temperatureCorrelation = (float) (percentagesPerDegree / 100.0 * 0xff);
-        } else {
-            this.temperatureCorrelation = null;
-        }
         processStep();
     }
 
@@ -123,11 +118,36 @@ public class BrewingServiceImpl implements BrewingService {
         }
     }
 
-    private Float getCurrentTemperature() {
-        Integer result = temperatureProvider.getSensorTemperature(brewingTemperatureSensor);
+    @Override
+    public void setPowerTemperatureCorrelation(Float percentagesPerDegree) {
+        if (percentagesPerDegree != null) {
+            this.temperatureCorrelation = (float) (percentagesPerDegree / 100.0 * 0xff);
+        } else {
+            this.temperatureCorrelation = null;
+        }
+        processStep();
+    }
 
-        if (result != null) {
-            return result / 1000.0f;
+    private Float getUncalibratedTemperature() {
+        Integer rawValue = temperatureProvider.getSensorTemperature(brewingTemperatureSensor);
+
+        if (rawValue != null) {
+            return rawValue / 1000.0f;
+        } else {
+            return null;
+        }
+    }
+
+    private Float getCurrentTemperature() {
+        Float temperature = getUncalibratedTemperature();
+
+        if (temperature != null) {
+            List<Float> temperatureCalibration = configProvider.getTemperatureCalibrationOf(brewingTemperatureSensor);
+            if (temperatureCalibration != null && temperatureCalibration.size() == 2) {
+                temperature *= (1 + temperatureCalibration.get(0));
+                temperature += temperatureCalibration.get(1);
+            }
+            return Math.round(temperature * 100) / 100.0f;
         } else {
             return null;
         }
@@ -159,9 +179,69 @@ public class BrewingServiceImpl implements BrewingService {
         }
     }
 
-    @Override
-    public void calibrateThermometer(Integer thermometerNumber, Integer side, Float value) {
+    public void calibrateTemperature(Integer side, Float value) {
+        Configuration configuration = configProvider.getConfiguration();
 
+        updateTemperatureCalibrationMeasurements(configuration, side, value);
+
+        updateTemperatureCalibration(configuration);
+
+        configProvider.setConfiguration(configuration);
+    }
+
+    private void updateTemperatureCalibration(Configuration configuration) {
+        List<Float> measurements = configuration.getTemperatureCalibrationMeasurements().get(brewingTemperatureSensor);
+
+        if (measurements.stream().filter(Objects::nonNull).count() != 4) {
+            configuration.setTemperatureCalibration(Map.of());
+        } else {
+            Map<String, List<Float>> currCalibration = configuration.getTemperatureCalibration();
+            if (currCalibration == null) {
+                currCalibration = Map.of();
+            }
+            currCalibration = new HashMap<>(currCalibration);
+
+            var x1 = measurements.get(0);
+            var x2 = measurements.get(2);
+            var t1 = measurements.get(1);
+            var t2 = measurements.get(3);
+            var a = (t2 - t1) / (x2 - x1);
+            var b = -a * x1 + t1;
+
+            List<Float> currCalibrations = Arrays.asList(a, b);
+            currCalibration.put(brewingTemperatureSensor, currCalibrations);
+            configuration.setTemperatureCalibration(currCalibration);
+        }
+    }
+
+    private void updateTemperatureCalibrationMeasurements(Configuration configuration,
+            Integer side, Float value) {
+
+        Map<String, List<Float>> allMeasurements = configuration.getTemperatureCalibrationMeasurements();
+        if (allMeasurements == null) {
+            allMeasurements = Map.of();
+        }
+        allMeasurements = new HashMap<>(allMeasurements);
+
+        List<Float> currMeasurements;
+        if (!allMeasurements.containsKey(brewingTemperatureSensor) ||
+                allMeasurements.get(brewingTemperatureSensor).size() != 4
+        ) {
+            currMeasurements = Arrays.asList(null, null, null, null);
+        } else {
+            currMeasurements = allMeasurements.get(brewingTemperatureSensor);
+        }
+
+        if (side == 0) {
+            currMeasurements.set(0, getUncalibratedTemperature());
+            currMeasurements.set(1, value);
+        } else if (side == 1) {
+            currMeasurements.set(2, getUncalibratedTemperature());
+            currMeasurements.set(3, value);
+        }
+
+        allMeasurements.put(brewingTemperatureSensor, currMeasurements);
+        configuration.setTemperatureCalibrationMeasurements(allMeasurements);
     }
 
     private boolean isAlarmEnabled(Float currentTemperature) {
