@@ -5,9 +5,9 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>common</module>
+		<module>driver</module>
 		<module>updater</module>
 		<module>brewery-host</module>
-		<module>driver</module>
 	</modules>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
