@@ -1,5 +1,6 @@
 package wadosm.breweryhost;
 
+
 public class DigiPort {
 
      private final DriverEntry driverEntry;
@@ -25,5 +26,4 @@ public class DigiPort {
      public native void showNumberDec(int channel, int num, boolean leading_zero, int length, int pos);
      public native void showNumberDecEx(int channel, int num, int dots, boolean leading_zero, int length, int pos);
      public native void showNumberHexEx(int channel, int num, int dots, boolean leading_zero, int length, int pos);
-
 }

@@ -2,6 +2,7 @@ package wadosm.breweryhost.device.driver;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import wadosm.breweryhost.MessagesProcessor;
 import wadosm.breweryhost.device.externalinterface.DriverSession;
 import wadosm.breweryhost.device.externalinterface.dto.ResponseDTO;
 import wadosm.breweryhost.logic.DeviceCommand;
@@ -21,7 +22,7 @@ class DriverInterfaceImplTest {
     @Test
     void readDriverInterfaceState_if_session_not_set() {
         // given
-        DriverInterfaceImpl driverInterface = new DriverInterfaceImpl();
+        DriverInterfaceImpl driverInterface = new DriverInterfaceImpl(message -> null);
 
         // when
         DriverInterfaceState driverInterfaceState = driverInterface.readDriverInterfaceState();
@@ -34,7 +35,7 @@ class DriverInterfaceImplTest {
     @Test
     void readDriverInterfaceState_should_set_not_ready_after_remove_session() {
         // given
-        DriverInterfaceImpl driverInterface = new DriverInterfaceImpl();
+        DriverInterfaceImpl driverInterface = new DriverInterfaceImpl(message -> null);
         driverInterface.setSession(new FakeSession());
 
         // when
@@ -47,7 +48,7 @@ class DriverInterfaceImplTest {
     @Test
     void should_init_driver_after_session_established() {
         // given
-        DriverInterfaceImpl driverInterface = new DriverInterfaceImpl();
+        DriverInterfaceImpl driverInterface = new DriverInterfaceImpl(message -> null);
         FakeSession session = new FakeSession();
 
         // when
@@ -77,7 +78,7 @@ class DriverInterfaceImplTest {
     @Test
     void readDriverInterfaceState_should_send_read_commands() {
         // given
-        DriverInterfaceImpl driverInterface = new DriverInterfaceImpl();
+        DriverInterfaceImpl driverInterface = new DriverInterfaceImpl(message -> null);
         FakeSession session = new FakeSession();
         driverInterface.setSession(session);
         session.commandsSent.clear();
@@ -101,7 +102,7 @@ class DriverInterfaceImplTest {
     @Test
     void readDriverInterfaceState_should_process_response() {
         // given
-        DriverInterfaceImpl driverInterface = new DriverInterfaceImpl();
+        DriverInterfaceImpl driverInterface = new DriverInterfaceImpl(message -> null);
         FakeSession session = new FakeSession();
         driverInterface.setSession(session);
         session.commandsSent.clear();
@@ -123,7 +124,7 @@ class DriverInterfaceImplTest {
     @Test
     void readDriverInterfaceState_should_returns_null_when_invalid_response_response() {
         // given
-        DriverInterfaceImpl driverInterface = new DriverInterfaceImpl();
+        DriverInterfaceImpl driverInterface = new DriverInterfaceImpl(message -> null);
         FakeSession session = new FakeSession();
         driverInterface.setSession(session);
         session.commandsSent.clear();

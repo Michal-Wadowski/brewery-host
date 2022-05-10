@@ -31,14 +31,14 @@ public class DriverConnectorReal extends DriverConnectorAbstract {
         }
 
         private void tryEnablePower() {
-            while (true) {
+//            while (true) {
                 driverConnector.tryConnect();
 
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ignored) {
-                }
-            }
+//                try {
+//                    Thread.sleep(1000);
+//                } catch (InterruptedException ignored) {
+//                }
+//            }
         }
     }
 }

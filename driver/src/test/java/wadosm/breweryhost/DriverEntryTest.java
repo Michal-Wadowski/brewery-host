@@ -1,13 +1,15 @@
 package wadosm.breweryhost;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled
 class DriverEntryTest {
 
     @Test
-    void say_hello() throws InterruptedException {
+    void check_DigiPort_methods() {
         DigiPort digiPort = new DigiPort(new DriverEntryImpl());
 
         digiPort.pinMode(1, 2);
@@ -26,5 +28,18 @@ class DriverEntryTest {
         digiPort.showNumberDec(1, 2, true, 4, 5);
         digiPort.showNumberDecEx(1, 2, 3, true, 5, 6);
         digiPort.showNumberHexEx(1, 2, 3, true, 5, 6);
+    }
+
+    @Test
+    void check_ConnectionConsumer() {
+        ConnectionConsumer connectionConsumer = new ConnectionConsumer(
+                new DriverEntryImpl(),
+                message -> {
+                    System.out.println("ConnectionConsumer.receivedMessage(): " + message);
+                    return "#MESSAGE RESPONSE#";
+                }
+        );
+
+        connectionConsumer.attachListener();
     }
 }

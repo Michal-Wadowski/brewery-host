@@ -93,7 +93,7 @@ class BrewingServiceImplTest {
     @Test
     void getBrewingState_should_be_resilient_to_not_connected_driver() {
         //given
-        DriverInterface driverInterface = new DriverInterfaceImpl();
+        DriverInterface driverInterface = new DriverInterfaceImpl(message -> null);
         TemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         BrewingServiceImpl brewingService = new BrewingServiceImpl(driverInterface, temperatureProvider,
                 new FakeConfigProvider());
@@ -105,7 +105,7 @@ class BrewingServiceImplTest {
     @Test
     void processStep_should_be_resilient_to_not_connected_driver() {
         //given
-        DriverInterface driverInterface = new DriverInterfaceImpl();
+        DriverInterface driverInterface = new DriverInterfaceImpl(message -> null);
         TemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         BrewingServiceImpl brewingService = new BrewingServiceImpl(driverInterface, temperatureProvider,
                 new FakeConfigProvider());
@@ -120,7 +120,7 @@ class BrewingServiceImplTest {
     void should_get_calibrated_temperature_with_calibration(List<Float> currCalib, Integer sensorValue,
             Float expectedTemperature) {
         // given
-        DriverInterface driverInterface = new DriverInterfaceImpl();
+        DriverInterface driverInterface = new DriverInterfaceImpl(message -> null);
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
         if (currCalib != null) {
@@ -145,7 +145,7 @@ class BrewingServiceImplTest {
     void temperatureCalibrationMeasurements(Map<String, List<Float>> initialConfig, Integer side,
             List<Float> expectedMeasurements) {
         // given
-        DriverInterface driverInterface = new DriverInterfaceImpl();
+        DriverInterface driverInterface = new DriverInterfaceImpl(message -> null);
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
 
@@ -174,7 +174,7 @@ class BrewingServiceImplTest {
     void calibrateTemperature(Map<String, List<Float>> initialConfig, Map<String, List<Float>> initialCalibration,
             Integer side, List<Float> expectedCalibration) {
         // given
-        DriverInterface driverInterface = new DriverInterfaceImpl();
+        DriverInterface driverInterface = new DriverInterfaceImpl(message -> null);
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
 
@@ -208,7 +208,7 @@ class BrewingServiceImplTest {
     @Test
     void shouldUpdateCalibrationFileWhileCalibrating() {
         // given
-        DriverInterface driverInterface = new DriverInterfaceImpl();
+        DriverInterface driverInterface = new DriverInterfaceImpl(message -> null);
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
 

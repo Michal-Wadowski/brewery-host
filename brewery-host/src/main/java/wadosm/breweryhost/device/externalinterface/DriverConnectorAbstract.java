@@ -21,28 +21,29 @@ abstract class DriverConnectorAbstract implements DriverConnector {
 
     @Override
     public void tryConnect() {
-        try {
-            Socket socket = new Socket("localhost", 1111);
+//        try {
+//            Socket socket = new Socket("localhost", 1111);
 
-            log.info("Connected to driver");
+//            log.info("Connected to driver");
 
-            SocketWrapperImpl socketWrapper = new SocketWrapperImpl(socket);
-            DriverSessionImpl driverSession = new DriverSessionImpl(socketWrapper, objectMapper);
-            driverInterface.setSession(driverSession);
+//            SocketWrapperImpl socketWrapper = new SocketWrapperImpl(socket);
+//            DriverSessionImpl driverSession = new DriverSessionImpl(socketWrapper, objectMapper);
+//            driverInterface.setSession(driverSession);
+            driverInterface.init();
 
-            while (driverSession.isConnected()) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ignored) {
-                }
-            }
+//            while (driverSession.isConnected()) {
+//                try {
+//                    Thread.sleep(1000);
+//                } catch (InterruptedException ignored) {
+//                }
+//            }
 
-            log.info("Disconnected from driver");
+//            log.info("Disconnected from driver");
 
-            driverInterface.removeSession();
+//            driverInterface.removeSession();
 
-        } catch (IOException ignored) {
-
-        }
+//        } catch (IOException ignored) {
+//
+//        }
     }
 }

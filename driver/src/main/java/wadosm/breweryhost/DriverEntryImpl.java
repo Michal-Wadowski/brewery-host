@@ -8,14 +8,17 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /*
-javac -h . driver/src/main/java/wadosm/breweryhost/DigiPort.java driver/src/main/java/wadosm/breweryhost/DriverEntry.java
+javac -h . driver/src/main/java/wadosm/breweryhost/DigiPort.java \
+driver/src/main/java/wadosm/breweryhost/ConnectionConsumer.java \
+driver/src/main/java/wadosm/breweryhost/MessagesProcessor.java \
+driver/src/main/java/wadosm/breweryhost/DriverEntry.java
  */
 @Log4j2
 public class DriverEntryImpl implements DriverEntry {
 
     static {
         try {
-            loadNativeLibrary("/brewery_driver.so");
+            loadNativeLibrary("/brewery_driver_orange_pi.so");
         } catch (IOException e) {
             e.printStackTrace();
         }

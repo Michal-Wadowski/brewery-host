@@ -5,15 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
-import wadosm.breweryhost.DigiPort;
-import wadosm.breweryhost.DriverEntry;
-import wadosm.breweryhost.DriverEntryImpl;
+import wadosm.breweryhost.*;
 import wadosm.breweryhost.device.externalinterface.DriverSession;
-import wadosm.breweryhost.logic.DeviceCommand;
-import wadosm.breweryhost.logic.DeviceResponse;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Service
 @Log4j2
@@ -23,6 +16,15 @@ public class DriverInterfaceImpl implements DriverInterface {
 
     private final DriverEntry driverEntry = new DriverEntryImpl();
     private final DigiPort digiPort = new DigiPort(driverEntry);
+    private final MessagesProcessor messagesProcessor;
+    private final ConnectionConsumer connectionConsumer;
+
+    public DriverInterfaceImpl(MessagesProcessor messagesProcessor) {
+        this.messagesProcessor = messagesProcessor;
+        connectionConsumer = new ConnectionConsumer(
+                driverEntry, messagesProcessor
+        );
+    }
 
     @Getter
     @AllArgsConstructor
@@ -104,6 +106,13 @@ public class DriverInterfaceImpl implements DriverInterface {
             digiPort.setBrightness(1, 7, true);
 
             initialized = true;
+
+            Thread attachListener = new Thread() {
+                public void run() {
+                    connectionConsumer.attachListener();
+                }
+            };
+            attachListener.start();
         }
     }
 
