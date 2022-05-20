@@ -18,7 +18,11 @@ public class DriverEntryImpl implements DriverEntry {
 
     static {
         try {
-            loadNativeLibrary("/brewery_driver_orange_pi.so");
+            if (System.getProperty("os.arch").indexOf("arm") != -1) {
+                loadNativeLibrary("/brewery_driver_orange_pi.so");
+            } else {
+                loadNativeLibrary("/brewery_driver_mock.so");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
