@@ -2,14 +2,13 @@ package wadosm.breweryhost;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import wadosm.breweryhost.device.driver.DriverInterface;
-import wadosm.breweryhost.device.externalinterface.DriverConnector;
-import wadosm.breweryhost.device.externalinterface.DriverConnectorDemo;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import wadosm.breweryhost.device.driver.BreweryInterface;
 
 import java.io.IOException;
 
@@ -17,10 +16,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Log4j2
 @SpringBootTest
+@ActiveProfiles("test")
 public class IntegrationTest {
 
     @Autowired
-    DriverInterface driverInterface;
+    BreweryInterface breweryInterface;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -41,18 +41,5 @@ public class IntegrationTest {
         assertThat(fermentingTemperatureSensorId).isNotEmpty();
     }
 
-    @Test
-    @Disabled
-    void connectToDriver() {
-        DriverConnector driverConnector = new DriverConnectorDemo(driverInterface, objectMapper);
 
-        while (true) {
-            driverConnector.tryConnect();
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ignored) {
-            }
-        }
-    }
 }

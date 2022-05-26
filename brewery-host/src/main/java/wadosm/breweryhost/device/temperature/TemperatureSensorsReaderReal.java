@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
-@Profile("!demo")
+@Profile("!local")
 public class TemperatureSensorsReaderReal implements TemperatureSensorsReader {
 
     FilesManager filesManager;

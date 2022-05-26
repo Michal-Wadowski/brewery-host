@@ -2,14 +2,12 @@ package wadosm.breweryhost.logic.brewing;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import wadosm.breweryhost.device.externalinterface.dto.CommandDTO;
 import wadosm.breweryhost.device.externalinterface.dto.ResponseDTO;
-import wadosm.breweryhost.device.temperature.TemperatureProvider;
 
 import java.time.Instant;
 

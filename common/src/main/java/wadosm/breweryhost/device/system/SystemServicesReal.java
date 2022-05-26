@@ -4,13 +4,11 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 @Component
 @Log4j2
-@Profile("!demo")
+@Profile("!local")
 public class SystemServicesReal implements SystemServices {
 
     @Override
@@ -55,22 +53,6 @@ public class SystemServicesReal implements SystemServices {
     @Override
     public void synchronize() {
         runAndWait("sync");
-    }
-
-    @Override
-    public void heartBeat(boolean enable) {
-        File file = new File("/sys/class/leds/orangepi:red:status/trigger");
-        try {
-            FileWriter fw = new FileWriter(file);
-            if (enable) {
-                fw.write("heartbeat");
-            } else {
-                fw.write("none");
-            }
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void runAndWait(String command) {

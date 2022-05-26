@@ -8,8 +8,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import wadosm.breweryhost.device.driver.DriverInterface;
-import wadosm.breweryhost.device.driver.DriverInterfaceState;
+import wadosm.breweryhost.device.driver.BreweryInterface;
+import wadosm.breweryhost.device.driver.BreweryState;
 import wadosm.breweryhost.device.temperature.TemperatureProvider;
 import wadosm.breweryhost.logic.general.ConfigProvider;
 import wadosm.breweryhost.logic.general.Configuration;
@@ -21,7 +21,7 @@ import java.util.*;
 @EnableAsync
 public class BrewingServiceImpl implements BrewingService {
 
-    private final DriverInterface driverInterface;
+    private final BreweryInterface breweryInterface;
 
     private final TemperatureProvider temperatureProvider;
     private final ConfigProvider configProvider;
@@ -42,12 +42,13 @@ public class BrewingServiceImpl implements BrewingService {
     private Float temperatureCorrelation;
     private boolean motorEnabled;
     private boolean temperatureAlarmEnabled;
+    private boolean heartBeatState;
 
     public BrewingServiceImpl(
-            DriverInterface driverInterface,
+            BreweryInterface breweryInterface,
             TemperatureProvider temperatureProvider,
             ConfigProvider configProvider) {
-        this.driverInterface = driverInterface;
+        this.breweryInterface = breweryInterface;
         this.temperatureProvider = temperatureProvider;
         this.configProvider = configProvider;
     }
@@ -103,9 +104,9 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     private Integer getHeatingPower() {
-        DriverInterfaceState driverInterfaceState = driverInterface.readDriverInterfaceState();
-        if (driverInterfaceState != null) {
-            return (int) (driverInterfaceState.getMains(1) * 100.0 / 0xff);
+        BreweryState breweryState = breweryInterface.readDriverInterfaceState();
+        if (breweryState != null) {
+            return (int) (breweryState.getMains(1) * 100.0 / 0xff);
         }
         return null;
     }
@@ -162,20 +163,28 @@ public class BrewingServiceImpl implements BrewingService {
 
         driveMotor();
 
-        driverInterface.setAlarm(isAlarmEnabled(currentTemperature));
+        breweryInterface.setAlarm(isAlarmEnabled(currentTemperature));
 
         displayTemperature(currentTemperature);
+    }
+
+    @Override
+    @Async
+    @Scheduled(fixedRateString = "${brewing.heartbeat}")
+    public void heartbeat() {
+        breweryInterface.heartbeat(heartBeatState);
+        heartBeatState = !heartBeatState;
     }
 
     private void displayTemperature(Float currentTemperature) {
         if (enabled) {
             if (currentTemperature < 100) {
-                driverInterface.displayShowNumberDecEx(0, (int) (currentTemperature * 100), 1 << 6, false, 4, 0);
+                breweryInterface.displayShowNumberDecEx(0, (int) (currentTemperature * 100), 1 << 6, false, 4, 0);
             } else {
-                driverInterface.displayShowNumberDecEx(0, (int) (currentTemperature * 10), 1 << 5, false, 4, 0);
+                breweryInterface.displayShowNumberDecEx(0, (int) (currentTemperature * 10), 1 << 5, false, 4, 0);
             }
         } else {
-            driverInterface.displayClear(0);
+            breweryInterface.displayClear(0);
         }
     }
 
@@ -215,7 +224,7 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     private void updateTemperatureCalibrationMeasurements(Configuration configuration,
-            Integer side, Float value) {
+                                                          Integer side, Float value) {
 
         Map<String, List<Float>> allMeasurements = configuration.getTemperatureCalibrationMeasurements();
         if (allMeasurements == null) {
@@ -250,7 +259,7 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     private void driveMotor() {
-        driverInterface.motorEnable(motorNumber, enabled && motorEnabled);
+        breweryInterface.motorEnable(motorNumber, enabled && motorEnabled);
     }
 
     private void setMainsPower(Float currentTemperature) {
@@ -274,11 +283,11 @@ public class BrewingServiceImpl implements BrewingService {
                 drivePower = 0;
             }
 
-            driverInterface.setMainsPower(1, drivePower);
-            driverInterface.setMainsPower(2, drivePower);
+            breweryInterface.setMainsPower(1, drivePower);
+            breweryInterface.setMainsPower(2, drivePower);
         } else {
-            driverInterface.setMainsPower(1, 0);
-            driverInterface.setMainsPower(2, 0);
+            breweryInterface.setMainsPower(1, 0);
+            breweryInterface.setMainsPower(2, 0);
         }
     }
 }

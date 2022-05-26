@@ -11,7 +11,7 @@ import wadosm.breweryhost.logic.general.UpdaterUpdateService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes=UpdaterApplication.class)
+@SpringBootTest(classes = UpdaterApplication.class)
 class UpdaterDependenciesTest {
 
     @Autowired

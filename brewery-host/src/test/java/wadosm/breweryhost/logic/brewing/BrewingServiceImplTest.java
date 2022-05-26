@@ -7,20 +7,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import wadosm.breweryhost.device.driver.DriverInterface;
-import wadosm.breweryhost.device.driver.DriverInterfaceImpl;
+import wadosm.breweryhost.DigiPort;
+import wadosm.breweryhost.device.driver.BreweryInterface;
+import wadosm.breweryhost.device.driver.BreweryInterfaceImpl;
 import wadosm.breweryhost.device.temperature.TemperatureProvider;
 import wadosm.breweryhost.device.temperature.TemperatureSensor;
 import wadosm.breweryhost.logic.general.ConfigProvider;
 import wadosm.breweryhost.logic.general.Configuration;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 class BrewingServiceImplTest {
 
@@ -90,45 +91,22 @@ class BrewingServiceImplTest {
         );
     }
 
-    @Test
-    void getBrewingState_should_be_resilient_to_not_connected_driver() {
-        //given
-        DriverInterface driverInterface = new DriverInterfaceImpl(message -> null);
-        TemperatureProvider temperatureProvider = new FakeTemperatureProvider();
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(driverInterface, temperatureProvider,
-                new FakeConfigProvider());
-
-        // when
-        brewingService.getBrewingState();
-    }
-
-    @Test
-    void processStep_should_be_resilient_to_not_connected_driver() {
-        //given
-        DriverInterface driverInterface = new DriverInterfaceImpl(message -> null);
-        TemperatureProvider temperatureProvider = new FakeTemperatureProvider();
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(driverInterface, temperatureProvider,
-                new FakeConfigProvider());
-        brewingService.setMotorNumber(1);
-
-        // when
-        brewingService.processStep();
-    }
-
     @ParameterizedTest
     @MethodSource
     void should_get_calibrated_temperature_with_calibration(List<Float> currCalib, Integer sensorValue,
-            Float expectedTemperature) {
+                                                            Float expectedTemperature) {
         // given
-        DriverInterface driverInterface = new DriverInterfaceImpl(message -> null);
+        DigiPort digiPort = mock(DigiPort.class);
+        BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
         if (currCalib != null) {
-            configProvider.setConfiguration(Configuration.builder().temperatureCalibration(Map.of("aabbcc",
-                    currCalib)).build());
+            configProvider.setConfiguration(
+                    Configuration.builder().temperatureCalibration(Map.of("aabbcc", currCalib)).build());
         }
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(driverInterface, temperatureProvider,
-                configProvider);
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(
+                breweryInterface, temperatureProvider, configProvider
+        );
         brewingService.setBrewingTemperatureSensor("aabbcc");
 
         temperatureProvider.setCurrTemperature(sensorValue);
@@ -143,15 +121,16 @@ class BrewingServiceImplTest {
     @ParameterizedTest
     @MethodSource
     void temperatureCalibrationMeasurements(Map<String, List<Float>> initialConfig, Integer side,
-            List<Float> expectedMeasurements) {
+                                            List<Float> expectedMeasurements) {
         // given
-        DriverInterface driverInterface = new DriverInterfaceImpl(message -> null);
+        DigiPort digiPort = mock(DigiPort.class);
+        BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
 
         configProvider.getConfiguration().setTemperatureCalibrationMeasurements(initialConfig);
 
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(driverInterface, temperatureProvider,
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
                 configProvider);
         brewingService.setBrewingTemperatureSensor("aabbcc");
 
@@ -172,16 +151,17 @@ class BrewingServiceImplTest {
     @ParameterizedTest
     @MethodSource
     void calibrateTemperature(Map<String, List<Float>> initialConfig, Map<String, List<Float>> initialCalibration,
-            Integer side, List<Float> expectedCalibration) {
+                              Integer side, List<Float> expectedCalibration) {
         // given
-        DriverInterface driverInterface = new DriverInterfaceImpl(message -> null);
+        DigiPort digiPort = mock(DigiPort.class);
+        BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
 
         configProvider.getConfiguration().setTemperatureCalibration(initialCalibration);
         configProvider.getConfiguration().setTemperatureCalibrationMeasurements(initialConfig);
 
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(driverInterface, temperatureProvider,
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
                 configProvider);
         brewingService.setBrewingTemperatureSensor("aabbcc");
 
@@ -208,11 +188,12 @@ class BrewingServiceImplTest {
     @Test
     void shouldUpdateCalibrationFileWhileCalibrating() {
         // given
-        DriverInterface driverInterface = new DriverInterfaceImpl(message -> null);
+        DigiPort digiPort = mock(DigiPort.class);
+        BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
 
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(driverInterface, temperatureProvider,
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
                 configProvider);
         brewingService.setBrewingTemperatureSensor("aabbcc");
 
@@ -225,19 +206,19 @@ class BrewingServiceImplTest {
         assertThat(configProvider.isConfigUpdated()).isTrue();
     }
 
-    @Test
-    void testEquation1() {
-        var x1 = 10f;
-        var t1 = 20f;
-        var x2 = 50f;
-        var t2 = 40f;
-
-        var a = (t2 - t1) / (x2 - x1);
-        var b = -a * x1 + t1;
-
-        assertThat(a * 10f + b).isEqualTo(20f);
-        assertThat(a * 50f + b).isEqualTo(40f);
-    }
+//    @Test
+//    void testEquation1() {
+//        var x1 = 10f;
+//        var t1 = 20f;
+//        var x2 = 50f;
+//        var t2 = 40f;
+//
+//        var a = (t2 - t1) / (x2 - x1);
+//        var b = -a * x1 + t1;
+//
+//        assertThat(a * 10f + b).isEqualTo(20f);
+//        assertThat(a * 50f + b).isEqualTo(40f);
+//    }
 
     private static class FakeTemperatureProvider implements TemperatureProvider {
 

@@ -1,6 +1,5 @@
 package wadosm.breweryhost;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.AfterEach;
@@ -24,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Log4j2
 @SpringBootTest
+@ActiveProfiles("test")
 public class ConfigurationProviderTest {
 
     @Autowired

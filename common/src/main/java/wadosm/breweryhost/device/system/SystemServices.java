@@ -16,5 +16,4 @@ public interface SystemServices {
 
     void synchronize();
 
-    void heartBeat(boolean enable);
 }

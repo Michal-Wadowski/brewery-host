@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class DriverInterfaceState {
+public class BreweryState {
 
     private Boolean power;
     private Boolean motor1;

@@ -8,8 +8,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import wadosm.breweryhost.device.driver.DriverInterface;
-import wadosm.breweryhost.device.driver.DriverInterfaceState;
+import wadosm.breweryhost.device.driver.BreweryInterface;
+import wadosm.breweryhost.device.driver.BreweryState;
 import wadosm.breweryhost.device.temperature.TemperatureProvider;
 
 // TODO: Implement saving task on disk
@@ -31,15 +31,15 @@ public class FermentingServiceImpl implements FermentingService {
     private boolean enabled;
     private Float destinationTemperature;
 
-    private final DriverInterface driverInterface;
+    private final BreweryInterface breweryInterface;
 
     private final TemperatureProvider temperatureProvider;
 
     public FermentingServiceImpl(
-            DriverInterface driverInterface,
+            BreweryInterface breweryInterface,
             TemperatureProvider temperatureProvider
     ) {
-        this.driverInterface = driverInterface;
+        this.breweryInterface = breweryInterface;
         this.temperatureProvider = temperatureProvider;
     }
 
@@ -65,8 +65,8 @@ public class FermentingServiceImpl implements FermentingService {
     }
 
     private boolean getHeating() {
-        DriverInterfaceState driverInterfaceState = driverInterface.readDriverInterfaceState();
-        return driverInterfaceState.getMotor(motorNumber);
+        BreweryState breweryState = breweryInterface.readDriverInterfaceState();
+        return breweryState.getMotor(motorNumber);
     }
 
     @Async
@@ -76,9 +76,9 @@ public class FermentingServiceImpl implements FermentingService {
         Float currentTemperature = getCurrentTemperature();
 
         if (enabled && currentTemperature != null && destinationTemperature != null) {
-            driverInterface.motorEnable(motorNumber, currentTemperature < destinationTemperature);
+            breweryInterface.motorEnable(motorNumber, currentTemperature < destinationTemperature);
         } else {
-            driverInterface.motorEnable(motorNumber, false);
+            breweryInterface.motorEnable(motorNumber, false);
         }
     }
 

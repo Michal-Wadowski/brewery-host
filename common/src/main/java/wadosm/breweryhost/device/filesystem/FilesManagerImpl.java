@@ -99,7 +99,7 @@ public class FilesManagerImpl implements FilesManager {
         String dstChecksum;
 
         if (dotParts.length > 1) {
-            String extension = dotParts[dotParts.length-1];
+            String extension = dotParts[dotParts.length - 1];
             String filename = srcFile.substring(0, srcFile.length() - 1 - extension.length());
             dstChecksum = getChecksumFromName(filename);
         } else {
@@ -185,7 +185,7 @@ public class FilesManagerImpl implements FilesManager {
 
     @Override
     public void deleteFiles(List<String> files) {
-        for (String file: files) {
+        for (String file : files) {
             deleteFile(file);
         }
     }
