@@ -79,16 +79,6 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     @Override
-    public void setTimer(int seconds) {
-
-    }
-
-    @Override
-    public void removeTimer() {
-
-    }
-
-    @Override
     public void motorEnable(boolean enable) {
         motorEnabled = enable;
         processStep();

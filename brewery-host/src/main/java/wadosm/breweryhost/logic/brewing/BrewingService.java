@@ -15,10 +15,6 @@ public interface BrewingService {
 
     void setPowerTemperatureCorrelation(Float percentagesPerDegree);
 
-    void setTimer(int seconds);
-
-    void removeTimer();
-
     void motorEnable(boolean enable);
 
     BrewingState getBrewingState();
