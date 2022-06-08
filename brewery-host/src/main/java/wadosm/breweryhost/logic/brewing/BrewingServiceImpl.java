@@ -133,11 +133,17 @@ public class BrewingServiceImpl implements BrewingService {
         Float temperature = getUncalibratedTemperature();
 
         if (temperature != null) {
-            List<Float> temperatureCalibration = configProvider.getTemperatureCalibrationOf(brewingTemperatureSensor);
-            if (temperatureCalibration != null && temperatureCalibration.size() == 2) {
-                temperature *= (1 + temperatureCalibration.get(0));
-                temperature += temperatureCalibration.get(1);
+            Configuration configuration = configProvider.loadConfiguration();
+            Map<String, List<Float>> temperatureCalibration = configuration.getTemperatureCalibration();
+
+            if (temperatureCalibration != null && temperatureCalibration.containsKey(brewingTemperatureSensor)) {
+                List<Float> sensorCalibration = temperatureCalibration.get(brewingTemperatureSensor);
+                if (sensorCalibration.size() == 2) {
+                    temperature *= (1 + sensorCalibration.get(0));
+                    temperature += sensorCalibration.get(1);
+                }
             }
+
             return Math.round(temperature * 100) / 100.0f;
         } else {
             return null;
@@ -167,7 +173,7 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     private void displayTemperature(Float currentTemperature) {
-        if (enabled) {
+        if (enabled && currentTemperature != null) {
             if (currentTemperature < 100) {
                 breweryInterface.displayShowNumberDecEx(0, (int) (currentTemperature * 100), 1 << 6, false, 4, 0);
             } else {
@@ -179,13 +185,13 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     public void calibrateTemperature(Integer side, Float value) {
-        Configuration configuration = configProvider.getConfiguration();
+        Configuration configuration = configProvider.loadConfiguration();
 
         updateTemperatureCalibrationMeasurements(configuration, side, value);
 
         updateTemperatureCalibration(configuration);
 
-        configProvider.setConfiguration(configuration);
+        configProvider.saveConfiguration(configuration);
     }
 
     private void updateTemperatureCalibration(Configuration configuration) {
@@ -213,9 +219,7 @@ public class BrewingServiceImpl implements BrewingService {
         }
     }
 
-    private void updateTemperatureCalibrationMeasurements(Configuration configuration,
-                                                          Integer side, Float value) {
-
+    private void updateTemperatureCalibrationMeasurements(Configuration configuration, Integer side, Float value) {
         Map<String, List<Float>> allMeasurements = configuration.getTemperatureCalibrationMeasurements();
         if (allMeasurements == null) {
             allMeasurements = Map.of();

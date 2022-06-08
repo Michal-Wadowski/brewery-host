@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class BrewingServiceImplTest {
 
@@ -101,7 +102,7 @@ class BrewingServiceImplTest {
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
         if (currCalib != null) {
-            configProvider.setConfiguration(
+            configProvider.saveConfiguration(
                     Configuration.builder().temperatureCalibration(Map.of("aabbcc", currCalib)).build());
         }
         BrewingServiceImpl brewingService = new BrewingServiceImpl(
@@ -128,7 +129,7 @@ class BrewingServiceImplTest {
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
 
-        configProvider.getConfiguration().setTemperatureCalibrationMeasurements(initialConfig);
+        configProvider.loadConfiguration().setTemperatureCalibrationMeasurements(initialConfig);
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
                 configProvider);
@@ -140,7 +141,7 @@ class BrewingServiceImplTest {
         brewingService.calibrateTemperature(side, 20.0f);
 
         // then
-        assertThat(configProvider.getConfiguration().getTemperatureCalibrationMeasurements())
+        assertThat(configProvider.loadConfiguration().getTemperatureCalibrationMeasurements())
                 .isNotNull()
                 .containsKey("aabbcc")
                 .extracting("aabbcc").asList()
@@ -158,8 +159,8 @@ class BrewingServiceImplTest {
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
 
-        configProvider.getConfiguration().setTemperatureCalibration(initialCalibration);
-        configProvider.getConfiguration().setTemperatureCalibrationMeasurements(initialConfig);
+        configProvider.loadConfiguration().setTemperatureCalibration(initialCalibration);
+        configProvider.loadConfiguration().setTemperatureCalibrationMeasurements(initialConfig);
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
                 configProvider);
@@ -172,7 +173,7 @@ class BrewingServiceImplTest {
 
         // then
         MapAssert<String, List<Float>> assertion =
-                assertThat(configProvider.getConfiguration().getTemperatureCalibration())
+                assertThat(configProvider.loadConfiguration().getTemperatureCalibration())
                         .isNotNull();
 
         if (expectedCalibration == null) {
@@ -206,19 +207,24 @@ class BrewingServiceImplTest {
         assertThat(configProvider.isConfigUpdated()).isTrue();
     }
 
-//    @Test
-//    void testEquation1() {
-//        var x1 = 10f;
-//        var t1 = 20f;
-//        var x2 = 50f;
-//        var t2 = 40f;
-//
-//        var a = (t2 - t1) / (x2 - x1);
-//        var b = -a * x1 + t1;
-//
-//        assertThat(a * 10f + b).isEqualTo(20f);
-//        assertThat(a * 50f + b).isEqualTo(40f);
-//    }
+    @Test
+    void processStep_when_no_thermometer() {
+        // given
+        DigiPort digiPort = mock(DigiPort.class);
+        BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
+        FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
+        FakeConfigProvider configProvider = new FakeConfigProvider();
+
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
+                configProvider);
+        brewingService.setMotorNumber(0);
+
+        // when
+        brewingService.enable(true);
+
+        // then
+        verify(digiPort).clear(0);
+    }
 
     private static class FakeTemperatureProvider implements TemperatureProvider {
 
@@ -249,22 +255,14 @@ class BrewingServiceImplTest {
         private boolean configUpdated = false;
 
         @Override
-        public Configuration getConfiguration() {
+        public Configuration loadConfiguration() {
             return configuration;
         }
 
         @Override
-        public void setConfiguration(Configuration configuration) {
+        public void saveConfiguration(Configuration configuration) {
             this.configuration = configuration;
             configUpdated = true;
-        }
-
-        @Override
-        public List<Float> getTemperatureCalibrationOf(String brewingTemperatureSensor) {
-            if (getConfiguration().getTemperatureCalibration() != null) {
-                return getConfiguration().getTemperatureCalibration().get(brewingTemperatureSensor);
-            }
-            return null;
         }
 
     }

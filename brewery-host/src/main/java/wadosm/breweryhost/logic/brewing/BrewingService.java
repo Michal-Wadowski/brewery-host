@@ -1,8 +1,5 @@
 package wadosm.breweryhost.logic.brewing;
 
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
-
 public interface BrewingService {
 
     void enable(boolean enable);

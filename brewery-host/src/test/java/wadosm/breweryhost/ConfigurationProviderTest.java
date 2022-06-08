@@ -48,13 +48,13 @@ public class ConfigurationProviderTest {
         // then
         assertThat(calibrationFile).isNotEmpty();
 
-        assertThat(configProvider.getConfiguration()).isNotNull();
+        assertThat(configProvider.loadConfiguration()).isNotNull();
     }
 
     @Test
     void calibrationConfigIsNotNull() {
         // given/when
-        Configuration configuration = configProvider.getConfiguration();
+        Configuration configuration = configProvider.loadConfiguration();
 
         // then
         assertThat(configuration).isNotNull();
@@ -71,7 +71,7 @@ public class ConfigurationProviderTest {
         writer.close();
 
         // when
-        Configuration configuration = configProvider.getConfiguration();
+        Configuration configuration = configProvider.loadConfiguration();
 
         // then
         assertThat(configuration)
@@ -83,13 +83,13 @@ public class ConfigurationProviderTest {
     @Test
     void configSaveToFile() throws IOException {
         // given
-        Configuration configuration = configProvider.getConfiguration();
+        Configuration configuration = configProvider.loadConfiguration();
         configuration.setTemperatureCalibrationMeasurements(Map.of(
                 "example", Arrays.asList(null, null, 123f, 456f)
         ));
 
         // when
-        configProvider.setConfiguration(configuration);
+        configProvider.saveConfiguration(configuration);
 
         // then
         Configuration storedConfig = mapper.readValue(new File(calibrationFile), Configuration.class);

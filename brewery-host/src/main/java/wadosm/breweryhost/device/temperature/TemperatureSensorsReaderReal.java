@@ -2,8 +2,10 @@ package wadosm.breweryhost.device.temperature;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import wadosm.breweryhost.device.filesystem.FilesManager;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -13,15 +15,9 @@ import java.util.stream.Collectors;
 @Profile("!local")
 public class TemperatureSensorsReaderReal implements TemperatureSensorsReader {
 
-    FilesManager filesManager;
-
-    public TemperatureSensorsReaderReal(FilesManager filesManager) {
-        this.filesManager = filesManager;
-    }
-
     @Override
     public List<TemperatureSensor> readSensors() {
-        byte[] slavesListRaw = filesManager.readFile(
+        byte[] slavesListRaw = readFile(
                 "/sys/bus/w1/devices/w1_bus_master1/w1_master_slaves"
         );
         if (slavesListRaw != null) {
@@ -32,7 +28,7 @@ public class TemperatureSensorsReaderReal implements TemperatureSensorsReader {
                     return null;
                 }
 
-                byte[] sensorData = filesManager.readFile(
+                byte[] sensorData = readFile(
                         String.format("/sys/bus/w1/devices/%s/temperature", sensorId)
                 );
 
@@ -53,5 +49,13 @@ public class TemperatureSensorsReaderReal implements TemperatureSensorsReader {
         }
 
         return new ArrayList<>();
+    }
+
+    private byte[] readFile(String path) {
+        try {
+            return Files.readAllBytes(Paths.get(path));
+        } catch (IOException e) {
+            return null;
+        }
     }
 }

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 @Component
 @Log4j2
@@ -25,7 +24,7 @@ public class ConfigProviderImpl implements ConfigProvider {
     }
 
     @Override
-    public Configuration getConfiguration() {
+    public Configuration loadConfiguration() {
         Configuration configuration;
 
         try {
@@ -38,16 +37,11 @@ public class ConfigProviderImpl implements ConfigProvider {
     }
 
     @Override
-    public void setConfiguration(Configuration configuration) {
+    public void saveConfiguration(Configuration configuration) {
         try {
             mapper.writeValue(new File(calibrationFile), configuration);
         } catch (IOException e) {
             log.warn("Cant write to file {}", calibrationFile);
         }
-    }
-
-    @Override
-    public List<Float> getTemperatureCalibrationOf(String brewingTemperatureSensor) {
-        return null;
     }
 }

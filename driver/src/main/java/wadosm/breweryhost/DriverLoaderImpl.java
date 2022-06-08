@@ -1,11 +1,8 @@
 package wadosm.breweryhost;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -16,12 +13,10 @@ import java.util.Arrays;
 
 /*
 javac -h . driver/src/main/java/wadosm/breweryhost/DigiPort.java \
-driver/src/main/java/wadosm/breweryhost/MessagesProcessor.java \
-driver/src/main/java/wadosm/breweryhost/DriverLoader.java \
-driver/src/main/java/wadosm/breweryhost/DriverLoaderImpl.java \
+driver/src/main/java/wadosm/breweryhost/DigiPortImpl.java \
+driver/src/main/java/wadosm/breweryhost/DriverLoader.java
  */
 @Log4j2
-@Component
 @RequiredArgsConstructor
 public class DriverLoaderImpl implements DriverLoader {
 

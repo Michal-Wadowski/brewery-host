@@ -1,16 +1,15 @@
 package wadosm.breweryhost;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
 /*
   Don't change any signature or name, it's used by driver JNI.
  */
-@RequiredArgsConstructor
-@Component
 public class DigiPortImpl implements DigiPort {
 
     private final DriverLoader driverLoader;
+
+    public DigiPortImpl(DriverLoader driverLoader) {
+        this.driverLoader = driverLoader;
+    }
 
     @Override
     public native void pinMode(int pin, int mode);
