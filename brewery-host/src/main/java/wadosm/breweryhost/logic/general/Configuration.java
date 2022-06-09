@@ -1,6 +1,9 @@
 package wadosm.breweryhost.logic.general;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
@@ -17,10 +20,13 @@ public class Configuration {
 
     private String brewingSensorId;
 
+    private Integer brewingMotorNumber;
+
     public ConfigurationBuilder toBuilder() {
         return builder()
                 .temperatureCalibration(getTemperatureCalibration())
                 .temperatureCalibrationMeasurements(getTemperatureCalibrationMeasurements())
-                .brewingSensorId(getBrewingSensorId());
+                .brewingSensorId(getBrewingSensorId())
+                .brewingMotorNumber(getBrewingMotorNumber());
     }
 }

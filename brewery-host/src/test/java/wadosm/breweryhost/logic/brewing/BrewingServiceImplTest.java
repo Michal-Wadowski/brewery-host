@@ -226,7 +226,52 @@ class BrewingServiceImplTest {
     }
 
     @Test
-    void processStep_when_no_thermometer() {
+    void processStep_when_no_thermometer_configured() {
+        // given
+        DigiPort digiPort = mock(DigiPort.class);
+        BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
+        FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
+        FakeConfigProvider configProvider = new FakeConfigProvider(
+                Configuration.builder()
+                        .brewingMotorNumber(1)
+                        .build()
+        );
+
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
+                configProvider);
+
+        // when
+        brewingService.enable(true);
+
+        // then
+        verify(digiPort, atLeastOnce()).clear(0);
+    }
+
+    @Test
+    void motor_enable_when_no_thermometer() {
+        // given
+        DigiPort digiPort = mock(DigiPort.class);
+        BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
+        FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
+        FakeConfigProvider configProvider = new FakeConfigProvider(
+                Configuration.builder()
+                        .brewingMotorNumber(1)
+                        .build()
+        );
+
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
+                configProvider);
+
+        // when
+        brewingService.enable(true);
+        brewingService.motorEnable(true);
+
+        // then
+        verify(digiPort, atLeastOnce()).digitalWrite(BreweryInterfaceImpl.Pin.MOTOR_1.pinNumber, 1);
+    }
+
+    @Test
+    void processStep_when_no_motor_configured() {
         // given
         DigiPort digiPort = mock(DigiPort.class);
         BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
@@ -235,13 +280,13 @@ class BrewingServiceImplTest {
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
                 configProvider);
-        brewingService.setMotorNumber(0);
 
         // when
         brewingService.enable(true);
+        brewingService.motorEnable(true);
 
         // then
-        verify(digiPort).clear(0);
+        verify(digiPort, atLeastOnce()).clear(0);
     }
 
     @Test

@@ -1,9 +1,6 @@
 package wadosm.breweryhost.logic.brewing;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,11 +22,6 @@ public class BrewingServiceImpl implements BrewingService {
 
     private final TemperatureProvider temperatureProvider;
     private final ConfigProvider configProvider;
-
-    @Value("${brewing.motor_number}")
-    @Getter
-    @Setter
-    private Integer motorNumber;
 
     private boolean enabled;
     private Float destinationTemperature;
@@ -149,11 +141,13 @@ public class BrewingServiceImpl implements BrewingService {
     @Async
     @Scheduled(fixedRateString = "${brewing.checkingPeriod}")
     public void processStep() {
-        Float currentTemperature = getCurrentTemperature(configProvider.loadConfiguration());
+        Configuration configuration = configProvider.loadConfiguration();
+
+        Float currentTemperature = getCurrentTemperature(configuration);
 
         setMainsPower(currentTemperature);
 
-        driveMotor();
+        driveMotor(configuration);
 
         breweryInterface.setAlarm(isAlarmEnabled(currentTemperature));
 
@@ -259,9 +253,9 @@ public class BrewingServiceImpl implements BrewingService {
                 && currentTemperature != null && currentTemperature >= destinationTemperature;
     }
 
-    private void driveMotor() {
-        if (motorNumber != null) {
-            breweryInterface.motorEnable(motorNumber, enabled && motorEnabled);
+    private void driveMotor(Configuration configuration) {
+        if (configuration.getBrewingMotorNumber() != null) {
+            breweryInterface.motorEnable(configuration.getBrewingMotorNumber(), enabled && motorEnabled);
         }
     }
 
