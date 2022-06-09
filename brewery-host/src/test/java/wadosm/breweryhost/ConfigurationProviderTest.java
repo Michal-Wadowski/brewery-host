@@ -83,13 +83,14 @@ public class ConfigurationProviderTest {
     @Test
     void configSaveToFile() throws IOException {
         // given
-        Configuration configuration = configProvider.loadConfiguration();
-        configuration.setTemperatureCalibrationMeasurements(Map.of(
+        Configuration.ConfigurationBuilder configurationBuilder = configProvider.loadConfiguration().toBuilder();
+
+        configurationBuilder.temperatureCalibrationMeasurements(Map.of(
                 "example", Arrays.asList(null, null, 123f, 456f)
         ));
 
         // when
-        configProvider.saveConfiguration(configuration);
+        configProvider.saveConfiguration(configurationBuilder.build());
 
         // then
         Configuration storedConfig = mapper.readValue(new File(calibrationFile), Configuration.class);

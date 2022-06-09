@@ -26,11 +26,6 @@ public class BrewingServiceImpl implements BrewingService {
     private final TemperatureProvider temperatureProvider;
     private final ConfigProvider configProvider;
 
-    @Value("${brewing.temperature_sensor.id}")
-    @Getter
-    @Setter
-    private String brewingTemperatureSensor;
-
     @Value("${brewing.motor_number}")
     @Getter
     @Setter
@@ -86,10 +81,12 @@ public class BrewingServiceImpl implements BrewingService {
 
     @Override
     public BrewingState getBrewingState() {
+        Configuration configuration = configProvider.loadConfiguration();
+
         Integer heatingPower = getHeatingPower();
         return new BrewingState(
-                enabled, getCurrentTemperature(), destinationTemperature, maxPower, getPowerTemperatureCorrelation(),
-                null, motorEnabled, temperatureAlarmEnabled, heatingPower
+                enabled, getCurrentTemperature(configuration), destinationTemperature, maxPower,
+                getPowerTemperatureCorrelation(), null, motorEnabled, temperatureAlarmEnabled, heatingPower
         );
     }
 
@@ -119,8 +116,8 @@ public class BrewingServiceImpl implements BrewingService {
         processStep();
     }
 
-    private Float getUncalibratedTemperature() {
-        Integer rawValue = temperatureProvider.getSensorTemperature(brewingTemperatureSensor);
+    private Float getUncalibratedTemperature(Configuration configuration) {
+        Integer rawValue = temperatureProvider.getSensorTemperature(configuration.getBrewingSensorId());
 
         if (rawValue != null) {
             return rawValue / 1000.0f;
@@ -129,15 +126,14 @@ public class BrewingServiceImpl implements BrewingService {
         }
     }
 
-    private Float getCurrentTemperature() {
-        Float temperature = getUncalibratedTemperature();
+    private Float getCurrentTemperature(Configuration configuration) {
+        Float temperature = getUncalibratedTemperature(configuration);
 
         if (temperature != null) {
-            Configuration configuration = configProvider.loadConfiguration();
             Map<String, List<Float>> temperatureCalibration = configuration.getTemperatureCalibration();
 
-            if (temperatureCalibration != null && temperatureCalibration.containsKey(brewingTemperatureSensor)) {
-                List<Float> sensorCalibration = temperatureCalibration.get(brewingTemperatureSensor);
+            if (temperatureCalibration != null && temperatureCalibration.containsKey(configuration.getBrewingSensorId())) {
+                List<Float> sensorCalibration = temperatureCalibration.get(configuration.getBrewingSensorId());
                 if (sensorCalibration.size() == 2) {
                     temperature *= (1 + sensorCalibration.get(0));
                     temperature += sensorCalibration.get(1);
@@ -153,7 +149,7 @@ public class BrewingServiceImpl implements BrewingService {
     @Async
     @Scheduled(fixedRateString = "${brewing.checkingPeriod}")
     public void processStep() {
-        Float currentTemperature = getCurrentTemperature();
+        Float currentTemperature = getCurrentTemperature(configProvider.loadConfiguration());
 
         setMainsPower(currentTemperature);
 
@@ -187,18 +183,21 @@ public class BrewingServiceImpl implements BrewingService {
     public void calibrateTemperature(Integer side, Float value) {
         Configuration configuration = configProvider.loadConfiguration();
 
-        updateTemperatureCalibrationMeasurements(configuration, side, value);
+        configuration = updateTemperatureCalibrationMeasurements(configuration, side, value);
 
-        updateTemperatureCalibration(configuration);
+        configuration = updateTemperatureCalibration(configuration);
 
         configProvider.saveConfiguration(configuration);
     }
 
-    private void updateTemperatureCalibration(Configuration configuration) {
-        List<Float> measurements = configuration.getTemperatureCalibrationMeasurements().get(brewingTemperatureSensor);
+    private Configuration updateTemperatureCalibration(Configuration configuration) {
+        List<Float> measurements =
+                configuration.getTemperatureCalibrationMeasurements().get(configuration.getBrewingSensorId());
+
+        Configuration.ConfigurationBuilder configurationBuilder = configuration.toBuilder();
 
         if (measurements.stream().filter(Objects::nonNull).count() != 4) {
-            configuration.setTemperatureCalibration(Map.of());
+            configurationBuilder.temperatureCalibration(Map.of());
         } else {
             Map<String, List<Float>> currCalibration = configuration.getTemperatureCalibration();
             if (currCalibration == null) {
@@ -214,37 +213,45 @@ public class BrewingServiceImpl implements BrewingService {
             var b = -a * x1 + t1;
 
             List<Float> currCalibrations = Arrays.asList(a, b);
-            currCalibration.put(brewingTemperatureSensor, currCalibrations);
-            configuration.setTemperatureCalibration(currCalibration);
+            currCalibration.put(configuration.getBrewingSensorId(), currCalibrations);
+            configurationBuilder.temperatureCalibration(currCalibration);
         }
+
+        return configurationBuilder.build();
     }
 
-    private void updateTemperatureCalibrationMeasurements(Configuration configuration, Integer side, Float value) {
-        Map<String, List<Float>> allMeasurements = configuration.getTemperatureCalibrationMeasurements();
-        if (allMeasurements == null) {
-            allMeasurements = Map.of();
+    private Configuration updateTemperatureCalibrationMeasurements(Configuration configuration, Integer side,
+                                                                   Float value) {
+        Map<String, List<Float>> allMeasurements;
+        if (configuration.getTemperatureCalibrationMeasurements() == null) {
+            allMeasurements = new HashMap<>();
+        } else {
+            allMeasurements = new HashMap<>(configuration.getTemperatureCalibrationMeasurements());
         }
-        allMeasurements = new HashMap<>(allMeasurements);
 
         List<Float> currMeasurements;
-        if (!allMeasurements.containsKey(brewingTemperatureSensor) ||
-                allMeasurements.get(brewingTemperatureSensor).size() != 4
+        if (!allMeasurements.containsKey(configuration.getBrewingSensorId()) ||
+                allMeasurements.get(configuration.getBrewingSensorId()).size() != 4
         ) {
             currMeasurements = Arrays.asList(null, null, null, null);
         } else {
-            currMeasurements = allMeasurements.get(brewingTemperatureSensor);
+            currMeasurements = allMeasurements.get(configuration.getBrewingSensorId());
         }
 
         if (side == 0) {
-            currMeasurements.set(0, getUncalibratedTemperature());
+            currMeasurements.set(0, getUncalibratedTemperature(configuration));
             currMeasurements.set(1, value);
         } else if (side == 1) {
-            currMeasurements.set(2, getUncalibratedTemperature());
+            currMeasurements.set(2, getUncalibratedTemperature(configuration));
             currMeasurements.set(3, value);
         }
 
-        allMeasurements.put(brewingTemperatureSensor, currMeasurements);
-        configuration.setTemperatureCalibrationMeasurements(allMeasurements);
+        allMeasurements.put(configuration.getBrewingSensorId(), currMeasurements);
+
+        Configuration.ConfigurationBuilder configurationBuilder = configuration.toBuilder();
+        configurationBuilder.temperatureCalibrationMeasurements(allMeasurements);
+
+        return configurationBuilder.build();
     }
 
     private boolean isAlarmEnabled(Float currentTemperature) {
@@ -253,7 +260,9 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     private void driveMotor() {
-        breweryInterface.motorEnable(motorNumber, enabled && motorEnabled);
+        if (motorNumber != null) {
+            breweryInterface.motorEnable(motorNumber, enabled && motorEnabled);
+        }
     }
 
     private void setMainsPower(Float currentTemperature) {
@@ -284,4 +293,5 @@ public class BrewingServiceImpl implements BrewingService {
             breweryInterface.setMainsPower(2, 0);
         }
     }
+
 }

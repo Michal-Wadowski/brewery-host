@@ -1,18 +1,26 @@
 package wadosm.breweryhost.logic.general;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 import java.util.Map;
 
-@Data
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Configuration {
+
     private Map<String, List<Float>> temperatureCalibration;
+
     private Map<String, List<Float>> temperatureCalibrationMeasurements;
+
+    private String brewingSensorId;
+
+    public ConfigurationBuilder toBuilder() {
+        return builder()
+                .temperatureCalibration(getTemperatureCalibration())
+                .temperatureCalibrationMeasurements(getTemperatureCalibrationMeasurements())
+                .brewingSensorId(getBrewingSensorId());
+    }
 }

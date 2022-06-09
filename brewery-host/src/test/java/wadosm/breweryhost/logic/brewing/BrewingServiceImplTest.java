@@ -21,8 +21,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 class BrewingServiceImplTest {
 
@@ -97,18 +96,20 @@ class BrewingServiceImplTest {
     void should_get_calibrated_temperature_with_calibration(List<Float> currCalib, Integer sensorValue,
                                                             Float expectedTemperature) {
         // given
-        DigiPort digiPort = mock(DigiPort.class);
-        BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
         if (currCalib != null) {
             configProvider.saveConfiguration(
-                    Configuration.builder().temperatureCalibration(Map.of("aabbcc", currCalib)).build());
+                    Configuration.builder()
+                            .temperatureCalibration(Map.of("aabbcc", currCalib))
+                            .brewingSensorId("aabbcc")
+                            .build()
+            );
         }
         BrewingServiceImpl brewingService = new BrewingServiceImpl(
                 breweryInterface, temperatureProvider, configProvider
         );
-        brewingService.setBrewingTemperatureSensor("aabbcc");
 
         temperatureProvider.setCurrTemperature(sensorValue);
 
@@ -124,16 +125,17 @@ class BrewingServiceImplTest {
     void temperatureCalibrationMeasurements(Map<String, List<Float>> initialConfig, Integer side,
                                             List<Float> expectedMeasurements) {
         // given
-        DigiPort digiPort = mock(DigiPort.class);
-        BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
-        FakeConfigProvider configProvider = new FakeConfigProvider();
-
-        configProvider.loadConfiguration().setTemperatureCalibrationMeasurements(initialConfig);
+        FakeConfigProvider configProvider = new FakeConfigProvider(
+                Configuration.builder()
+                        .brewingSensorId("aabbcc")
+                        .temperatureCalibrationMeasurements(initialConfig)
+                        .build()
+        );
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
                 configProvider);
-        brewingService.setBrewingTemperatureSensor("aabbcc");
 
         temperatureProvider.setCurrTemperature(10000);
 
@@ -154,17 +156,17 @@ class BrewingServiceImplTest {
     void calibrateTemperature(Map<String, List<Float>> initialConfig, Map<String, List<Float>> initialCalibration,
                               Integer side, List<Float> expectedCalibration) {
         // given
-        DigiPort digiPort = mock(DigiPort.class);
-        BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
-        FakeConfigProvider configProvider = new FakeConfigProvider();
-
-        configProvider.loadConfiguration().setTemperatureCalibration(initialCalibration);
-        configProvider.loadConfiguration().setTemperatureCalibrationMeasurements(initialConfig);
-
+        FakeConfigProvider configProvider = new FakeConfigProvider(
+                Configuration.builder()
+                        .brewingSensorId("aabbcc")
+                        .temperatureCalibrationMeasurements(initialConfig)
+                        .temperatureCalibration(initialCalibration)
+                        .build()
+        );
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
                 configProvider);
-        brewingService.setBrewingTemperatureSensor("aabbcc");
 
         temperatureProvider.setCurrTemperature(50000);
 
@@ -189,14 +191,16 @@ class BrewingServiceImplTest {
     @Test
     void shouldUpdateCalibrationFileWhileCalibrating() {
         // given
-        DigiPort digiPort = mock(DigiPort.class);
-        BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
         FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
-        FakeConfigProvider configProvider = new FakeConfigProvider();
+        FakeConfigProvider configProvider = new FakeConfigProvider(
+                Configuration.builder()
+                        .brewingSensorId("aabbcc")
+                        .build()
+        );
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
                 configProvider);
-        brewingService.setBrewingTemperatureSensor("aabbcc");
 
         temperatureProvider.setCurrTemperature(50000);
 
@@ -205,6 +209,20 @@ class BrewingServiceImplTest {
 
         // then
         assertThat(configProvider.isConfigUpdated()).isTrue();
+    }
+
+    @Test
+    void shouldNotFailOnEmptyConfiguration() {
+        // given
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
+        FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
+        FakeConfigProvider configProvider = new FakeConfigProvider();
+
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
+                configProvider);
+
+        // when/then
+        brewingService.processStep();
     }
 
     @Test
@@ -224,6 +242,32 @@ class BrewingServiceImplTest {
 
         // then
         verify(digiPort).clear(0);
+    }
+
+    @Test
+    void should_use_configuration_as_thermometer_id_source() {
+        // given
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
+        TemperatureProvider temperatureProvider = mock(TemperatureProvider.class);
+        ConfigProvider configProvider = mock(ConfigProvider.class);
+
+        when(temperatureProvider.getSensorTemperature("aabbcc"))
+                .thenReturn(12350);
+
+        when(configProvider.loadConfiguration()).thenReturn(
+                Configuration.builder()
+                        .brewingSensorId("aabbcc")
+                        .build()
+        );
+
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
+                configProvider);
+
+        // when
+        BrewingState brewingState = brewingService.getBrewingState();
+
+        // then
+        assertThat(brewingState.getCurrentTemperature()).isEqualTo(12.35f);
     }
 
     private static class FakeTemperatureProvider implements TemperatureProvider {
@@ -249,10 +293,18 @@ class BrewingServiceImplTest {
 
     private static class FakeConfigProvider implements ConfigProvider {
 
-        private Configuration configuration = new Configuration();
+        private Configuration configuration;
 
         @Getter
         private boolean configUpdated = false;
+
+        public FakeConfigProvider(Configuration configuration) {
+            this.configuration = configuration;
+        }
+
+        public FakeConfigProvider() {
+            this.configuration = new Configuration();
+        }
 
         @Override
         public Configuration loadConfiguration() {
