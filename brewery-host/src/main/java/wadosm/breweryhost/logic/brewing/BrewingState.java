@@ -17,8 +17,6 @@ public class BrewingState {
 
     private final Float powerTemperatureCorrelation;
 
-    private final Integer timeElapsed;
-
     private final boolean motorEnabled;
 
     private final boolean temperatureAlarm;

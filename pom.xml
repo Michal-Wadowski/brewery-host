@@ -6,6 +6,7 @@
     <modules>
         <module>driver</module>
         <module>brewery-host</module>
+        <module>frontend</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

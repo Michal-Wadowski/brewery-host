@@ -23,7 +23,6 @@ public class BrewingController {
         return brewingService.getBrewingState();
     }
 
-
     @PostMapping("/enable")
     public void enable(@Valid @RequestBody EnableDto enable) {
         brewingService.enable(enable.getEnable());

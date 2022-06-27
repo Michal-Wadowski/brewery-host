@@ -78,7 +78,7 @@ public class BrewingServiceImpl implements BrewingService {
         Integer heatingPower = getHeatingPower();
         return new BrewingState(
                 enabled, getCurrentTemperature(configuration), destinationTemperature, maxPower,
-                getPowerTemperatureCorrelation(), null, motorEnabled, temperatureAlarmEnabled, heatingPower
+                getPowerTemperatureCorrelation(), motorEnabled, temperatureAlarmEnabled, heatingPower
         );
     }
 

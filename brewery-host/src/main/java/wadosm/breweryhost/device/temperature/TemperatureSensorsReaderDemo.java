@@ -23,7 +23,6 @@ public class TemperatureSensorsReaderDemo implements TemperatureSensorsReader {
     @Setter
     private String brewingTemperatureSensorId;
 
-
     @Override
     public List<TemperatureSensor> readSensors() {
         try {

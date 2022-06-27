@@ -31,3 +31,13 @@ build/
 
 ### VS Code ###
 .vscode/
+/frontend/src/main/ts/node_modules/
+/frontend/src/main/ts/package-lock.json
+/frontend/src/main/ts/bundle.js
+/frontend/package-lock.json
+/frontend/node_modules/
+/frontend/dist/main.js
+/frontend/dist/main.js.LICENSE.txt
+/frontend/dist/bundle.js
+/frontend/dist/bundle.js.LICENSE.txt
+/brewery-host/src/main/resources/static/
