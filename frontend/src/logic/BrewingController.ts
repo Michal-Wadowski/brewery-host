@@ -4,9 +4,9 @@ import {Screen} from '../components/Screen';
 import {NumberInput} from "../components/NumberInput";
 import {Checkbox} from "../components/Checkbox";
 
-import {BreweryEndpointFactory} from '../api/BreweryEndpointFactory'
-import {BreweryEndpoint} from '../api/BreweryEndpoint'
-import {BrewingState} from '../api/dto/BrewingState'
+import {EndpointFactory} from '../api/EndpointFactory'
+import {BreweryEndpoint} from '../api/brewery/BreweryEndpoint'
+import {BrewingState} from '../api/brewery/dto/BrewingState'
 
 export class BrewingController {
 
@@ -23,7 +23,7 @@ export class BrewingController {
     private powerTemperatureCorrelation: NumberInput;
 
     constructor() {
-        this.breweryEndpoint = BreweryEndpointFactory.createBreweryEndpoint();
+        this.breweryEndpoint = EndpointFactory.createBreweryEndpoint();
 
         this.screen = new Screen("Brewery Application", "brewing");
 

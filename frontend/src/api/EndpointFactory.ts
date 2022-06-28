@@ -1,8 +1,8 @@
-import {FakeBreweryEndpoint} from '../api/FakeBreweryEndpoint'
-import {RealBreweryEndpoint} from '../api/RealBreweryEndpoint'
-import {BreweryEndpoint} from '../api/BreweryEndpoint'
+import {FakeBreweryEndpoint} from './brewery/FakeBreweryEndpoint'
+import {RealBreweryEndpoint} from './brewery/RealBreweryEndpoint'
+import {BreweryEndpoint} from './brewery/BreweryEndpoint'
 
-export class BreweryEndpointFactory {
+export class EndpointFactory {
     static createBreweryEndpoint(): BreweryEndpoint {
         if (process.env.NODE_ENV == 'production') {
             return new RealBreweryEndpoint();

@@ -19,9 +19,13 @@ export class FakeBreweryEndpoint implements BreweryEndpoint {
     }
 
     getBrewingState(): Promise<BrewingState> {
-        return new Promise<BrewingState>((resolve) => {
+        return new Promise<BrewingState>((resolve, reject) => {
             if( Math.random() < 0.3 ) {
-                throw new Error("error");
+                reject(new Error(
+                    "status: test\n" +
+                    "statusText: test status\n" +
+                    "responseText:\n\n<h1>Test status</h1>"
+                ));
             }
             resolve(this.brewingState)
         });

@@ -52,9 +52,14 @@
         <label for="powerTemperatureCorrelation">Wsp. [%/°C]</label>
     </div>
 
+    <a class="btn btn-secondary" href="configuration.html" role="button">Konfiguruj</a>
+    <a class="btn btn-secondary" href="calibration.html" role="button">Kalibruj</a>
 </div>
 
-<script src="bundle.js"></script>
-
+<script type="application/javascript" src="bundle.js"></script>
+<script type="application/javascript">
+var brewingController = new window.globals.BrewingController();
+brewingController.start()
+</script>
 </body>
 </html>

@@ -61,6 +61,7 @@
                                         <include>bundle.js</include>
                                         <include>favicon.png</include>
                                         <include>index.html</include>
+                                        <include>configuration.html</include>
                                     </includes>
                                 </resource>
                             </resources>
