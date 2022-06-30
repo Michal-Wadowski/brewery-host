@@ -15,7 +15,8 @@ export class Screen {
             $('<title>').text(this.title)
         );
 
-        $('#' + this.id).show();
+        $('#loading').remove();
+        $('#' + this.id + " > .main-content").show();
     }
 
     showError(title: string, error: string): void {

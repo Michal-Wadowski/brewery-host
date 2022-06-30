@@ -1,6 +1,8 @@
+import {TemperatureSensor} from '../../configuration/dto/TemperatureSensor'
+
 export class BrewingState {
     enabled: boolean;
-    currentTemperature: number;
+    currentTemperature: Array<TemperatureSensor>;
     destinationTemperature: number;
     maxPower: number;
     powerTemperatureCorrelation: number;

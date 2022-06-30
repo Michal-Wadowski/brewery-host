@@ -5,15 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="favicon.png">
 </head>
-<body id="configuration" style="display: none">
+<body id="configuration" class="container bg-light pb-3">
 
-<div class="container-sm">
-    <h2>Konfiguracja</h2>
+<div id="loading">Proszę czekać...</div>
+
+<div class="main-content" style="display: none">
+
+    <header class="bd-header bg-dark py-3 d-flex align-items-stretch border-bottom border-dark">
+        <h1 class="d-flex align-items-center fs-4 text-white mb-0 px-3">Konfiguracja warzenia</h1>
+    </header>
+
+    <h2 class="fw-bold pt-3 pb-2 pb-xl-3">Czujniki temperatury</h2>
+    <table class="table table-striped" id="sensors-configuration">
+        <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Temperatura</th>
+            <th scope="col">Pokaż</th>
+            <th scope="col">Użyj</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+    </table>
 
     <a class="btn btn-secondary" href="index.html" role="button">Wróć</a>
 </div>
 
-<script src="bundle.js"></script>
+<script type="application/javascript" src="bundle.js"></script>
+<script type="application/javascript">
+var configurationController = new window.globals.ConfigurationController();
+configurationController.start()
+</script>
 
 </body>
 </html>

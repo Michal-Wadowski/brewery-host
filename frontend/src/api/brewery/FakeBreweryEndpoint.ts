@@ -1,32 +1,35 @@
 import {BrewingState} from './dto/BrewingState'
 import {BreweryEndpoint} from './BreweryEndpoint'
+import {TemperatureSensor} from '../configuration/dto/TemperatureSensor'
+
 import _ from 'lodash'
 
 export class FakeBreweryEndpoint implements BreweryEndpoint {
 
-    private brewingState: BrewingState;
-
-    constructor() {
-        this.brewingState = new BrewingState();
-        this.brewingState.enabled = true;
-        this.brewingState.currentTemperature = 50.0;
-        this.brewingState.destinationTemperature = 90.0;
-        this.brewingState.maxPower = 70;
-        this.brewingState.powerTemperatureCorrelation = 1.0;
-        this.brewingState.motorEnabled = true;
-        this.brewingState.temperatureAlarm = true;
-        this.brewingState.heatingPower = 70;
-    }
+    private brewingState: BrewingState = {
+        enabled: true,
+        currentTemperature: [
+            {sensorId: "foo-123", temperature: 36.6} as TemperatureSensor,
+            {sensorId: "bar-987", temperature: 70.3} as TemperatureSensor,
+            {sensorId: "#use", temperature: 53.45} as TemperatureSensor
+        ],
+        destinationTemperature: 90.0,
+        maxPower: 70,
+        powerTemperatureCorrelation: 1.0,
+        motorEnabled: true,
+        temperatureAlarm: true,
+        heatingPower: 70
+    } as BrewingState
 
     getBrewingState(): Promise<BrewingState> {
         return new Promise<BrewingState>((resolve, reject) => {
-            if( Math.random() < 0.3 ) {
-                reject(new Error(
-                    "status: test\n" +
-                    "statusText: test status\n" +
-                    "responseText:\n\n<h1>Test status</h1>"
-                ));
-            }
+//             if( Math.random() < 0.3 ) {
+//                 reject(new Error(
+//                     "status: test\n" +
+//                     "statusText: test status\n" +
+//                     "responseText:\n\n<h1>Test status</h1>"
+//                 ));
+//             }
             resolve(this.brewingState)
         });
     }
@@ -37,6 +40,7 @@ export class FakeBreweryEndpoint implements BreweryEndpoint {
                 throw new Error("Invalid data for enable endpoint");
             }
             this.brewingState.enabled = data['enable'];
+            resolve()
         });
     }
 
@@ -46,6 +50,7 @@ export class FakeBreweryEndpoint implements BreweryEndpoint {
                 throw new Error("Invalid data for enableTemperatureAlarm endpoint");
             }
             this.brewingState.temperatureAlarm = data['enable'];
+            resolve()
         });
     }
 
@@ -55,6 +60,7 @@ export class FakeBreweryEndpoint implements BreweryEndpoint {
                 throw new Error("Invalid data for motorEnable endpoint");
             }
             this.brewingState.motorEnabled = data['enable'];
+            resolve()
         });
     }
 
@@ -64,6 +70,7 @@ export class FakeBreweryEndpoint implements BreweryEndpoint {
                 throw new Error("Invalid data for setDestinationTemperature endpoint");
             }
             this.brewingState.destinationTemperature = data['temperature'];
+            resolve()
         });
     }
 
@@ -73,6 +80,7 @@ export class FakeBreweryEndpoint implements BreweryEndpoint {
                 throw new Error("Invalid data for setMaxPower endpoint");
             }
             this.brewingState.maxPower = data['power'];
+            resolve()
         });
     }
 
@@ -82,6 +90,7 @@ export class FakeBreweryEndpoint implements BreweryEndpoint {
                 throw new Error("Invalid data for setPowerTemperatureCorrelation endpoint");
             }
             this.brewingState.powerTemperatureCorrelation = data['powerTemperatureCorrelation'];
+            resolve()
         });
     }
 

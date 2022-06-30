@@ -1,3 +1,16 @@
 .error-dialog > .content {
     white-space: pre;
 }
+
+.row .form-floating label {
+    left: .7rem;
+}
+
+#currentTemperature-placeholder .used input  {
+    background: #343a40;
+    color: #e9ecef;
+}
+
+#currentTemperature-placeholder .used label  {
+    color: #e9ecef;
+}
