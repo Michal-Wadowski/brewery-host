@@ -2,6 +2,7 @@ package wadosm.breweryhost.device.driver;
 
 import org.junit.jupiter.api.Test;
 import wadosm.breweryhost.DigiPort;
+import wadosm.breweryhost.device.driver.model.BreweryState;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;

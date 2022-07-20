@@ -1,4 +1,4 @@
-package wadosm.breweryhost.device.temperature;
+package wadosm.breweryhost.device.temperature.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,10 +7,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @Getter
 @ToString
-public class TemperatureSensor {
+public class RawTemperatureSensor {
 
     private String sensorId;
 
-    private Integer temperature;
+    private Integer rawTemperature;
 
 }

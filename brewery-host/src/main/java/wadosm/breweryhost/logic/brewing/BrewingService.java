@@ -1,5 +1,7 @@
 package wadosm.breweryhost.logic.brewing;
 
+import wadosm.breweryhost.logic.brewing.model.BrewingState;
+
 public interface BrewingService {
 
     void enable(boolean enable);

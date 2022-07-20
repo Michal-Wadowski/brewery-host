@@ -26,7 +26,7 @@ export class BrewingController extends AbstractController {
         super()
         this.breweryEndpoint = EndpointFactory.createBreweryEndpoint();
 
-        this.screen = new Screen("Brewery Application", "brewing");
+        this.screen = new Screen("Browar", "brewing");
 
         this.heatingPower = new NumberInput($("#heatingPower"))
 
@@ -42,7 +42,7 @@ export class BrewingController extends AbstractController {
         this.screen.init();
     }
 
-    protected override setListeners(): void {
+    protected setListeners(): void {
         this.enabled.onChange((value: boolean) => {
             this.handleError(this.breweryEndpoint.enable({enable: value})).then();
         });
@@ -117,7 +117,7 @@ export class BrewingController extends AbstractController {
                 if (sensor.sensorId != '#use') {
                     $label.text(sensor.sensorId);
                 } else {
-                    $label.text("Średnia");
+                    $label.text("Wyliczona");
                     $item.addClass('used');
                 }
                 $item.append($label);

@@ -3,6 +3,7 @@ import {RealBreweryEndpoint} from './brewery/RealBreweryEndpoint'
 import {BreweryEndpoint} from './brewery/BreweryEndpoint'
 
 import {FakeConfigurationEndpoint} from './configuration/FakeConfigurationEndpoint'
+import {RealConfigurationEndpoint} from './configuration/RealConfigurationEndpoint'
 import {ConfigurationEndpoint} from './configuration/ConfigurationEndpoint'
 
 export class EndpointFactory {
@@ -17,7 +18,7 @@ export class EndpointFactory {
 
     static createConfigurationEndpoint(): ConfigurationEndpoint {
         if (process.env.NODE_ENV == 'production') {
-            throw new Error('Not implemented');
+            return new RealConfigurationEndpoint();
         } else {
             return new FakeConfigurationEndpoint();
         }

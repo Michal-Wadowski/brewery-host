@@ -24,7 +24,7 @@ public class IntegrationTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Value("${calibration.file}")
+    @Value("${configuration.file}")
     private String calibrationFile;
 
     @Value("${brewing.temperature_sensor.id}")

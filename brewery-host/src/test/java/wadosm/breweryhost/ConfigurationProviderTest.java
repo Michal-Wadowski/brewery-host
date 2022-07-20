@@ -3,13 +3,14 @@ package wadosm.breweryhost;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import wadosm.breweryhost.logic.general.ConfigProviderImpl;
-import wadosm.breweryhost.logic.general.Configuration;
+import wadosm.breweryhost.logic.general.model.Configuration;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -32,8 +33,13 @@ public class ConfigurationProviderTest {
     @Autowired
     private ObjectMapper mapper;
 
-    @Value("${calibration.file}")
+    @Value("${configuration.file}")
     private String calibrationFile;
+
+    @BeforeEach
+    void setUp() {
+        new File(calibrationFile).delete();
+    }
 
     @AfterEach
     void tearDown() {
@@ -43,7 +49,7 @@ public class ConfigurationProviderTest {
     @Test
     void calibrationFileNameExists() {
         // given/when
-        String calibrationFile = configProvider.getCalibrationFile();
+        String calibrationFile = configProvider.getConfigurationFile();
 
         // then
         assertThat(calibrationFile).isNotEmpty();
@@ -52,12 +58,17 @@ public class ConfigurationProviderTest {
     }
 
     @Test
-    void calibrationConfigIsNotNull() {
+    void calibrationConfigHasNotEmptyCollectionsAndMaps() {
         // given/when
         Configuration configuration = configProvider.loadConfiguration();
 
         // then
         assertThat(configuration).isNotNull();
+        assertThat(configuration.getSensorsConfiguration()).isNotNull();
+        assertThat(configuration.getSensorsConfiguration().getShowBrewingSensorIds()).isNotNull();
+        assertThat(configuration.getSensorsConfiguration().getUseBrewingSensorIds()).isNotNull();
+        assertThat(configuration.getTemperatureCalibration()).isNotNull();
+        assertThat(configuration.getTemperatureCalibrationMeasurements()).isNotNull();
     }
 
     @Test

@@ -4,23 +4,25 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import wadosm.breweryhost.device.temperature.model.RawTemperatureSensor;
+import wadosm.breweryhost.device.temperature.model.TemperatureSensor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @Component
 @EnableAsync
-public class TemperatureProviderImpl implements TemperatureProvider {
+public class TemperatureSensorProviderImpl implements TemperatureSensorProvider {
 
-    private List<TemperatureSensor> temperatureSensors = new ArrayList<>();
+    private List<RawTemperatureSensor> rawTemperatureSensors = new ArrayList<>();
 
     private final TemperatureSensorsReader temperatureSensorsReader;
 
     private final AtomicBoolean ready = new AtomicBoolean(true);
 
-    public TemperatureProviderImpl(TemperatureSensorsReader temperatureSensorsReader) {
+    public TemperatureSensorProviderImpl(TemperatureSensorsReader temperatureSensorsReader) {
         this.temperatureSensorsReader = temperatureSensorsReader;
     }
 
@@ -30,22 +32,22 @@ public class TemperatureProviderImpl implements TemperatureProvider {
     public void readPeriodicallySensors() {
         if (ready.get()) {
             ready.set(false);
-            temperatureSensors = temperatureSensorsReader.readSensors();
+            rawTemperatureSensors = temperatureSensorsReader.readSensors();
             ready.set(true);
         }
     }
 
     @Override
     public List<TemperatureSensor> getTemperatureSensors() {
-        return temperatureSensors;
+        return rawTemperatureSensors
+                .stream().map(TemperatureSensor::fromRaw)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Integer getSensorTemperature(String sensorId) {
-        Optional<TemperatureSensor> result = temperatureSensors.stream().filter(
+    public RawTemperatureSensor getRawTemperatureSensor(String sensorId) {
+        return rawTemperatureSensors.stream().filter(
                 x -> x.getSensorId().equals(sensorId)
-        ).findFirst();
-
-        return result.map(TemperatureSensor::getTemperature).orElse(null);
+        ).findFirst().orElse(null);
     }
 }

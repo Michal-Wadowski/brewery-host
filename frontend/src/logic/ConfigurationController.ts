@@ -22,15 +22,9 @@ export class ConfigurationController extends AbstractController {
 
         this.configurationEndpoint = EndpointFactory.createConfigurationEndpoint();
 
-        this.screen = new Screen("Brewery Configuration", "configuration");
-
-        this.setListeners();
+        this.screen = new Screen("Konfiguracja browaru", "configuration");
 
         this.screen.init();
-    }
-
-    protected override setListeners(): void {
-
     }
 
     override start(): void {
@@ -40,8 +34,9 @@ export class ConfigurationController extends AbstractController {
                 this.configurationEndpoint.getSensorsConfiguration()
             ])).then((result) => {
                 console.log(result);
-
-                this.updateTemperatureSensors(result[0], result[1]);
+                if (result != null) {
+                    this.updateTemperatureSensors(result[0], result[1]);
+                }
             });
         }, 1000);
     }

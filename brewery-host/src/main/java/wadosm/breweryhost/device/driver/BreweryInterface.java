@@ -1,5 +1,7 @@
 package wadosm.breweryhost.device.driver;
 
+import wadosm.breweryhost.device.driver.model.BreweryState;
+
 public interface BreweryInterface {
 
     void initDriver();

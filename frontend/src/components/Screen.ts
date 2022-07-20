@@ -20,17 +20,18 @@ export class Screen {
     }
 
     showError(title: string, error: string): void {
-        if ($("#brewing-errors").length == 0) {
-            $('#brewing').prepend(`<div id="brewing-errors" class="mb-3 alert alert-danger error-dialog">
+        if ($("#" + this.id + "-errors").length == 0) {
+            $('#' + this.id).prepend(`
+                <div id="` + this.id + `-errors" class="mb-3 alert alert-danger error-dialog">
                    <h3 class="alert-headingr">` + title + `</h3>
                    <p class="content"></p>
-            </div>`);
+                </div>`);
         }
 
-        $("#brewing-errors > .content").text(error);
+        $("#" + this.id + "-errors > .content").text(error);
     }
 
     hideError(): void {
-        $("#brewing-errors").remove();
+        $("#" + this.id + "-errors").remove();
     }
 }

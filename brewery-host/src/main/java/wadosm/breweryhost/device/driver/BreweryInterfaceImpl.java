@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import wadosm.breweryhost.DigiPort;
+import wadosm.breweryhost.device.driver.model.BreweryState;
 
 import javax.annotation.PostConstruct;
 

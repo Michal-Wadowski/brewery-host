@@ -6,12 +6,15 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.driver.BreweryInterface;
-import wadosm.breweryhost.device.driver.BreweryState;
-import wadosm.breweryhost.device.temperature.TemperatureProvider;
+import wadosm.breweryhost.device.driver.model.BreweryState;
+import wadosm.breweryhost.device.temperature.TemperatureSensorProvider;
+import wadosm.breweryhost.device.temperature.model.TemperatureSensor;
+import wadosm.breweryhost.logic.brewing.model.BrewingState;
 import wadosm.breweryhost.logic.general.ConfigProvider;
-import wadosm.breweryhost.logic.general.Configuration;
+import wadosm.breweryhost.logic.general.model.Configuration;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -20,7 +23,7 @@ public class BrewingServiceImpl implements BrewingService {
 
     private final BreweryInterface breweryInterface;
 
-    private final TemperatureProvider temperatureProvider;
+    private final TemperatureSensorProvider temperatureSensorProvider;
     private final ConfigProvider configProvider;
 
     private boolean enabled;
@@ -33,10 +36,10 @@ public class BrewingServiceImpl implements BrewingService {
 
     public BrewingServiceImpl(
             BreweryInterface breweryInterface,
-            TemperatureProvider temperatureProvider,
+            TemperatureSensorProvider temperatureSensorProvider,
             ConfigProvider configProvider) {
         this.breweryInterface = breweryInterface;
-        this.temperatureProvider = temperatureProvider;
+        this.temperatureSensorProvider = temperatureSensorProvider;
         this.configProvider = configProvider;
     }
 
@@ -108,34 +111,84 @@ public class BrewingServiceImpl implements BrewingService {
         processStep();
     }
 
-    private Float getUncalibratedTemperature(Configuration configuration) {
-        Integer rawValue = temperatureProvider.getSensorTemperature(configuration.getBrewingSensorId());
+    private Float getUncalibratedTemperature(String sensorId) {
+        // TODO: Update here after tests about use multiple sensors
+        TemperatureSensor temperatureSensor = TemperatureSensor.fromRaw(
+                temperatureSensorProvider.getRawTemperatureSensor(sensorId)
+        );
 
-        if (rawValue != null) {
-            return rawValue / 1000.0f;
+        if (temperatureSensor != null) {
+            return temperatureSensor.getTemperature();
         } else {
             return null;
         }
     }
 
-    private Float getCurrentTemperature(Configuration configuration) {
-        Float temperature = getUncalibratedTemperature(configuration);
+    private List<TemperatureSensor> getCurrentTemperature(Configuration configuration) {
+        List<TemperatureSensor> result =
+                configuration.getSensorsConfiguration().getShowBrewingSensorIds().stream().map(sensorId -> {
+            Float temperature = getCalibratedTemperature(configuration, sensorId);
+            if (temperature == null) {
+                return null;
+            }
+            return TemperatureSensor.builder()
+                    .sensorId(sensorId)
+                    .temperature(temperature)
+                    .build();
+        })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+
+        boolean usedSameAsShown = configuration.getSensorsConfiguration().getUseBrewingSensorIds()
+                .equals(configuration.getSensorsConfiguration().getShowBrewingSensorIds());
+        boolean shownSingleSensor = configuration.getSensorsConfiguration().getShowBrewingSensorIds().size() == 1;
+
+        if (!usedSameAsShown || !shownSingleSensor) {
+            TemperatureSensor usedTemperature = getUsedTemperature(configuration);
+            if (usedTemperature != null) {
+                result.add(usedTemperature);
+            }
+        }
+
+        return result;
+    }
+
+    private TemperatureSensor getUsedTemperature(Configuration configuration) {
+        double usedTemperatures = configuration.getSensorsConfiguration().getUseBrewingSensorIds().stream()
+                .map(sensorId -> getCalibratedTemperature(configuration, sensorId))
+                .filter(Objects::nonNull)
+                .mapToDouble(Float::doubleValue)
+                .average()
+                .orElse(Double.NaN);
+
+        if (Double.isNaN(usedTemperatures)) {
+            return null;
+        }
+        return TemperatureSensor.builder()
+                .sensorId("#use")
+                .temperature((float) usedTemperatures)
+                .build();
+    }
+
+    private Float getCalibratedTemperature(Configuration configuration, String shownSensorId) {
+        Float temperature = getUncalibratedTemperature(shownSensorId);
+        Float calibratedTemperature = null;
 
         if (temperature != null) {
             Map<String, List<Float>> temperatureCalibration = configuration.getTemperatureCalibration();
 
-            if (temperatureCalibration != null && temperatureCalibration.containsKey(configuration.getBrewingSensorId())) {
-                List<Float> sensorCalibration = temperatureCalibration.get(configuration.getBrewingSensorId());
+            // TODO: #2
+            if (temperatureCalibration != null && temperatureCalibration.containsKey(shownSensorId)) {
+                List<Float> sensorCalibration = temperatureCalibration.get(shownSensorId);
                 if (sensorCalibration.size() == 2) {
                     temperature *= (1 + sensorCalibration.get(0));
                     temperature += sensorCalibration.get(1);
                 }
             }
 
-            return Math.round(temperature * 100) / 100.0f;
-        } else {
-            return null;
+            calibratedTemperature = Math.round(temperature * 100) / 100.0f;
         }
+        return calibratedTemperature;
     }
 
     @Async
@@ -143,7 +196,8 @@ public class BrewingServiceImpl implements BrewingService {
     public void processStep() {
         Configuration configuration = configProvider.loadConfiguration();
 
-        Float currentTemperature = getCurrentTemperature(configuration);
+        TemperatureSensor usedTemperature = getUsedTemperature(configuration);
+        Float currentTemperature = usedTemperature != null ? usedTemperature.getTemperature() : null;
 
         setMainsPower(currentTemperature);
 
@@ -185,33 +239,36 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     private Configuration updateTemperatureCalibration(Configuration configuration) {
-        List<Float> measurements =
-                configuration.getTemperatureCalibrationMeasurements().get(configuration.getBrewingSensorId());
-
-        Configuration.ConfigurationBuilder configurationBuilder = configuration.toBuilder();
-
-        if (measurements.stream().filter(Objects::nonNull).count() != 4) {
-            configurationBuilder.temperatureCalibration(Map.of());
-        } else {
-            Map<String, List<Float>> currCalibration = configuration.getTemperatureCalibration();
-            if (currCalibration == null) {
-                currCalibration = Map.of();
-            }
-            currCalibration = new HashMap<>(currCalibration);
-
-            var x1 = measurements.get(0);
-            var x2 = measurements.get(2);
-            var t1 = measurements.get(1);
-            var t2 = measurements.get(3);
-            var a = (t2 - t1) / (x2 - x1);
-            var b = -a * x1 + t1;
-
-            List<Float> currCalibrations = Arrays.asList(a, b);
-            currCalibration.put(configuration.getBrewingSensorId(), currCalibrations);
-            configurationBuilder.temperatureCalibration(currCalibration);
-        }
-
-        return configurationBuilder.build();
+        return configuration;
+        // TODO
+//        List<Float> measurements =
+//                configuration.getTemperatureCalibrationMeasurements().get(getUsedSensorId(configuration));
+//
+//        Configuration.ConfigurationBuilder configurationBuilder = configuration.toBuilder();
+//
+//        if (measurements.stream().filter(Objects::nonNull).count() != 4) {
+//            configurationBuilder.temperatureCalibration(Map.of());
+//        } else {
+//            Map<String, List<Float>> currCalibration = configuration.getTemperatureCalibration();
+//            if (currCalibration == null) {
+//                currCalibration = Map.of();
+//            }
+//            currCalibration = new HashMap<>(currCalibration);
+//
+//            var x1 = measurements.get(0);
+//            var x2 = measurements.get(2);
+//            var t1 = measurements.get(1);
+//            var t2 = measurements.get(3);
+//            var a = (t2 - t1) / (x2 - x1);
+//            var b = -a * x1 + t1;
+//
+//            List<Float> currCalibrations = Arrays.asList(a, b);
+//            // TODO
+//            currCalibration.put(getUsedSensorId(configuration), currCalibrations);
+//            configurationBuilder.temperatureCalibration(currCalibration);
+//        }
+//
+//        return configurationBuilder.build();
     }
 
     private Configuration updateTemperatureCalibrationMeasurements(Configuration configuration, Integer side,
@@ -223,24 +280,27 @@ public class BrewingServiceImpl implements BrewingService {
             allMeasurements = new HashMap<>(configuration.getTemperatureCalibrationMeasurements());
         }
 
-        List<Float> currMeasurements;
-        if (!allMeasurements.containsKey(configuration.getBrewingSensorId()) ||
-                allMeasurements.get(configuration.getBrewingSensorId()).size() != 4
-        ) {
-            currMeasurements = Arrays.asList(null, null, null, null);
-        } else {
-            currMeasurements = allMeasurements.get(configuration.getBrewingSensorId());
-        }
+        // TODO:
+//        String brewingSensorId = getUsedSensorId(configuration);
+//        List<Float> currMeasurements;
+//        if (!allMeasurements.containsKey(brewingSensorId) ||
+//                allMeasurements.get(brewingSensorId).size() != 4
+//        ) {
+//            currMeasurements = Arrays.asList(null, null, null, null);
+//        } else {
+//            currMeasurements = allMeasurements.get(brewingSensorId);
+//        }
+//
+//        String usedSensorId = getUsedSensorId(configuration);
+//        if (side == 0) {
+//            currMeasurements.set(0, getUncalibratedTemperature(usedSensorId));
+//            currMeasurements.set(1, value);
+//        } else if (side == 1) {
+//            currMeasurements.set(2, getUncalibratedTemperature(usedSensorId));
+//            currMeasurements.set(3, value);
+//        }
 
-        if (side == 0) {
-            currMeasurements.set(0, getUncalibratedTemperature(configuration));
-            currMeasurements.set(1, value);
-        } else if (side == 1) {
-            currMeasurements.set(2, getUncalibratedTemperature(configuration));
-            currMeasurements.set(3, value);
-        }
-
-        allMeasurements.put(configuration.getBrewingSensorId(), currMeasurements);
+//        allMeasurements.put(brewingSensorId, currMeasurements);
 
         Configuration.ConfigurationBuilder configurationBuilder = configuration.toBuilder();
         configurationBuilder.temperatureCalibrationMeasurements(allMeasurements);

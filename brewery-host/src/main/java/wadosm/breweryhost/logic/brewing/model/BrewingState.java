@@ -1,7 +1,10 @@
-package wadosm.breweryhost.logic.brewing;
+package wadosm.breweryhost.logic.brewing.model;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import wadosm.breweryhost.device.temperature.model.TemperatureSensor;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Getter
@@ -9,7 +12,7 @@ public class BrewingState {
 
     private final boolean enabled;
 
-    private final Float currentTemperature;
+    private final List<TemperatureSensor> currentTemperature;
 
     private final Float destinationTemperature;
 

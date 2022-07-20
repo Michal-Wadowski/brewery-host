@@ -2,6 +2,7 @@ package wadosm.breweryhost.device.temperature;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import wadosm.breweryhost.device.temperature.model.RawTemperatureSensor;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,14 +17,14 @@ import java.util.stream.Collectors;
 public class TemperatureSensorsReaderReal implements TemperatureSensorsReader {
 
     @Override
-    public List<TemperatureSensor> readSensors() {
+    public List<RawTemperatureSensor> readSensors() {
         byte[] slavesListRaw = readFile(
                 "/sys/bus/w1/devices/w1_bus_master1/w1_master_slaves"
         );
         if (slavesListRaw != null) {
             String slavesList = new String(slavesListRaw);
 
-            List<TemperatureSensor> result = slavesList.lines().map(sensorId -> {
+            List<RawTemperatureSensor> result = slavesList.lines().map(sensorId -> {
                 if (sensorId == null || sensorId.trim().length() == 0) {
                     return null;
                 }
@@ -38,7 +39,7 @@ public class TemperatureSensorsReaderReal implements TemperatureSensorsReader {
 
                 try {
                     Integer temperature = Integer.valueOf(new String(sensorData).trim());
-                    return new TemperatureSensor(sensorId, temperature);
+                    return new RawTemperatureSensor(sensorId, temperature);
                 } catch (NumberFormatException e) {
                     return null;
                 }

@@ -1,8 +1,8 @@
 package wadosm.breweryhost.logic.brewing;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.assertj.core.api.MapAssert;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -10,12 +10,15 @@ import org.junit.jupiter.params.provider.MethodSource;
 import wadosm.breweryhost.DigiPort;
 import wadosm.breweryhost.device.driver.BreweryInterface;
 import wadosm.breweryhost.device.driver.BreweryInterfaceImpl;
-import wadosm.breweryhost.device.temperature.TemperatureProvider;
-import wadosm.breweryhost.device.temperature.TemperatureSensor;
+import wadosm.breweryhost.device.temperature.TemperatureSensorProvider;
+import wadosm.breweryhost.device.temperature.model.RawTemperatureSensor;
+import wadosm.breweryhost.device.temperature.model.TemperatureSensor;
+import wadosm.breweryhost.logic.brewing.model.BrewingState;
 import wadosm.breweryhost.logic.general.ConfigProvider;
-import wadosm.breweryhost.logic.general.Configuration;
+import wadosm.breweryhost.logic.general.model.Configuration;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -27,14 +30,22 @@ class BrewingServiceImplTest {
 
     private static Stream<Arguments> should_get_calibrated_temperature_with_calibration() {
         return Stream.of(
-                Arguments.of(null, 50500, 50.5f),
-                Arguments.of(List.of(0.0f, 0.0f), 50500, 50.5f),
-                Arguments.of(List.of(0.0f, 10.0f), 50500, 60.5f),
-                Arguments.of(List.of(0.1f, 0.0f), 0, 0.0f),
-                Arguments.of(List.of(0.2f, 0.0f), 50500, 60.6f),
-                Arguments.of(List.of(0.2f, 10.0f), 50500, 70.6f),
-                Arguments.of(List.of(0.0f, 10.0f), 0, 10.0f),
-                Arguments.of(List.of(-0.1f, -10.0f), 50500, 35.45f)
+                Arguments.of(null, 50500,
+                        List.of(new TemperatureSensor("aabbcc", 50.5f))),
+                Arguments.of(List.of(0.0f, 0.0f), 50500,
+                        List.of(new TemperatureSensor("aabbcc", 50.5f))),
+                Arguments.of(List.of(0.0f, 10.0f), 50500,
+                        List.of(new TemperatureSensor("aabbcc", 60.5f))),
+                Arguments.of(List.of(0.1f, 0.0f), 0,
+                        List.of(new TemperatureSensor("aabbcc", 0.0f))),
+                Arguments.of(List.of(0.2f, 0.0f), 50500,
+                        List.of(new TemperatureSensor("aabbcc", 60.6f))),
+                Arguments.of(List.of(0.2f, 10.0f), 50500,
+                        List.of(new TemperatureSensor("aabbcc", 70.6f))),
+                Arguments.of(List.of(0.0f, 10.0f), 0,
+                        List.of(new TemperatureSensor("aabbcc", 10.0f))),
+                Arguments.of(List.of(-0.1f, -10.0f), 50500,
+                        List.of(new TemperatureSensor("aabbcc", 35.45f)))
         );
     }
 
@@ -91,45 +102,321 @@ class BrewingServiceImplTest {
         );
     }
 
+    public static Stream<Arguments> should_handle_configuration_variants() {
+        return Stream.of(
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(
+                                Configuration.SensorsConfiguration.builder()
+                                        .useBrewingSensorIds(List.of("aabbcc"))
+                                        .showBrewingSensorIds(List.of("aabbcc"))
+                                        .build()
+                        ).build(),
+                        Stream.of(new FakeTemperatureSensorProvider())
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 66120)))
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50120)))
+                                .findFirst().get(),
+                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(50.12f).build())
+                ),
+
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(
+                                Configuration.SensorsConfiguration.builder()
+                                        .useBrewingSensorIds(List.of("aabbcc", "ddeeff"))
+                                        .showBrewingSensorIds(List.of("aabbcc", "ddeeff"))
+                                        .build()
+                        ).build(),
+                        Stream.of(new FakeTemperatureSensorProvider())
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 66100)))
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50100)))
+                                .findFirst().get(),
+                        List.of(
+                                TemperatureSensor.builder().sensorId("aabbcc").temperature(50.1f).build(),
+                                TemperatureSensor.builder().sensorId("ddeeff").temperature(66.1f).build(),
+                                TemperatureSensor.builder().sensorId("#use").temperature(58.1f).build()
+                        )
+                ),
+
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(
+                                Configuration.SensorsConfiguration.builder()
+                                        .useBrewingSensorIds(List.of("aabbcc"))
+                                        .showBrewingSensorIds(List.of("aabbcc"))
+                                        .build()
+                        ).build(),
+                        new FakeTemperatureSensorProvider(),
+                        List.of()
+                ),
+
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(Configuration.SensorsConfiguration.empty()).build(),
+                        Stream.of(new FakeTemperatureSensorProvider())
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 66120)))
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50120)))
+                                .findFirst().get(),
+                        List.of()
+                ),
+
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(
+                                Configuration.SensorsConfiguration.builder()
+                                        .useBrewingSensorIds(List.of("aabbcc"))
+                                        .showBrewingSensorIds(List.of("ddeeff"))
+                                        .build()
+                        ).build(),
+                        Stream.of(new FakeTemperatureSensorProvider())
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 66120)))
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50120)))
+                                .findFirst().get(),
+                        List.of(
+                                TemperatureSensor.builder().sensorId("ddeeff").temperature(66.12f).build(),
+                                TemperatureSensor.builder().sensorId("#use").temperature(50.12f).build()
+                        )
+                ),
+
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(
+                                Configuration.SensorsConfiguration.builder()
+                                        .useBrewingSensorIds(List.of("aabbcc"))
+                                        .showBrewingSensorIds(List.of("aabbcc", "ddeeff"))
+                                        .build()
+                        ).build(),
+                        Stream.of(new FakeTemperatureSensorProvider())
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 66120)))
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50120)))
+                                .findFirst().get(),
+                        List.of(
+                                TemperatureSensor.builder().sensorId("aabbcc").temperature(50.12f).build(),
+                                TemperatureSensor.builder().sensorId("ddeeff").temperature(66.12f).build(),
+                                TemperatureSensor.builder().sensorId("#use").temperature(50.12f).build()
+                        )
+                ),
+
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(
+                                Configuration.SensorsConfiguration.builder()
+                                        .useBrewingSensorIds(List.of("aabbcc"))
+                                        .build()
+                        ).build(),
+                        Stream.of(new FakeTemperatureSensorProvider())
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 66120)))
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50120)))
+                                .findFirst().get(),
+                        List.of(
+                                TemperatureSensor.builder().sensorId("#use").temperature(50.12f).build()
+                        )
+                )
+        );
+    }
+
+    public static Stream<Arguments> should_handle_used_sensor_variants() {
+        return Stream.of(
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(
+                                Configuration.SensorsConfiguration.builder()
+                                        .useBrewingSensorIds(List.of("aabbcc"))
+                                        .build()
+                        ).build(),
+
+                        Stream.of(new FakeTemperatureSensorProvider())
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50120)))
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 99120)))
+                                .findFirst().get(),
+
+                        99f,
+                        true
+                ),
+
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(
+                                Configuration.SensorsConfiguration.builder()
+                                        .useBrewingSensorIds(List.of("aabbcc"))
+                                        .build()
+                        ).build(),
+
+                        Stream.of(new FakeTemperatureSensorProvider())
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50120)))
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 99120)))
+                                .findFirst().get(),
+
+                        30f,
+                        false
+                ),
+
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(
+                                Configuration.SensorsConfiguration.builder()
+                                        .useBrewingSensorIds(List.of("aabbcc"))
+                                        .build()
+                        ).build(),
+
+                        new FakeTemperatureSensorProvider(),
+
+                        99f,
+                        false
+                ),
+
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(
+                                Configuration.SensorsConfiguration.builder()
+                                        .build()
+                        ).build(),
+
+                        Stream.of(new FakeTemperatureSensorProvider())
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50120)))
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 99120)))
+                                .findFirst().get(),
+
+                        99f,
+                        false
+                ),
+
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(
+                                Configuration.SensorsConfiguration.builder()
+                                        .useBrewingSensorIds(List.of("ddeeff"))
+                                        .build()
+                        ).build(),
+
+                        Stream.of(new FakeTemperatureSensorProvider())
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 99120)))
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 30120)))
+                                .findFirst().get(),
+
+                        99f,
+                        true
+                ),
+
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(
+                                Configuration.SensorsConfiguration.builder()
+                                        .useBrewingSensorIds(List.of("aabbcc", "ddeeff"))
+                                        .build()
+                        ).build(),
+
+                        Stream.of(new FakeTemperatureSensorProvider())
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 20000)))
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 60000)))
+                                .findFirst().get(),
+
+                        41f,
+                        true
+                ),
+
+                Arguments.of(
+                        Configuration.builder().sensorsConfiguration(
+                                Configuration.SensorsConfiguration.builder()
+                                        .useBrewingSensorIds(List.of("aabbcc", "ddeeff"))
+                                        .build()
+                        ).build(),
+
+                        Stream.of(new FakeTemperatureSensorProvider())
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 20000)))
+                                .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 60000)))
+                                .findFirst().get(),
+
+                        39f,
+                        false
+                )
+        );
+    }
+
     @ParameterizedTest
     @MethodSource
     void should_get_calibrated_temperature_with_calibration(List<Float> currCalib, Integer sensorValue,
-                                                            Float expectedTemperature) {
+                                                            List<TemperatureSensor> expectedTemperatureSensors) {
         // given
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
-        FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
+        FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
+
+        Configuration.ConfigurationBuilder configurationBuilder = Configuration.builder()
+                .sensorsConfiguration(Configuration.SensorsConfiguration.builder()
+                        .showBrewingSensorIds(List.of("aabbcc"))
+                        .build());
+
         if (currCalib != null) {
-            configProvider.saveConfiguration(
-                    Configuration.builder()
-                            .temperatureCalibration(Map.of("aabbcc", currCalib))
-                            .brewingSensorId("aabbcc")
-                            .build()
-            );
+            configurationBuilder.temperatureCalibration(Map.of("aabbcc", currCalib));
         }
+
+        configProvider.saveConfiguration(configurationBuilder.build());
+
         BrewingServiceImpl brewingService = new BrewingServiceImpl(
                 breweryInterface, temperatureProvider, configProvider
         );
 
-        temperatureProvider.setCurrTemperature(sensorValue);
+        temperatureProvider.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", sensorValue));
 
         // when
         BrewingState brewingState = brewingService.getBrewingState();
 
         // then
-        assertThat(brewingState.getCurrentTemperature()).isEqualTo(expectedTemperature);
+        assertThat(brewingState.getCurrentTemperature()).
+                isEqualTo(expectedTemperatureSensors);
     }
 
+    @ParameterizedTest
+    @MethodSource
+    void should_handle_configuration_variants(Configuration configuration,
+                                              TemperatureSensorProvider sensorProvider,
+                                              List<TemperatureSensor> expectedTemperatureSensors) {
+        // given
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
+        FakeConfigProvider configProvider = new FakeConfigProvider();
+        configProvider.saveConfiguration(configuration);
+
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(
+                breweryInterface, sensorProvider, configProvider
+        );
+
+        // when
+        BrewingState brewingState = brewingService.getBrewingState();
+
+        // then
+        assertThat(brewingState.getCurrentTemperature()).
+                isEqualTo(expectedTemperatureSensors);
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void should_handle_used_sensor_variants(Configuration configuration,
+                                            TemperatureSensorProvider sensorProvider,
+                                            Float destinationTemperature,
+                                            Boolean power) {
+        // given
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
+        FakeConfigProvider configProvider = new FakeConfigProvider();
+        configProvider.saveConfiguration(configuration);
+
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(
+                breweryInterface, sensorProvider, configProvider
+        );
+
+        brewingService.setDestinationTemperature(destinationTemperature);
+
+        // when
+        brewingService.enable(true);
+
+        // then
+        if (power) {
+            verify(breweryInterface).setMainsPower(eq(1), eq(255));
+        } else {
+            verify(breweryInterface, never()).setMainsPower(eq(1), eq(255));
+        }
+    }
+
+    @Disabled
     @ParameterizedTest
     @MethodSource
     void temperatureCalibrationMeasurements(Map<String, List<Float>> initialConfig, Integer side,
                                             List<Float> expectedMeasurements) {
         // given
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
-        FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
+        FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider(
                 Configuration.builder()
-                        .brewingSensorId("aabbcc")
+                        .sensorsConfiguration(Configuration.SensorsConfiguration.builder()
+                                .useBrewingSensorIds(List.of("aabbcc"))
+                                .build())
                         .temperatureCalibrationMeasurements(initialConfig)
                         .build()
         );
@@ -137,7 +424,7 @@ class BrewingServiceImplTest {
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
                 configProvider);
 
-        temperatureProvider.setCurrTemperature(10000);
+        temperatureProvider.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 10000));
 
         // when
         brewingService.calibrateTemperature(side, 20.0f);
@@ -151,16 +438,19 @@ class BrewingServiceImplTest {
                 .containsSequence(expectedMeasurements);
     }
 
+    @Disabled
     @ParameterizedTest
     @MethodSource
     void calibrateTemperature(Map<String, List<Float>> initialConfig, Map<String, List<Float>> initialCalibration,
                               Integer side, List<Float> expectedCalibration) {
         // given
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
-        FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
+        FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider(
                 Configuration.builder()
-                        .brewingSensorId("aabbcc")
+                        .sensorsConfiguration(Configuration.SensorsConfiguration.builder()
+                                .useBrewingSensorIds(List.of("aabbcc"))
+                                .build())
                         .temperatureCalibrationMeasurements(initialConfig)
                         .temperatureCalibration(initialCalibration)
                         .build()
@@ -168,7 +458,7 @@ class BrewingServiceImplTest {
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
                 configProvider);
 
-        temperatureProvider.setCurrTemperature(50000);
+        temperatureProvider.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50000));
 
         // when
         brewingService.calibrateTemperature(side, 40.0f);
@@ -192,17 +482,19 @@ class BrewingServiceImplTest {
     void shouldUpdateCalibrationFileWhileCalibrating() {
         // given
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
-        FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
+        FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider(
                 Configuration.builder()
-                        .brewingSensorId("aabbcc")
+                        .sensorsConfiguration(Configuration.SensorsConfiguration.builder()
+                                .useBrewingSensorIds(List.of("aabbcc"))
+                                .build())
                         .build()
         );
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
                 configProvider);
 
-        temperatureProvider.setCurrTemperature(50000);
+        temperatureProvider.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50000));
 
         // when
         brewingService.calibrateTemperature(0, 40.0f);
@@ -215,7 +507,7 @@ class BrewingServiceImplTest {
     void shouldNotFailOnEmptyConfiguration() {
         // given
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
-        FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
+        FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
@@ -230,7 +522,7 @@ class BrewingServiceImplTest {
         // given
         DigiPort digiPort = mock(DigiPort.class);
         BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
-        FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
+        FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider(
                 Configuration.builder()
                         .brewingMotorNumber(1)
@@ -252,7 +544,7 @@ class BrewingServiceImplTest {
         // given
         DigiPort digiPort = mock(DigiPort.class);
         BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
-        FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
+        FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider(
                 Configuration.builder()
                         .brewingMotorNumber(1)
@@ -275,7 +567,7 @@ class BrewingServiceImplTest {
         // given
         DigiPort digiPort = mock(DigiPort.class);
         BreweryInterface breweryInterface = new BreweryInterfaceImpl(digiPort);
-        FakeTemperatureProvider temperatureProvider = new FakeTemperatureProvider();
+        FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
@@ -293,32 +585,36 @@ class BrewingServiceImplTest {
     void should_use_configuration_as_thermometer_id_source() {
         // given
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
-        TemperatureProvider temperatureProvider = mock(TemperatureProvider.class);
+        TemperatureSensorProvider temperatureSensorProvider = mock(TemperatureSensorProvider.class);
         ConfigProvider configProvider = mock(ConfigProvider.class);
 
-        when(temperatureProvider.getSensorTemperature("aabbcc"))
-                .thenReturn(12350);
+        when(temperatureSensorProvider.getRawTemperatureSensor("aabbcc"))
+                .thenReturn(new RawTemperatureSensor("aabbcc", 12350));
 
         when(configProvider.loadConfiguration()).thenReturn(
                 Configuration.builder()
-                        .brewingSensorId("aabbcc")
+                        .sensorsConfiguration(Configuration.SensorsConfiguration.builder()
+                                .showBrewingSensorIds(List.of("aabbcc"))
+                                .useBrewingSensorIds(List.of("aabbcc"))
+                                .build())
                         .build()
         );
 
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureSensorProvider,
                 configProvider);
 
         // when
         BrewingState brewingState = brewingService.getBrewingState();
 
         // then
-        assertThat(brewingState.getCurrentTemperature()).isEqualTo(12.35f);
+        assertThat(brewingState.getCurrentTemperature()).isEqualTo(
+                List.of(new TemperatureSensor("aabbcc", 12.35f))
+        );
     }
 
-    private static class FakeTemperatureProvider implements TemperatureProvider {
+    private static class FakeTemperatureSensorProvider implements TemperatureSensorProvider {
 
-        @Setter
-        private Integer currTemperature = null;
+        private final Map<String, RawTemperatureSensor> sensorsMap = new HashMap<>();
 
         @Override
         public void readPeriodicallySensors() {
@@ -331,8 +627,12 @@ class BrewingServiceImplTest {
         }
 
         @Override
-        public Integer getSensorTemperature(String sensorId) {
-            return currTemperature;
+        public RawTemperatureSensor getRawTemperatureSensor(String sensorId) {
+            return sensorsMap.get(sensorId);
+        }
+
+        public void setCurrTemperatureSensor(RawTemperatureSensor sensor) {
+            sensorsMap.put(sensor.getSensorId(), sensor);
         }
     }
 
@@ -344,11 +644,11 @@ class BrewingServiceImplTest {
         private boolean configUpdated = false;
 
         public FakeConfigProvider(Configuration configuration) {
-            this.configuration = configuration;
+            this.configuration = initEmptyListsAndMapsInNeeded(configuration);
         }
 
         public FakeConfigProvider() {
-            this.configuration = new Configuration();
+            this.configuration = initEmptyListsAndMapsInNeeded(new Configuration());
         }
 
         @Override
@@ -362,5 +662,18 @@ class BrewingServiceImplTest {
             configUpdated = true;
         }
 
+        private Configuration initEmptyListsAndMapsInNeeded(Configuration configuration) {
+            Configuration.ConfigurationBuilder builder = configuration.toBuilder();
+            if (configuration.getSensorsConfiguration() == null) {
+                builder.sensorsConfiguration(Configuration.SensorsConfiguration.empty());
+            }
+            if (configuration.getTemperatureCalibrationMeasurements() == null) {
+                builder.temperatureCalibrationMeasurements(new HashMap<>());
+            }
+            if (configuration.getTemperatureCalibration() == null) {
+                builder.temperatureCalibration(new HashMap<>());
+            }
+            return builder.build();
+        }
     }
 }

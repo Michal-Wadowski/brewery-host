@@ -1,4 +1,4 @@
-package wadosm.breweryhost.device.driver;
+package wadosm.breweryhost.device.driver.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
