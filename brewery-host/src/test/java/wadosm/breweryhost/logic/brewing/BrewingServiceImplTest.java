@@ -518,6 +518,26 @@ class BrewingServiceImplTest {
     }
 
     @Test
+    void shouldUseDefaultMotorPin() {
+        // given
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
+        FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
+        FakeConfigProvider configProvider = new FakeConfigProvider();
+
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
+                configProvider);
+
+        brewingService.motorEnable(true);
+        brewingService.enable(true);
+
+        // when
+        brewingService.processStep();
+
+        // then
+        verify(breweryInterface, atLeastOnce()).motorEnable(eq(1), eq(true));
+    }
+
+    @Test
     void processStep_when_no_thermometer_configured() {
         // given
         DigiPort digiPort = mock(DigiPort.class);

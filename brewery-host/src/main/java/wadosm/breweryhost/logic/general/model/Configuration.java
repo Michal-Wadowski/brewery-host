@@ -13,7 +13,6 @@ public class Configuration {
 
     private Map<String, List<Float>> temperatureCalibrationMeasurements;
 
-    @Getter
     private Integer brewingMotorNumber;
 
     protected SensorsConfiguration sensorsConfiguration;
@@ -32,6 +31,10 @@ public class Configuration {
 
     public Map<String, List<Float>> getTemperatureCalibrationMeasurements() {
         return Objects.requireNonNullElseGet(temperatureCalibrationMeasurements, Map::of);
+    }
+
+    public Integer getBrewingMotorNumber() {
+        return Objects.requireNonNullElse(brewingMotorNumber, 1);
     }
 
     public SensorsConfiguration getSensorsConfiguration() {
