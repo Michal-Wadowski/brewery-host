@@ -26,4 +26,9 @@ public class PowerController {
     public void restart() {
         systemServices.doReboot();
     }
+
+    @PostMapping("/restartBrewery")
+    public void restartBrewery() {
+        systemServices.doRestartBrewery();
+    }
 }

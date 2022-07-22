@@ -13,33 +13,38 @@ public class SystemServicesReal implements SystemServices {
 
     @Override
     public void doReboot() {
-        runAndWait("sudo systemctl reboot");
+        runAndWait("systemctl reboot");
     }
 
     @Override
     public void doPowerOff() {
-        runAndWait("sudo systemctl poweroff");
+        runAndWait("systemctl poweroff");
+    }
+
+    @Override
+    public void doRestartBrewery() {
+        runAndWait("service brewery-host restart");
     }
 
     @Override
     public void stopService(String serviceName) {
-        runAndWait(String.format("sudo service %s stop", serviceName));
+        runAndWait(String.format("service %s stop", serviceName));
     }
 
     @Override
     public void startService(String serviceName) {
-        runAndWait(String.format("sudo service %s start", serviceName));
+        runAndWait(String.format("service %s start", serviceName));
     }
 
     @Override
     public void restartService(String serviceName) {
-        runAndWait(String.format("sudo service %s restart", serviceName));
+        runAndWait(String.format("service %s restart", serviceName));
     }
 
     @Override
     public String getServiceInfo(String serviceName) {
         try {
-            Process process = Runtime.getRuntime().exec(String.format("sudo service %s status", serviceName));
+            Process process = Runtime.getRuntime().exec(String.format("service %s status", serviceName));
             process.waitFor();
             return new String(process.getInputStream().readAllBytes());
         } catch (IOException e) {

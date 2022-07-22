@@ -12,19 +12,36 @@ import {TemperatureSensor} from '../api/configuration/dto/TemperatureSensor'
 import {SensorsConfiguration} from '../api/configuration/dto/SensorsConfiguration'
 import {ShowSensorDto} from '../api/configuration/dto/ShowSensorDto'
 import {UseSensorDto} from '../api/configuration/dto/UseSensorDto'
+import {PowerEndpoint} from '../api/power/PowerEndpoint'
 
 export class ConfigurationController extends AbstractController {
 
     private configurationEndpoint: ConfigurationEndpoint;
+    private powerEndpoint: PowerEndpoint;
 
     constructor() {
         super()
 
         this.configurationEndpoint = EndpointFactory.createConfigurationEndpoint();
+        this.powerEndpoint = EndpointFactory.createPowerEndpoint();
 
         this.screen = new Screen("Konfiguracja browaru", "configuration");
 
         this.screen.init();
+
+        this.setListeners();
+    }
+
+    setListeners(): void {
+        $("#power-off").click(() => {
+            this.handleError(this.powerEndpoint.powerOff()).then();
+        });
+        $("#power-restart").click(() => {
+            this.handleError(this.powerEndpoint.restart()).then();
+        });
+        $("#power-app-restart").click(() => {
+            this.handleError(this.powerEndpoint.restartBrewery()).then();
+        });
     }
 
     override start(): void {

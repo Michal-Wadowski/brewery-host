@@ -6,6 +6,8 @@ public interface SystemServices {
 
     void doPowerOff();
 
+    void doRestartBrewery();
+
     void stopService(String serviceName);
 
     void startService(String serviceName);
