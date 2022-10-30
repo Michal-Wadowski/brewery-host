@@ -2,37 +2,34 @@ package wadosm.breweryhost.device.temperature;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import wadosm.breweryhost.device.filesystem.FilesManager;
+import wadosm.breweryhost.device.temperature.model.RawTemperatureSensor;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
-@Profile("!demo")
+@Profile("!local")
 public class TemperatureSensorsReaderReal implements TemperatureSensorsReader {
 
-    FilesManager filesManager;
-
-    public TemperatureSensorsReaderReal(FilesManager filesManager) {
-        this.filesManager = filesManager;
-    }
-
     @Override
-    public List<TemperatureSensor> readSensors() {
-        byte[] slavesListRaw = filesManager.readFile(
+    public List<RawTemperatureSensor> readSensors() {
+        byte[] slavesListRaw = readFile(
                 "/sys/bus/w1/devices/w1_bus_master1/w1_master_slaves"
         );
         if (slavesListRaw != null) {
             String slavesList = new String(slavesListRaw);
 
-            List<TemperatureSensor> result = slavesList.lines().map(sensorId -> {
+            List<RawTemperatureSensor> result = slavesList.lines().map(sensorId -> {
                 if (sensorId == null || sensorId.trim().length() == 0) {
                     return null;
                 }
 
-                byte[] sensorData = filesManager.readFile(
+                byte[] sensorData = readFile(
                         String.format("/sys/bus/w1/devices/%s/temperature", sensorId)
                 );
 
@@ -42,7 +39,7 @@ public class TemperatureSensorsReaderReal implements TemperatureSensorsReader {
 
                 try {
                     Integer temperature = Integer.valueOf(new String(sensorData).trim());
-                    return new TemperatureSensor(sensorId, temperature);
+                    return new RawTemperatureSensor(sensorId, temperature);
                 } catch (NumberFormatException e) {
                     return null;
                 }
@@ -53,5 +50,13 @@ public class TemperatureSensorsReaderReal implements TemperatureSensorsReader {
         }
 
         return new ArrayList<>();
+    }
+
+    private byte[] readFile(String path) {
+        try {
+            return Files.readAllBytes(Paths.get(path));
+        } catch (IOException e) {
+            return null;
+        }
     }
 }

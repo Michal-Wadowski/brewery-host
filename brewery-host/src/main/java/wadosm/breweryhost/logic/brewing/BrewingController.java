@@ -1,17 +1,12 @@
 package wadosm.breweryhost.logic.brewing;
 
-import lombok.Getter;
+import lombok.Data;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import wadosm.breweryhost.device.externalinterface.dto.CommandDTO;
-import wadosm.breweryhost.device.externalinterface.dto.ResponseDTO;
-import wadosm.breweryhost.device.temperature.TemperatureProvider;
+import org.springframework.web.bind.annotation.*;
+import wadosm.breweryhost.logic.brewing.dto.*;
+import wadosm.breweryhost.logic.brewing.model.BrewingState;
 
-import java.time.Instant;
+import javax.validation.Valid;
 
 @Log4j2
 @RestController
@@ -24,82 +19,50 @@ public class BrewingController {
         this.brewingService = brewingService;
     }
 
-    @PostMapping("/getBrewingState")
-    public BrewingStatusResponse getBrewingState(@RequestBody CommandDTO commandDTO) {
-        BrewingStatusResponse brewingStatusResponse = sendStateResponse(commandDTO);
-        return brewingStatusResponse;
-    }
-
-    @PostMapping("/setDestinationTemperature")
-    public BrewingStatusResponse setDestinationTemperature(@RequestBody CommandDTO commandDTO) {
-        Float value = commandDTO.getFloatValue();
-        brewingService.setDestinationTemperature(value);
-        return sendStateResponse(commandDTO);
+    @GetMapping("/getBrewingState")
+    public BrewingState getBrewingState() {
+        return brewingService.getBrewingState();
     }
 
     @PostMapping("/enable")
-    public BrewingStatusResponse enable(@RequestBody CommandDTO commandDTO) {
-        Boolean enable = commandDTO.getEnable();
-        brewingService.enable(enable);
-        return sendStateResponse(commandDTO);
-    }
-
-    @PostMapping("/setMaxPower")
-    public BrewingStatusResponse setMaxPower(@RequestBody CommandDTO commandDTO) {
-        Integer maxPower = commandDTO.getIntValue();
-        brewingService.setMaxPower(maxPower);
-        return sendStateResponse(commandDTO);
-    }
-
-    @PostMapping("/setPowerTemperatureCorrelation")
-    public BrewingStatusResponse setPowerTemperatureCorrelation(@RequestBody CommandDTO commandDTO) {
-        Float temperatureCorrelation = commandDTO.getFloatValue();
-        brewingService.setPowerTemperatureCorrelation(temperatureCorrelation);
-        return sendStateResponse(commandDTO);
+    public void enable(@Valid @RequestBody EnableDto enable) {
+        brewingService.enable(enable.getEnable());
     }
 
     @PostMapping("/enableTemperatureAlarm")
-    public BrewingStatusResponse enableTemperatureAlarm(@RequestBody CommandDTO commandDTO) {
-        boolean enable = commandDTO.getEnable();
-        brewingService.enableTemperatureAlarm(enable);
-        return sendStateResponse(commandDTO);
-    }
-
-    @PostMapping("/setTimer")
-    public BrewingStatusResponse setTimer(@RequestBody CommandDTO commandDTO) {
-        Integer time = commandDTO.getIntValue();
-        brewingService.setTimer(time);
-        return sendStateResponse(commandDTO);
-    }
-
-    @PostMapping("/removeTimer")
-    public BrewingStatusResponse removeTimer(@RequestBody CommandDTO commandDTO) {
-        brewingService.removeTimer();
-        return sendStateResponse(commandDTO);
+    public void enableTemperatureAlarm(@Valid @RequestBody EnableTemperatureAlarmDto enable) {
+        brewingService.enableTemperatureAlarm(enable.getEnable());
     }
 
     @PostMapping("/motorEnable")
-    public BrewingStatusResponse motorEnable(@RequestBody CommandDTO commandDTO) {
-        boolean enable = commandDTO.getEnable();
-        brewingService.motorEnable(enable);
-        return sendStateResponse(commandDTO);
+    public void motorEnable(@Valid @RequestBody MotorEnableDto enable) {
+        brewingService.motorEnable(enable.getEnable());
     }
 
-    private BrewingStatusResponse sendStateResponse(CommandDTO commandDTO) {
-        BrewingState brewingState = brewingService.getBrewingState();
-        return new BrewingStatusResponse(
-                commandDTO.getCommandId(), Instant.now().getEpochSecond(), brewingState
-        );
+
+    @PostMapping("/setDestinationTemperature")
+    public void setDestinationTemperature(@Valid @RequestBody DestinationTemperatureDto temperature) {
+        brewingService.setDestinationTemperature(temperature.getTemperature());
     }
 
-    @Getter
-    public static class BrewingStatusResponse extends ResponseDTO {
+    @PostMapping("/setMaxPower")
+    public void setMaxPower(@Valid @RequestBody MaxPowerDto maxPower) {
+        brewingService.setMaxPower(maxPower.getPower());
+    }
 
-        private final BrewingState brewingState;
+    @PostMapping("/setPowerTemperatureCorrelation")
+    public void setPowerTemperatureCorrelation(@Valid @RequestBody PowerTemperatureCorrelationDto correlation) {
+        brewingService.setPowerTemperatureCorrelation(correlation.getPowerTemperatureCorrelation());
+    }
 
-        public BrewingStatusResponse(Integer commandId, Long time, BrewingState brewingState) {
-            super(commandId, time);
-            this.brewingState = brewingState;
-        }
+    @Data
+    static class CalibrateTemperatureDto {
+        private final Integer side;
+        private final Float value;
+    }
+
+    @PostMapping("/calibrateTemperature")
+    public void calibrateTemperature(@RequestBody CalibrateTemperatureDto calibrateTemperatureDto) {
+        brewingService.calibrateTemperature(calibrateTemperatureDto.getSide(), calibrateTemperatureDto.getValue());
     }
 }

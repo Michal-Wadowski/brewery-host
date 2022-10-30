@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body id="configuration" class="container bg-light pb-3">
+
+<div id="loading">Proszę czekać...</div>
+
+<div class="main-content" style="display: none">
+
+    <header class="bd-header bg-dark py-3 d-flex align-items-stretch border-bottom border-dark">
+        <h1 class="d-flex align-items-center fs-4 text-white mb-0 px-3">Konfiguracja browaru</h1>
+    </header>
+
+    <h2 class="fw-bold pt-3 pb-2 pb-xl-3">Czujniki temperatury</h2>
+    <table class="table table-striped" id="sensors-configuration">
+        <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Temperatura</th>
+            <th scope="col">Pokaż</th>
+            <th scope="col">Użyj</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+    </table>
+
+    <a class="btn btn-secondary" href="index.html" role="button">Wróć</a>
+
+    <span class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            Zasilanie
+        </button>
+        <ul class="dropdown-menu">
+            <li><span class="dropdown-item" id="power-off">Wyłącz</span></li>
+            <li><span class="dropdown-item" id="power-restart">Restart</span></li>
+            <li><span class="dropdown-item" id="power-app-restart">Restart aplikacji</span></li>
+        </ul>
+    </span>
+</div>
+
+<script type="application/javascript" src="bundle.js"></script>
+<script type="application/javascript">
+var configurationController = new window.globals.ConfigurationController();
+configurationController.start()
+</script>
+
+</body>
+</html>

@@ -1,5 +1,7 @@
 package wadosm.breweryhost.logic.brewing;
 
+import wadosm.breweryhost.logic.brewing.model.BrewingState;
+
 public interface BrewingService {
 
     void enable(boolean enable);
@@ -12,13 +14,13 @@ public interface BrewingService {
 
     void setPowerTemperatureCorrelation(Float percentagesPerDegree);
 
-    void setTimer(int seconds);
-
-    void removeTimer();
-
     void motorEnable(boolean enable);
 
     BrewingState getBrewingState();
 
     void processStep();
+
+    void heartbeat();
+
+    void calibrateTemperature(Integer side, Float value);
 }
