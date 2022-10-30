@@ -19,15 +19,26 @@
     <table class="table table-striped" id="sensors-configuration">
         <thead>
         <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Temperatura</th>
-            <th scope="col">Pokaż</th>
-            <th scope="col">Użyj</th>
+            <th scope="col" style="width: 25%">ID</th>
+            <th scope="col" style="width: 25%">Temperatura</th>
+            <th scope="col" style="width: 25%">Pokaż</th>
+            <th scope="col" style="width: 25%">Użyj</th>
         </tr>
         </thead>
         <tbody></tbody>
         <tfoot></tfoot>
     </table>
+
+    <button class="btn btn-warning" type="button" data-bs-toggle="collapse" data-bs-target="#manual-config-container"
+            id="manual-config-button">
+        Ręczna konfiguracja
+    </button>
+
+    <div class="collapse collapse-vertical mb-3 mt-3" id="manual-config-container">
+        <textarea id="manual-config-content" style="width: 100%; height: 25em;"></textarea>
+
+        <div><button class="btn btn-primary" type="button" id="manual-config-save">Zapisz</button></div>
+    </div>
 
     <a class="btn btn-secondary" href="index.html" role="button">Wróć</a>
 

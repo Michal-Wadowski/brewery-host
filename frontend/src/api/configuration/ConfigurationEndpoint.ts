@@ -13,4 +13,5 @@ export interface ConfigurationEndpoint {
 
     useSensor(useSensorDto: UseSensorDto): Promise<void>;
 
+    getManualConfig(): Promise<string>;
 }

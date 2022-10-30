@@ -42,6 +42,13 @@ export class ConfigurationController extends AbstractController {
         $("#power-app-restart").click(() => {
             this.handleError(this.powerEndpoint.restartBrewery()).then();
         });
+
+        $('#manual-config-button').click(() => {
+            this.handleError(this.configurationEndpoint.getManualConfig()).then((result) => {
+                var json = JSON.parse(result);
+                $('#manual-config-content').val(JSON.stringify(json, null, 4));
+            });
+        });
     }
 
     override start(): void {
@@ -50,7 +57,6 @@ export class ConfigurationController extends AbstractController {
                 this.configurationEndpoint.getTemperatureSensors(),
                 this.configurationEndpoint.getSensorsConfiguration()
             ])).then((result) => {
-                console.log(result);
                 if (result != null) {
                     this.updateTemperatureSensors(result[0], result[1]);
                 }

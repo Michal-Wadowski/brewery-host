@@ -25,4 +25,8 @@ export class RealConfigurationEndpoint extends AbstractEndpoint implements Confi
     useSensor(useSensorDto: UseSensorDto): Promise<void> {
         return this.postRequest<void>("/configuration/useSensor", useSensorDto);
     }
+
+    getManualConfig(): Promise<string> {
+        return this.getRequest<string>("/configuration/manualConfig");
+    }
 }

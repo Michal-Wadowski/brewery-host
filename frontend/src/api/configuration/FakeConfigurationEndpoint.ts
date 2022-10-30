@@ -56,4 +56,10 @@ export class FakeConfigurationEndpoint implements ConfigurationEndpoint {
             resolve();
         });
     }
+
+    getManualConfig(): Promise<string> {
+        return new Promise((resolve) => {
+            resolve('{"a":1,"b":2,"c":{"d":1,"e":[1,2]}}');
+        });
+    }
 }
