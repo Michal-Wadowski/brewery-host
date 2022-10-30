@@ -1,19 +1,37 @@
 import {BrewingState} from './dto/BrewingState'
+import _ from 'lodash'
+import $ from 'jquery'
 
-export interface BreweryEndpoint {
+import {AbstractEndpoint} from '../AbstractEndpoint'
 
-    getBrewingState(): Promise<BrewingState>;
+export class BreweryEndpoint extends AbstractEndpoint {
 
-    enable(data: any): Promise<void>;
+    getBrewingState(): Promise<BrewingState> {
+        return this.getRequest<BrewingState>("/brewing/getBrewingState");
+    }
 
-    enableTemperatureAlarm(data: any): Promise<void>;
+    enable(data: any): Promise<void> {
+        return this.postRequest<void>("/brewing/enable", data);
+    }
 
-    motorEnable(data: any): Promise<void>;
+    enableTemperatureAlarm(data: any): Promise<void> {
+        return this.postRequest<void>("/brewing/enableTemperatureAlarm", data);
+    }
 
-    setDestinationTemperature(data: any): Promise<void>;
+    motorEnable(data: any): Promise<void> {
+        return this.postRequest<void>("/brewing/motorEnable", data);
+    }
 
-    setMaxPower(data: any): Promise<void>;
+    setDestinationTemperature(data: any): Promise<void> {
+        return this.postRequest<void>("/brewing/setDestinationTemperature", data);
+    }
 
-    setPowerTemperatureCorrelation(data: any): Promise<void>;
+    setMaxPower(data: any): Promise<void> {
+        return this.postRequest<void>("/brewing/setMaxPower", data);
+    }
+
+    setPowerTemperatureCorrelation(data: any): Promise<void> {
+        return this.postRequest<void>("/brewing/setPowerTemperatureCorrelation", data);
+    }
 
 }

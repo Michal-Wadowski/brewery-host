@@ -6,7 +6,6 @@ import {Screen} from '../components/Screen';
 import {NumberInput} from "../components/NumberInput";
 import {Checkbox} from "../components/Checkbox";
 
-import {EndpointFactory} from '../api/EndpointFactory'
 import {BreweryEndpoint} from '../api/brewery/BreweryEndpoint'
 import {BrewingState} from '../api/brewery/dto/BrewingState'
 import {TemperatureSensor} from '../api/configuration/dto/TemperatureSensor'
@@ -24,7 +23,7 @@ export class BrewingController extends AbstractController {
 
     constructor() {
         super()
-        this.breweryEndpoint = EndpointFactory.createBreweryEndpoint();
+        this.breweryEndpoint = new BreweryEndpoint();
 
         this.screen = new Screen("Browar", "brewing");
 

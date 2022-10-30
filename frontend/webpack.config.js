@@ -24,7 +24,28 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'dist'),
+    clean: true,
+  },
+
+  devServer: {
+    static: path.join(__dirname, 'dist'),
+    port: 8000,
+    proxy: {
+          '/api': {
+             target: {
+                host: "localhost",
+                protocol: 'http:',
+                port: 8080
+             },
+             pathRewrite: {
+                '^/api': ''
+             }
+          }
+          }
+  },
+  optimization: {
+    runtimeChunk: 'single',
   },
 };

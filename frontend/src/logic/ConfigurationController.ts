@@ -6,7 +6,6 @@ import {Screen} from '../components/Screen';
 import {NumberInput} from "../components/NumberInput";
 import {Checkbox} from "../components/Checkbox";
 
-import {EndpointFactory} from '../api/EndpointFactory'
 import {ConfigurationEndpoint} from '../api/configuration/ConfigurationEndpoint'
 import {TemperatureSensor} from '../api/configuration/dto/TemperatureSensor'
 import {SensorsConfiguration} from '../api/configuration/dto/SensorsConfiguration'
@@ -22,8 +21,8 @@ export class ConfigurationController extends AbstractController {
     constructor() {
         super()
 
-        this.configurationEndpoint = EndpointFactory.createConfigurationEndpoint();
-        this.powerEndpoint = EndpointFactory.createPowerEndpoint();
+        this.configurationEndpoint = new ConfigurationEndpoint();
+        this.powerEndpoint = new PowerEndpoint();
 
         this.screen = new Screen("Konfiguracja browaru", "configuration");
 
