@@ -28,4 +28,6 @@ public interface DigiPort {
     void showNumberDecEx(int channel, int num, int dots, boolean leading_zero, int length, int pos);
 
     void showNumberHexEx(int channel, int num, int dots, boolean leading_zero, int length, int pos);
+
+    void debugEnable(boolean enable);
 }

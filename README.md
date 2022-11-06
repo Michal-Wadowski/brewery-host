@@ -15,6 +15,7 @@ To build project:
 ## Backend
 
 Please run backend with profile **local**: `--spring.profiles.active=local`
+To debug driver information please use **debug-driver** profile.
 
 ## Frontend
 

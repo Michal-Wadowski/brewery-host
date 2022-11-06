@@ -15,7 +15,6 @@ class DriverLoaderTest {
         Environment environment = mock(Environment.class);
         when(environment.getActiveProfiles()).thenReturn(new String[]{"test"});
         DriverLoaderImpl driverLoader = new DriverLoaderImpl(environment);
-        driverLoader.init();
 
         // when/then
         DigiPort digiPort = new DigiPortImpl(driverLoader);

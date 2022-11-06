@@ -17,14 +17,16 @@ driver/src/main/java/wadosm/breweryhost/DigiPortImpl.java \
 driver/src/main/java/wadosm/breweryhost/DriverLoader.java
  */
 @Log4j2
-@RequiredArgsConstructor
 public class DriverLoaderImpl implements DriverLoader {
 
     private final Environment environment;
 
-    @Override
-    @PostConstruct
-    public void init() {
+    public DriverLoaderImpl(Environment environment) {
+        this.environment = environment;
+        loadLibrary();
+    }
+
+    private void loadLibrary() {
         try {
             boolean isLocalOrTestProfile = Arrays.stream(environment.getActiveProfiles())
                     .anyMatch(profiles -> profiles.contains("local") || profiles.contains("test"));
@@ -42,8 +44,12 @@ public class DriverLoaderImpl implements DriverLoader {
         log.info("Library " + name + " loading...");
 
         InputStream in = DriverLoaderImpl.class.getResourceAsStream(name);
+        if (in == null) {
+            throw new RuntimeException(String.format("Can't load %s", name));
+        }
+
         byte[] buffer = new byte[1024];
-        int read = -1;
+        int read;
         File temp = File.createTempFile(name, "");
         FileOutputStream fos = new FileOutputStream(temp);
 
@@ -56,6 +62,9 @@ public class DriverLoaderImpl implements DriverLoader {
 
         System.load(temp.getAbsolutePath());
 
-        new File(temp.getAbsolutePath()).delete();
+        boolean deleted = new File(temp.getAbsolutePath()).delete();
+        if (!deleted) {
+            log.warn("Cant delete {}", name);
+        }
     }
 }
