@@ -34,7 +34,7 @@ public class IntegrationTest {
     private String fermentingTemperatureSensorId;
 
     @Test
-    void contextLoads() throws IOException {
+    void contextLoads() {
         assertThat(calibrationFile).isNotEmpty();
         assertThat(brewingTemperatureSensorId).isNotEmpty();
         assertThat(fermentingTemperatureSensorId).isNotEmpty();

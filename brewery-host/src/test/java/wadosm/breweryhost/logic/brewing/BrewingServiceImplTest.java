@@ -341,8 +341,8 @@ class BrewingServiceImplTest {
         configProvider.saveConfiguration(configurationBuilder.build());
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(
-                breweryInterface, temperatureProvider, configProvider
-        );
+                breweryInterface, configProvider, new BrewingSettingsProvider(), new TemperatureProvider(configProvider, temperatureProvider),
+                mock(MainsPowerProvider.class));
 
         temperatureProvider.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", sensorValue));
 
@@ -365,7 +365,7 @@ class BrewingServiceImplTest {
         configProvider.saveConfiguration(configuration);
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(
-                breweryInterface, sensorProvider, configProvider
+                breweryInterface, configProvider, new BrewingSettingsProvider(), new TemperatureProvider(configProvider, sensorProvider), mock(MainsPowerProvider.class)
         );
 
         // when
@@ -387,8 +387,11 @@ class BrewingServiceImplTest {
         FakeConfigProvider configProvider = new FakeConfigProvider();
         configProvider.saveConfiguration(configuration);
 
+        BrewingSettingsProvider brewingSettingsProvider = new BrewingSettingsProvider();
         BrewingServiceImpl brewingService = new BrewingServiceImpl(
-                breweryInterface, sensorProvider, configProvider
+                breweryInterface, configProvider, brewingSettingsProvider,
+                new TemperatureProvider(configProvider, sensorProvider),
+                new MainsPowerProvider(brewingSettingsProvider, breweryInterface)
         );
 
         brewingService.setDestinationTemperature(destinationTemperature);
@@ -421,8 +424,9 @@ class BrewingServiceImplTest {
                         .build()
         );
 
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
-                configProvider);
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
+                configProvider, new BrewingSettingsProvider(), new TemperatureProvider(configProvider, temperatureProvider), mock(MainsPowerProvider.class)
+        );
 
         temperatureProvider.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 10000));
 
@@ -455,8 +459,9 @@ class BrewingServiceImplTest {
                         .temperatureCalibration(initialCalibration)
                         .build()
         );
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
-                configProvider);
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
+                configProvider, new BrewingSettingsProvider(), new TemperatureProvider(configProvider, temperatureProvider), mock(MainsPowerProvider.class)
+        );
 
         temperatureProvider.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50000));
 
@@ -491,8 +496,9 @@ class BrewingServiceImplTest {
                         .build()
         );
 
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
-                configProvider);
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
+                configProvider, new BrewingSettingsProvider(), new TemperatureProvider(configProvider, temperatureProvider), mock(MainsPowerProvider.class)
+        );
 
         temperatureProvider.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50000));
 
@@ -510,8 +516,9 @@ class BrewingServiceImplTest {
         FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
 
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
-                configProvider);
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
+                configProvider, new BrewingSettingsProvider(), new TemperatureProvider(configProvider, temperatureProvider), mock(MainsPowerProvider.class)
+        );
 
         // when/then
         brewingService.processStep();
@@ -524,8 +531,9 @@ class BrewingServiceImplTest {
         FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
 
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
-                configProvider);
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
+                configProvider, new BrewingSettingsProvider(), new TemperatureProvider(configProvider, temperatureProvider), mock(MainsPowerProvider.class)
+        );
 
         brewingService.motorEnable(true);
         brewingService.enable(true);
@@ -549,8 +557,9 @@ class BrewingServiceImplTest {
                         .build()
         );
 
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
-                configProvider);
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
+                configProvider, new BrewingSettingsProvider(), new TemperatureProvider(configProvider, temperatureProvider), mock(MainsPowerProvider.class)
+        );
 
         // when
         brewingService.enable(true);
@@ -571,8 +580,9 @@ class BrewingServiceImplTest {
                         .build()
         );
 
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
-                configProvider);
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
+                configProvider, new BrewingSettingsProvider(), new TemperatureProvider(configProvider, temperatureProvider), mock(MainsPowerProvider.class)
+        );
 
         // when
         brewingService.enable(true);
@@ -590,8 +600,9 @@ class BrewingServiceImplTest {
         FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
         FakeConfigProvider configProvider = new FakeConfigProvider();
 
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureProvider,
-                configProvider);
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
+                configProvider, new BrewingSettingsProvider(), new TemperatureProvider(configProvider, temperatureProvider), mock(MainsPowerProvider.class)
+        );
 
         // when
         brewingService.enable(true);
@@ -620,8 +631,9 @@ class BrewingServiceImplTest {
                         .build()
         );
 
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, temperatureSensorProvider,
-                configProvider);
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
+                configProvider, new BrewingSettingsProvider(), new TemperatureProvider(configProvider, temperatureSensorProvider), mock(MainsPowerProvider.class)
+        );
 
         // when
         BrewingSnapshotState brewingSnapshotState = brewingService.getBrewingSnapshotState();
@@ -632,15 +644,16 @@ class BrewingServiceImplTest {
         );
     }
 
-    @Disabled // processStep() needs more mocking
     @Test
     void test_valid_powerTemperatureCorrelation_from_getBrewingSnapshotState() {
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
         TemperatureSensorProvider sensorProvider = mock(TemperatureSensorProvider.class);
         ConfigProvider configProvider = mock(ConfigProvider.class);
+        when(configProvider.loadConfiguration()).thenReturn(new Configuration());
 
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, sensorProvider,
-                configProvider);
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
+                configProvider, new BrewingSettingsProvider(), new TemperatureProvider(configProvider, sensorProvider), mock(MainsPowerProvider.class)
+        );
 
         brewingService.setPowerTemperatureCorrelation(123.45f);
 
