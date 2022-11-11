@@ -1,9 +1,6 @@
 package wadosm.breweryhost.logic.general.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
 
 import java.util.LinkedList;
@@ -12,22 +9,18 @@ import java.util.Map;
 import java.util.Objects;
 
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@Value
 public class Configuration {
 
-    private Map<String, List<Float>> temperatureCalibration;
-    private Map<String, List<Float>> temperatureCalibrationMeasurements;
-    private Integer brewingMotorNumber;
-    private SensorsConfiguration sensorsConfiguration;
-
-    public ConfigurationBuilder toBuilder() {
-        return builder()
-                .temperatureCalibration(getTemperatureCalibration())
-                .temperatureCalibrationMeasurements(getTemperatureCalibrationMeasurements())
-                .brewingMotorNumber(getBrewingMotorNumber())
-                .sensorsConfiguration(getSensorsConfiguration());
-    }
+    @With
+    Map<String, List<Float>> temperatureCalibration;
+    @With
+    Map<String, List<Float>> temperatureCalibrationMeasurements;
+    @With
+    Integer brewingMotorNumber;
+    @With
+    SensorsConfiguration sensorsConfiguration;
 
     public Map<String, List<Float>> getTemperatureCalibration() {
         return Objects.requireNonNullElseGet(temperatureCalibration, Map::of);

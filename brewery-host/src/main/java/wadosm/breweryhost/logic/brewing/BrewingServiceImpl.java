@@ -206,10 +206,7 @@ public class BrewingServiceImpl implements BrewingService {
 
 //        allMeasurements.put(brewingSensorId, currMeasurements);
 
-        Configuration.ConfigurationBuilder configurationBuilder = configuration.toBuilder();
-        configurationBuilder.temperatureCalibrationMeasurements(allMeasurements);
-
-        return configurationBuilder.build();
+        return configuration.withTemperatureCalibrationMeasurements(allMeasurements);
     }
 
     private boolean isAlarmEnabled(Float currentTemperature) {

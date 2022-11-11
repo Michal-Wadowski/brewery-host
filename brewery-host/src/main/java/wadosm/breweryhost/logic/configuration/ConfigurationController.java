@@ -56,7 +56,7 @@ public class ConfigurationController {
         sensorsConfiguration.setShowBrewingSensorIds(showSensorIds);
 
         configProvider.saveConfiguration(
-                configuration.toBuilder().sensorsConfiguration(sensorsConfiguration).build()
+                configuration.withSensorsConfiguration(sensorsConfiguration)
         );
     }
 
@@ -81,7 +81,7 @@ public class ConfigurationController {
         sensorsConfiguration.setUseBrewingSensorIds(showSensorIds);
 
         configProvider.saveConfiguration(
-                configuration.toBuilder().sensorsConfiguration(sensorsConfiguration).build()
+                configuration.withSensorsConfiguration(sensorsConfiguration)
         );
     }
 

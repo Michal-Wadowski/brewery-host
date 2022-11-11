@@ -656,7 +656,7 @@ class BrewingServiceImplTest {
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
         TemperatureSensorProvider sensorProvider = mock(TemperatureSensorProvider.class);
         ConfigProvider configProvider = mock(ConfigProvider.class);
-        when(configProvider.loadConfiguration()).thenReturn(new Configuration());
+        when(configProvider.loadConfiguration()).thenReturn(Configuration.builder().build());
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
                 configProvider, getMockedBrewingSettingsProvider(), new TemperatureProvider(configProvider, sensorProvider), mock(MainsPowerProvider.class)
@@ -675,7 +675,7 @@ class BrewingServiceImplTest {
     void test_keep_valid_powerTemperatureCorrelation_while_processStep() {
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
         ConfigProvider configProvider = mock(ConfigProvider.class);
-        when(configProvider.loadConfiguration()).thenReturn(new Configuration());
+        when(configProvider.loadConfiguration()).thenReturn(Configuration.builder().build());
 
         TemperatureProvider temperatureProvider = mock(TemperatureProvider.class);
         when(temperatureProvider.getUsedTemperature()).thenReturn(50.0f);
@@ -735,7 +735,7 @@ class BrewingServiceImplTest {
         }
 
         public FakeConfigProvider() {
-            this.configuration = initEmptyListsAndMapsInNeeded(new Configuration());
+            this.configuration = initEmptyListsAndMapsInNeeded(Configuration.builder().build());
         }
 
         @Override
@@ -750,17 +750,16 @@ class BrewingServiceImplTest {
         }
 
         private Configuration initEmptyListsAndMapsInNeeded(Configuration configuration) {
-            Configuration.ConfigurationBuilder builder = configuration.toBuilder();
             if (configuration.getSensorsConfiguration() == null) {
-                builder.sensorsConfiguration(Configuration.SensorsConfiguration.empty());
+                configuration = configuration.withSensorsConfiguration(Configuration.SensorsConfiguration.empty());
             }
             if (configuration.getTemperatureCalibrationMeasurements() == null) {
-                builder.temperatureCalibrationMeasurements(new HashMap<>());
+                configuration = configuration.withTemperatureCalibrationMeasurements(new HashMap<>());
             }
             if (configuration.getTemperatureCalibration() == null) {
-                builder.temperatureCalibration(new HashMap<>());
+                configuration = configuration.withTemperatureCalibration(new HashMap<>());
             }
-            return builder.build();
+            return configuration;
         }
     }
 }
