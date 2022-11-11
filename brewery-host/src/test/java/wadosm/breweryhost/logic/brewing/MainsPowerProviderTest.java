@@ -3,10 +3,10 @@ package wadosm.breweryhost.logic.brewing;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import wadosm.breweryhost.device.driver.BreweryInterface;
+import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 class MainsPowerProviderTest {
 
@@ -22,7 +22,7 @@ class MainsPowerProviderTest {
     })
     void verify_scenarios_fixed_temp_correlation(Float destinationTemperature, Float currentTemperature, Integer maxPower, int expectedPower) {
         // given
-        BrewingSettingsProvider brewingSettingsProvider = new BrewingSettingsProvider();
+        BrewingSettingsProvider brewingSettingsProvider = getMockedBrewingSettingsProvider();
         brewingSettingsProvider.getBrewingSettings().setEnabled(true);
         brewingSettingsProvider.getBrewingSettings().setDestinationTemperature(destinationTemperature);
         brewingSettingsProvider.getBrewingSettings().setMaxPower(maxPower);
@@ -51,7 +51,7 @@ class MainsPowerProviderTest {
     })
         void verify_scenarios_vary_temp_correlation(Float destinationTemperature, Float currentTemperature, Float powerTemperatureCorrelation, int expectedPower) {
         // given
-        BrewingSettingsProvider brewingSettingsProvider = new BrewingSettingsProvider();
+        BrewingSettingsProvider brewingSettingsProvider = getMockedBrewingSettingsProvider();
         brewingSettingsProvider.getBrewingSettings().setEnabled(true);
         brewingSettingsProvider.getBrewingSettings().setDestinationTemperature(destinationTemperature);
         brewingSettingsProvider.getBrewingSettings().setPowerTemperatureCorrelation(powerTemperatureCorrelation);
@@ -74,7 +74,7 @@ class MainsPowerProviderTest {
     })
     void verify_expected_power(Float destinationTemperature, Float powerTemperatureCorrelation, Integer maxPower, Float currentTemperature, Integer expectedPower) {
         // given
-        BrewingSettingsProvider brewingSettingsProvider = new BrewingSettingsProvider();
+        BrewingSettingsProvider brewingSettingsProvider = getMockedBrewingSettingsProvider();
         brewingSettingsProvider.getBrewingSettings().setEnabled(true);
         brewingSettingsProvider.getBrewingSettings().setDestinationTemperature(destinationTemperature);
         brewingSettingsProvider.getBrewingSettings().setPowerTemperatureCorrelation(powerTemperatureCorrelation);
@@ -88,5 +88,11 @@ class MainsPowerProviderTest {
 
         // then
         assertThat(powerProvider.getCurrentPower()).isEqualTo(expectedPower);
+    }
+
+    private static BrewingSettingsProvider getMockedBrewingSettingsProvider() {
+        BrewingSettingsProvider settingsProvider = mock(BrewingSettingsProvider.class);
+        when(settingsProvider.getBrewingSettings()).thenReturn(new BrewingSettings());
+        return settingsProvider;
     }
 }

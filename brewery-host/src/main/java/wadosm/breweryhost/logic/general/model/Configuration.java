@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -16,12 +17,9 @@ import java.util.Objects;
 public class Configuration {
 
     private Map<String, List<Float>> temperatureCalibration;
-
     private Map<String, List<Float>> temperatureCalibrationMeasurements;
-
     private Integer brewingMotorNumber;
-
-    protected SensorsConfiguration sensorsConfiguration;
+    private SensorsConfiguration sensorsConfiguration;
 
     public ConfigurationBuilder toBuilder() {
         return builder()
