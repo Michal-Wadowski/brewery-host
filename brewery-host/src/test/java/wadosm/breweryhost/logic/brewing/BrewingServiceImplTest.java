@@ -13,7 +13,7 @@ import wadosm.breweryhost.device.driver.BreweryInterfaceImpl;
 import wadosm.breweryhost.device.temperature.TemperatureSensorProvider;
 import wadosm.breweryhost.device.temperature.model.RawTemperatureSensor;
 import wadosm.breweryhost.device.temperature.model.TemperatureSensor;
-import wadosm.breweryhost.logic.brewing.model.BrewingState;
+import wadosm.breweryhost.logic.brewing.model.BrewingSnapshotState;
 import wadosm.breweryhost.logic.general.ConfigProvider;
 import wadosm.breweryhost.logic.general.model.Configuration;
 
@@ -347,10 +347,10 @@ class BrewingServiceImplTest {
         temperatureProvider.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", sensorValue));
 
         // when
-        BrewingState brewingState = brewingService.getBrewingState();
+        BrewingSnapshotState brewingSnapshotState = brewingService.getBrewingSnapshotState();
 
         // then
-        assertThat(brewingState.getCurrentTemperature()).
+        assertThat(brewingSnapshotState.getReadings().getCurrentTemperature()).
                 isEqualTo(expectedTemperatureSensors);
     }
 
@@ -369,10 +369,10 @@ class BrewingServiceImplTest {
         );
 
         // when
-        BrewingState brewingState = brewingService.getBrewingState();
+        BrewingSnapshotState brewingSnapshotState = brewingService.getBrewingSnapshotState();
 
         // then
-        assertThat(brewingState.getCurrentTemperature()).
+        assertThat(brewingSnapshotState.getReadings().getCurrentTemperature()).
                 isEqualTo(expectedTemperatureSensors);
     }
 
@@ -624,12 +624,31 @@ class BrewingServiceImplTest {
                 configProvider);
 
         // when
-        BrewingState brewingState = brewingService.getBrewingState();
+        BrewingSnapshotState brewingSnapshotState = brewingService.getBrewingSnapshotState();
 
         // then
-        assertThat(brewingState.getCurrentTemperature()).isEqualTo(
+        assertThat(brewingSnapshotState.getReadings().getCurrentTemperature()).isEqualTo(
                 List.of(new TemperatureSensor("aabbcc", 12.35f))
         );
+    }
+
+    @Disabled // processStep() needs more mocking
+    @Test
+    void test_valid_powerTemperatureCorrelation_from_getBrewingSnapshotState() {
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
+        TemperatureSensorProvider sensorProvider = mock(TemperatureSensorProvider.class);
+        ConfigProvider configProvider = mock(ConfigProvider.class);
+
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface, sensorProvider,
+                configProvider);
+
+        brewingService.setPowerTemperatureCorrelation(123.45f);
+
+        // when
+        BrewingSnapshotState brewingSnapshotState = brewingService.getBrewingSnapshotState();
+
+        // then
+        assertThat(brewingSnapshotState.getSettings().getPowerTemperatureCorrelation()).isEqualTo(123.45f);
     }
 
     private static class FakeTemperatureSensorProvider implements TemperatureSensorProvider {

@@ -25,7 +25,11 @@ export class ConfigurationEndpoint extends AbstractEndpoint {
         return this.postRequest<void>("/configuration/useSensor", useSensorDto);
     }
 
-    getManualConfig(): Promise<string> {
-        return this.getRequest<string>("/configuration/manualConfig");
+    getManualConfig(): Promise<Object> {
+        return this.getRequest<Object>("/configuration/manualConfig");
+    }
+
+    setManualConfig(manualConfigJson: string): Promise<void> {
+        return this.postRequest<void>("/configuration/manualConfig", manualConfigJson);
     }
 }

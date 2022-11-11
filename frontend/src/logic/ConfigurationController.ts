@@ -43,10 +43,15 @@ export class ConfigurationController extends AbstractController {
         });
 
         $('#manual-config-button').click(() => {
-            this.handleError(this.configurationEndpoint.getManualConfig()).then((result) => {
-                var json = JSON.parse(result);
-                $('#manual-config-content').val(JSON.stringify(json, null, 4));
+            this.handleError(this.configurationEndpoint.getManualConfig()).then((config) => {
+                $('#manual-config-content').val(JSON.stringify(config, null, 4));
             });
+        });
+
+        $('#manual-config-save').click(() => {
+            const content = JSON.parse($('#manual-config-content').val() as string);
+            console.log({content})
+            this.handleError(this.configurationEndpoint.setManualConfig(content)).then();
         });
     }
 

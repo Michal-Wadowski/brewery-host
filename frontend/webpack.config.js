@@ -1,4 +1,5 @@
 const path = require('path');
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   entry: './src/index.ts',
@@ -32,6 +33,9 @@ module.exports = {
   devServer: {
     static: path.join(__dirname, 'dist'),
     port: 8000,
+     headers: {
+      'Cache-Control': 'no-store',
+    },
     proxy: {
           '/api': {
              target: {
@@ -48,4 +52,12 @@ module.exports = {
   optimization: {
     runtimeChunk: 'single',
   },
+
+  plugins: [
+    new CopyPlugin({
+      patterns: [
+        { from: "src/static/*", to: "./[name][ext]"},
+      ],
+    }),
+  ],
 };

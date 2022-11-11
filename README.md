@@ -22,6 +22,7 @@ To debug driver information please use **debug-driver** profile.
 Frontend needs running backend to work. To start frontend environment:
 
 ```shell
+cd frontend
 npm install
 npm start
 ```

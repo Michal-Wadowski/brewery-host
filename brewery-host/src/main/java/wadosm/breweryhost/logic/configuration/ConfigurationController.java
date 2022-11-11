@@ -1,8 +1,6 @@
 package wadosm.breweryhost.logic.configuration;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.*;
 import wadosm.breweryhost.device.temperature.TemperatureSensorProvider;
@@ -11,6 +9,7 @@ import wadosm.breweryhost.logic.brewing.BrewingService;
 import wadosm.breweryhost.logic.general.ConfigProvider;
 import wadosm.breweryhost.logic.general.model.Configuration;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -100,5 +99,15 @@ public class ConfigurationController {
     @GetMapping("/getTemperatureSensors")
     public List<TemperatureSensor> getTemperatureSensors() {
         return temperatureSensorProvider.getTemperatureSensors();
+    }
+
+    @GetMapping("/manualConfig")
+    public Configuration manualConfig() {
+        return configProvider.loadConfiguration();
+    }
+
+    @PostMapping("/manualConfig")
+    public void manualConfig(@Valid @RequestBody Configuration configuration) {
+        configProvider.saveConfiguration(configuration);
     }
 }

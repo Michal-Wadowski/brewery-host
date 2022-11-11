@@ -9,11 +9,16 @@ import wadosm.breweryhost.device.driver.BreweryInterface;
 import wadosm.breweryhost.device.driver.model.BreweryState;
 import wadosm.breweryhost.device.temperature.TemperatureSensorProvider;
 import wadosm.breweryhost.device.temperature.model.TemperatureSensor;
-import wadosm.breweryhost.logic.brewing.model.BrewingState;
+import wadosm.breweryhost.logic.brewing.model.BrewingReadings;
+import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
+import wadosm.breweryhost.logic.brewing.model.BrewingSnapshotState;
 import wadosm.breweryhost.logic.general.ConfigProvider;
 import wadosm.breweryhost.logic.general.model.Configuration;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,12 +31,8 @@ public class BrewingServiceImpl implements BrewingService {
     private final TemperatureSensorProvider temperatureSensorProvider;
     private final ConfigProvider configProvider;
 
-    private boolean enabled;
-    private Float destinationTemperature;
-    private Integer maxPower;
-    private Float temperatureCorrelation;
-    private boolean motorEnabled;
-    private boolean temperatureAlarmEnabled;
+    private final BrewingSettings brewingSettings = new BrewingSettings();
+
     private boolean heartBeatState;
 
     public BrewingServiceImpl(
@@ -45,44 +46,56 @@ public class BrewingServiceImpl implements BrewingService {
 
     @Override
     public void enable(boolean enable) {
-        this.enabled = enable;
+        brewingSettings.setEnabled(enable);
         processStep();
     }
 
     @Override
     public void setDestinationTemperature(Float temperature) {
         if (temperature == null || temperature >= 0 && temperature <= 100) {
-            destinationTemperature = temperature;
+            brewingSettings.setDestinationTemperature(temperature);
             processStep();
         }
     }
 
     @Override
     public void enableTemperatureAlarm(boolean enable) {
-        temperatureAlarmEnabled = enable;
+        brewingSettings.setTemperatureAlarmEnabled(enable);
+        processStep();
     }
 
     @Override
     public void setMaxPower(Integer powerInPercents) {
-        this.maxPower = powerInPercents;
+        brewingSettings.setMaxPower(powerInPercents);
         processStep();
     }
 
     @Override
     public void motorEnable(boolean enable) {
-        motorEnabled = enable;
+        brewingSettings.setMotorEnabled(enable);
         processStep();
     }
 
     @Override
-    public BrewingState getBrewingState() {
+    public BrewingSnapshotState getBrewingSnapshotState() {
         Configuration configuration = configProvider.loadConfiguration();
 
-        Integer heatingPower = getHeatingPower();
-        return new BrewingState(
-                enabled, getCurrentTemperature(configuration), destinationTemperature, maxPower,
-                getPowerTemperatureCorrelation(), motorEnabled, temperatureAlarmEnabled, heatingPower
-        );
+        return BrewingSnapshotState.builder()
+                .readings(BrewingReadings.builder()
+                        .heatingPower(getHeatingPower())
+                        .currentTemperature(getCurrentTemperature(configuration))
+                        .build())
+
+                .settings(BrewingSettings.builder()
+                        .enabled(brewingSettings.isEnabled())
+                        .destinationTemperature(brewingSettings.getDestinationTemperature())
+                        .maxPower(brewingSettings.getMaxPower())
+                        .powerTemperatureCorrelation(getPowerTemperatureCorrelation())
+                        .motorEnabled(brewingSettings.isMotorEnabled())
+                        .temperatureAlarmEnabled(brewingSettings.isTemperatureAlarmEnabled())
+                        .build())
+
+                .build();
     }
 
     private Integer getHeatingPower() {
@@ -93,9 +106,10 @@ public class BrewingServiceImpl implements BrewingService {
         return null;
     }
 
+    // TODO: Move 0xff * 100 scalar to setMainsPower(). Write tests to handle this
     private Float getPowerTemperatureCorrelation() {
-        if (temperatureCorrelation != null) {
-            return temperatureCorrelation / 0xff * 100;
+        if (brewingSettings.getPowerTemperatureCorrelation() != null) {
+            return brewingSettings.getPowerTemperatureCorrelation() / 0xff * 100;
         } else {
             return null;
         }
@@ -104,9 +118,9 @@ public class BrewingServiceImpl implements BrewingService {
     @Override
     public void setPowerTemperatureCorrelation(Float percentagesPerDegree) {
         if (percentagesPerDegree != null) {
-            this.temperatureCorrelation = (float) (percentagesPerDegree / 100.0 * 0xff);
+            this.brewingSettings.setPowerTemperatureCorrelation((float) (percentagesPerDegree / 100.0 * 0xff));
         } else {
-            this.temperatureCorrelation = null;
+            this.brewingSettings.setPowerTemperatureCorrelation(null);
         }
         processStep();
     }
@@ -127,15 +141,15 @@ public class BrewingServiceImpl implements BrewingService {
     private List<TemperatureSensor> getCurrentTemperature(Configuration configuration) {
         List<TemperatureSensor> result =
                 configuration.getSensorsConfiguration().getShowBrewingSensorIds().stream().map(sensorId -> {
-            Float temperature = getCalibratedTemperature(configuration, sensorId);
-            if (temperature == null) {
-                return null;
-            }
-            return TemperatureSensor.builder()
-                    .sensorId(sensorId)
-                    .temperature(temperature)
-                    .build();
-        })
+                            Float temperature = getCalibratedTemperature(configuration, sensorId);
+                            if (temperature == null) {
+                                return null;
+                            }
+                            return TemperatureSensor.builder()
+                                    .sensorId(sensorId)
+                                    .temperature(temperature)
+                                    .build();
+                        })
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
 
@@ -217,7 +231,7 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     private void displayTemperature(Float currentTemperature) {
-        if (enabled && currentTemperature != null) {
+        if (brewingSettings.isEnabled() && currentTemperature != null) {
             if (currentTemperature < 100) {
                 breweryInterface.displayShowNumberDecEx(0, (int) (currentTemperature * 100), 1 << 6, false, 4, 0);
             } else {
@@ -309,29 +323,32 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     private boolean isAlarmEnabled(Float currentTemperature) {
-        return enabled && temperatureAlarmEnabled && destinationTemperature != null
-                && currentTemperature != null && currentTemperature >= destinationTemperature;
+        return brewingSettings.isEnabled() && brewingSettings.isTemperatureAlarmEnabled() && brewingSettings.getDestinationTemperature() != null
+                && currentTemperature != null && currentTemperature >= brewingSettings.getDestinationTemperature();
     }
 
     private void driveMotor(Configuration configuration) {
         if (configuration.getBrewingMotorNumber() != null) {
-            breweryInterface.motorEnable(configuration.getBrewingMotorNumber(), enabled && motorEnabled);
+            breweryInterface.motorEnable(configuration.getBrewingMotorNumber(),
+                    brewingSettings.isEnabled() && brewingSettings.isMotorEnabled());
         }
     }
 
     private void setMainsPower(Float currentTemperature) {
-        if (enabled && currentTemperature != null
-                && destinationTemperature != null
-                && currentTemperature < destinationTemperature
+        if (brewingSettings.isEnabled() && currentTemperature != null
+                && brewingSettings.getDestinationTemperature() != null
+                && currentTemperature < brewingSettings.getDestinationTemperature()
         ) {
             int driveMaxPower = 0xff;
-            if (this.maxPower != null) {
-                driveMaxPower = (int) (this.maxPower / 100.0 * 0xff);
+            if (brewingSettings.getMaxPower() != null) {
+                driveMaxPower = (int) (brewingSettings.getMaxPower() / 100.0 * 0xff);
             }
 
             int drivePower = 0xff;
-            if (temperatureCorrelation != null) {
-                drivePower = (int) ((destinationTemperature - currentTemperature) * temperatureCorrelation);
+            if (brewingSettings.getPowerTemperatureCorrelation() != null) {
+                drivePower = (int) (
+                        (brewingSettings.getDestinationTemperature() - currentTemperature) * brewingSettings.getPowerTemperatureCorrelation()
+                );
             }
 
             if (drivePower > driveMaxPower) {
