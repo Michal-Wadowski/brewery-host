@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import wadosm.breweryhost.DigiPort;
-import wadosm.breweryhost.device.driver.model.BreweryState;
+import wadosm.breweryhost.device.driver.model.BreweryRawState;
 
 import javax.annotation.PostConstruct;
 
@@ -174,7 +174,7 @@ public class BreweryInterfaceImpl implements BreweryInterface {
     }
 
     @Override
-    public BreweryState readDriverInterfaceState() {
+    public BreweryRawState readDriverInterfaceState() {
         Boolean power = responseToBoolean(digiPort.digitalRead(Pin.POWER.pinNumber));
         Boolean motor1 = responseToBoolean(digiPort.digitalRead(Pin.MOTOR_1.pinNumber));
         Boolean motor2 = responseToBoolean(digiPort.digitalRead(Pin.MOTOR_2.pinNumber));
@@ -182,7 +182,7 @@ public class BreweryInterfaceImpl implements BreweryInterface {
         Integer mains1 = fromPwmPower(digiPort.softPwmRead(Pin.MAINS_1.pinNumber));
         Integer mains2 = fromPwmPower(digiPort.softPwmRead(Pin.MAINS_2.pinNumber));
 
-        return new BreweryState(power, motor1, motor2, motor3, mains1, mains2);
+        return new BreweryRawState(power, motor1, motor2, motor3, mains1, mains2);
 
     }
 

@@ -1,9 +1,11 @@
 package wadosm.breweryhost.logic.brewing;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.driver.BreweryInterface;
 import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
 
+@Service
 @RequiredArgsConstructor
 public
 class MainsPowerProvider {
@@ -11,36 +13,42 @@ class MainsPowerProvider {
     private final BrewingSettingsProvider brewingSettingsProvider;
     private final BreweryInterface breweryInterface;
 
-    void setMainsPower(Float currentTemperature) {
+    private Float currentPower = 0f;
+
+    void updatePowerForTemperature(Float currentTemperature) {
         BrewingSettings brewingSettings = brewingSettingsProvider.getBrewingSettings();
 
         if (brewingSettings.isEnabled() && currentTemperature != null
                 && brewingSettings.getDestinationTemperature() != null
                 && currentTemperature < brewingSettings.getDestinationTemperature()
         ) {
-            int driveMaxPower = 0xff;
+            float driveMaxPower = 1.0f;
             if (brewingSettings.getMaxPower() != null) {
-                driveMaxPower = (int) (brewingSettings.getMaxPower() / 100.0 * 0xff);
+                driveMaxPower = brewingSettings.getMaxPower() / 100.0f;
             }
 
-            int drivePower = 0xff;
+            currentPower = 1.0f;
             if (brewingSettings.getPowerTemperatureCorrelation() != null) {
-                drivePower = (int) (
-                        (brewingSettings.getDestinationTemperature() - currentTemperature) * brewingSettings.getPowerTemperatureCorrelation()
+                currentPower = (
+                        (brewingSettings.getDestinationTemperature() - currentTemperature) * brewingSettings.getPowerTemperatureCorrelation() / 100.0f
                 );
             }
 
-            if (drivePower > driveMaxPower) {
-                drivePower = driveMaxPower;
-            } else if (drivePower < 0) {
-                drivePower = 0;
+            if (currentPower > driveMaxPower) {
+                currentPower = driveMaxPower;
+            } else if (currentPower < 0) {
+                currentPower = 0f;
             }
 
-            breweryInterface.setMainsPower(1, drivePower);
-            breweryInterface.setMainsPower(2, drivePower);
+            breweryInterface.setMainsPower(1, (int) (currentPower * 0xff));
+            breweryInterface.setMainsPower(2, (int) (currentPower * 0xff));
         } else {
             breweryInterface.setMainsPower(1, 0);
             breweryInterface.setMainsPower(2, 0);
         }
+    }
+
+    public Integer getCurrentPower() {
+        return (int)(currentPower * 100);
     }
 }

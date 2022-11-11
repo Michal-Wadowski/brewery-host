@@ -664,6 +664,34 @@ class BrewingServiceImplTest {
         assertThat(brewingSnapshotState.getSettings().getPowerTemperatureCorrelation()).isEqualTo(123.45f);
     }
 
+    @Test
+    void test_keep_valid_powerTemperatureCorrelation_while_processStep() {
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
+        ConfigProvider configProvider = mock(ConfigProvider.class);
+        when(configProvider.loadConfiguration()).thenReturn(new Configuration());
+
+        TemperatureProvider temperatureProvider = mock(TemperatureProvider.class);
+        when(temperatureProvider.getUsedTemperature()).thenReturn(50.0f);
+
+        BrewingSettingsProvider brewingSettingsProvider = new BrewingSettingsProvider();
+        brewingSettingsProvider.getBrewingSettings().setEnabled(true);
+        brewingSettingsProvider.getBrewingSettings().setDestinationTemperature(100.0f);
+        brewingSettingsProvider.getBrewingSettings().setMaxPower(70);
+
+        MainsPowerProvider mainsPowerProvider = new MainsPowerProvider(brewingSettingsProvider, breweryInterface);
+
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
+                configProvider, brewingSettingsProvider, temperatureProvider, mainsPowerProvider
+        );
+
+        // when
+        brewingService.setPowerTemperatureCorrelation(1f);
+
+        // then
+        verify(breweryInterface).setMainsPower(1, 0x7f);
+        verify(breweryInterface).setMainsPower(2, 0x7f);
+    }
+
     private static class FakeTemperatureSensorProvider implements TemperatureSensorProvider {
 
         private final Map<String, RawTemperatureSensor> sensorsMap = new HashMap<>();

@@ -7,7 +7,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.driver.BreweryInterface;
-import wadosm.breweryhost.device.driver.model.BreweryState;
 import wadosm.breweryhost.logic.brewing.model.BrewingReadings;
 import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
 import wadosm.breweryhost.logic.brewing.model.BrewingSnapshotState;
@@ -77,7 +76,7 @@ public class BrewingServiceImpl implements BrewingService {
                         .enabled(brewingSettings.isEnabled())
                         .destinationTemperature(brewingSettings.getDestinationTemperature())
                         .maxPower(brewingSettings.getMaxPower())
-                        .powerTemperatureCorrelation(getPowerTemperatureCorrelation())
+                        .powerTemperatureCorrelation(brewingSettings.getPowerTemperatureCorrelation())
                         .motorEnabled(brewingSettings.isMotorEnabled())
                         .temperatureAlarmEnabled(brewingSettings.isTemperatureAlarmEnabled())
                         .build())
@@ -86,30 +85,13 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     private Integer getHeatingPower() {
-        BreweryState breweryState = breweryInterface.readDriverInterfaceState();
-        if (breweryState != null) {
-            return (int) (breweryState.getMains(1) * 100.0 / 0xff);
-        }
-        return null;
-    }
-
-    // TODO: Move 0xff * 100 scalar to setMainsPower(). Write tests to handle this
-    private Float getPowerTemperatureCorrelation() {
-        if (brewingSettingsProvider.getBrewingSettings().getPowerTemperatureCorrelation() != null) {
-            return brewingSettingsProvider.getBrewingSettings().getPowerTemperatureCorrelation() / 0xff * 100;
-        } else {
-            return null;
-        }
+        return mainsPowerProvider.getCurrentPower();
     }
 
     @Override
     public void setPowerTemperatureCorrelation(Float percentagesPerDegree) {
         var brewingSettings = brewingSettingsProvider.getBrewingSettings();
-        if (percentagesPerDegree != null) {
-            brewingSettings.setPowerTemperatureCorrelation((float) (percentagesPerDegree / 100.0 * 0xff));
-        } else {
-            brewingSettings.setPowerTemperatureCorrelation(null);
-        }
+        brewingSettings.setPowerTemperatureCorrelation(percentagesPerDegree);
         processStep();
     }
 
@@ -121,7 +103,7 @@ public class BrewingServiceImpl implements BrewingService {
 
         Float usedTemperature = temperatureProvider.getUsedTemperature();
 
-        mainsPowerProvider.setMainsPower(usedTemperature);
+        mainsPowerProvider.updatePowerForTemperature(usedTemperature);
 
         driveMotor(configuration);
 

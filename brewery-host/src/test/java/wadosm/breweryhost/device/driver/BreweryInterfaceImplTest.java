@@ -2,7 +2,7 @@ package wadosm.breweryhost.device.driver;
 
 import org.junit.jupiter.api.Test;
 import wadosm.breweryhost.DigiPort;
-import wadosm.breweryhost.device.driver.model.BreweryState;
+import wadosm.breweryhost.device.driver.model.BreweryRawState;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -59,16 +59,16 @@ class BreweryInterfaceImplTest {
         BreweryInterfaceImpl driverInterface = new BreweryInterfaceImpl(digiPort);
 
         // when
-        BreweryState breweryState = driverInterface.readDriverInterfaceState();
+        BreweryRawState breweryRawState = driverInterface.readDriverInterfaceState();
 
         // then
-        assertThat(breweryState).isNotNull();
+        assertThat(breweryRawState).isNotNull();
 
-        assertThat(breweryState.getPower()).isEqualTo(true);
-        assertThat(breweryState.getMotor1()).isEqualTo(true);
-        assertThat(breweryState.getMotor2()).isEqualTo(false);
-        assertThat(breweryState.getMotor3()).isEqualTo(false);
-        assertThat(breweryState.getMains1()).isEqualTo(100);
-        assertThat(breweryState.getMains2()).isEqualTo(50);
+        assertThat(breweryRawState.getPower()).isEqualTo(true);
+        assertThat(breweryRawState.getMotor1()).isEqualTo(true);
+        assertThat(breweryRawState.getMotor2()).isEqualTo(false);
+        assertThat(breweryRawState.getMotor3()).isEqualTo(false);
+        assertThat(breweryRawState.getMains1()).isEqualTo(100);
+        assertThat(breweryRawState.getMains2()).isEqualTo(50);
     }
 }

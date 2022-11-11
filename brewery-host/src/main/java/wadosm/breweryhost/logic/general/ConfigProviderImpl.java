@@ -9,7 +9,6 @@ import wadosm.breweryhost.logic.general.model.Configuration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 
 @Component
 @Log4j2

@@ -1,6 +1,6 @@
 package wadosm.breweryhost.device.driver;
 
-import wadosm.breweryhost.device.driver.model.BreweryState;
+import wadosm.breweryhost.device.driver.model.BreweryRawState;
 
 public interface BreweryInterface {
 
@@ -12,7 +12,7 @@ public interface BreweryInterface {
 
     void setMainsPower(int mainsNumber, int power);
 
-    BreweryState readDriverInterfaceState();
+    BreweryRawState readDriverInterfaceState();
 
     void setAlarm(boolean alarmEnabled);
 
