@@ -1,9 +1,11 @@
 package wadosm.breweryhost.logic.brewing.model;
 
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
+@Jacksonized
 public class BrewingSettings {
     @With
     boolean enabled;

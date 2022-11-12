@@ -1,45 +1,56 @@
 package wadosm.breweryhost.logic.brewing;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
+import wadosm.breweryhost.logic.general.ConfigProvider;
+
+import java.util.function.Function;
 
 @Component
+@RequiredArgsConstructor
 public class BrewingSettingsProviderImpl implements BrewingSettingsProvider {
-
-    private BrewingSettings brewingSettings = BrewingSettings.builder().build();
+    
+    private final ConfigProvider configProvider;
 
     @Override
     public BrewingSettings getBrewingSettings() {
-        return brewingSettings;
+        return configProvider.loadConfiguration().getBrewingSettings();
     }
 
     @Override
     public void setEnabled(boolean enable) {
-        brewingSettings = brewingSettings.withEnabled(enable);
+        updateAndSaveSettings(brewingSettings -> brewingSettings.withEnabled(enable));
     }
 
     @Override
     public void setDestinationTemperature(Float temperature) {
-        brewingSettings = brewingSettings.withDestinationTemperature(temperature);
+        updateAndSaveSettings(brewingSettings -> brewingSettings.withDestinationTemperature(temperature));
     }
 
     @Override
     public void setTemperatureAlarmEnabled(boolean enable) {
-        brewingSettings = brewingSettings.withTemperatureAlarmEnabled(enable);
+        updateAndSaveSettings(brewingSettings -> brewingSettings.withTemperatureAlarmEnabled(enable));
     }
 
     @Override
     public void setMaxPower(Integer powerInPercents) {
-        brewingSettings = brewingSettings.withMaxPower(powerInPercents);
+        updateAndSaveSettings(brewingSettings -> brewingSettings.withMaxPower(powerInPercents));
     }
 
     @Override
     public void setMotorEnabled(boolean enable) {
-        brewingSettings = brewingSettings.withMotorEnabled(enable);
+        updateAndSaveSettings(brewingSettings -> brewingSettings.withMotorEnabled(enable));
     }
 
     @Override
     public void setPowerTemperatureCorrelation(Float percentagesPerDegree) {
-        brewingSettings = brewingSettings.withPowerTemperatureCorrelation(percentagesPerDegree);
+        updateAndSaveSettings(brewingSettings -> brewingSettings.withPowerTemperatureCorrelation(percentagesPerDegree));
+    }
+
+    private void updateAndSaveSettings(Function<BrewingSettings, BrewingSettings> updateBrewingSettings) {
+        configProvider.updateAndSaveConfiguration(
+                configuration -> configuration.withBrewingSettings(updateBrewingSettings.apply(configuration.getBrewingSettings()))
+        );
     }
 }

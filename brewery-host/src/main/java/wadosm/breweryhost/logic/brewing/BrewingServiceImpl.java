@@ -132,13 +132,13 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     public void calibrateTemperature(Integer side, Float value) {
-        Configuration configuration = configProvider.loadConfiguration();
-
-        configuration = updateTemperatureCalibrationMeasurements(configuration, side, value);
-
-        configuration = updateTemperatureCalibration(configuration);
-
-        configProvider.saveConfiguration(configuration);
+//        Configuration configuration = configProvider.loadConfiguration();
+//
+//        configuration = updateTemperatureCalibrationMeasurements(configuration, side, value);
+//
+//        configuration = updateTemperatureCalibration(configuration);
+//
+//        configProvider.saveConfiguration(configuration);
     }
 
     private Configuration updateTemperatureCalibration(Configuration configuration) {

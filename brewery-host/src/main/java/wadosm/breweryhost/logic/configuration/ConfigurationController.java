@@ -43,8 +43,7 @@ public class ConfigurationController {
 
     @PostMapping("/showSensor")
     public void showSensor(@RequestBody ShowSensorDto showSensorDto) {
-        Configuration configuration = configProvider.loadConfiguration();
-        Configuration.SensorsConfiguration sensorsConfiguration = configuration.getSensorsConfiguration();
+        Configuration.SensorsConfiguration sensorsConfiguration = configProvider.loadConfiguration().getSensorsConfiguration();
 
         List<String> showSensorIds =
                 sensorsConfiguration.getShowBrewingSensorIds().stream()
@@ -53,10 +52,12 @@ public class ConfigurationController {
         if (showSensorDto.show) {
             showSensorIds.add(showSensorDto.sensorId);
         }
-        sensorsConfiguration = sensorsConfiguration.withShowBrewingSensorIds(showSensorIds);
 
-        configProvider.saveConfiguration(
-                configuration.withSensorsConfiguration(sensorsConfiguration)
+        configProvider.updateAndSaveConfiguration(configuration -> configuration
+                .withSensorsConfiguration(configuration
+                        .getSensorsConfiguration()
+                        .withShowBrewingSensorIds(showSensorIds)
+                )
         );
     }
 
@@ -68,8 +69,7 @@ public class ConfigurationController {
 
     @PostMapping("/useSensor")
     public void useSensor(@RequestBody UseSensorDto useSensorDto) {
-        Configuration configuration = configProvider.loadConfiguration();
-        Configuration.SensorsConfiguration sensorsConfiguration = configuration.getSensorsConfiguration();
+        Configuration.SensorsConfiguration sensorsConfiguration = configProvider.loadConfiguration().getSensorsConfiguration();
 
         List<String> showSensorIds =
                 sensorsConfiguration.getUseBrewingSensorIds().stream()
@@ -78,10 +78,12 @@ public class ConfigurationController {
         if (useSensorDto.use) {
             showSensorIds.add(useSensorDto.sensorId);
         }
-        sensorsConfiguration = sensorsConfiguration.withUseBrewingSensorIds(showSensorIds);
 
-        configProvider.saveConfiguration(
-                configuration.withSensorsConfiguration(sensorsConfiguration)
+        configProvider.updateAndSaveConfiguration(configuration -> configuration
+                .withSensorsConfiguration(configuration
+                        .getSensorsConfiguration()
+                        .withUseBrewingSensorIds(showSensorIds)
+                )
         );
     }
 

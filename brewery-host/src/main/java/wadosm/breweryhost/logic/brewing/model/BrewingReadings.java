@@ -1,16 +1,14 @@
 package wadosm.breweryhost.logic.brewing.model;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import wadosm.breweryhost.device.temperature.model.TemperatureSensor;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
-@Getter
-@RequiredArgsConstructor
 @Builder
+@Value
 public class BrewingReadings {
-    private final Integer heatingPower;
-    private final List<TemperatureSensor> currentTemperature;
+    @NotNull Integer heatingPower;
+    @NonNull List<TemperatureSensor> currentTemperature;
 }

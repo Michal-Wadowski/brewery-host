@@ -2,6 +2,7 @@ package wadosm.breweryhost.logic.general.model;
 
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
 
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,8 @@ public class Configuration {
     @With @NonNull Integer brewingMotorNumber = 1;
     @Builder.Default
     @With @NonNull SensorsConfiguration sensorsConfiguration = SensorsConfiguration.builder().build();
+    @Builder.Default
+    @With @NonNull BrewingSettings brewingSettings = BrewingSettings.builder().build();
 
     @Jacksonized
     @Builder
