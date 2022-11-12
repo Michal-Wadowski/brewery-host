@@ -1,69 +1,32 @@
 package wadosm.breweryhost.logic.general.model;
 
 import lombok.*;
-import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
+import lombok.extern.jackson.Jacksonized;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+@Jacksonized
 @Builder
-@AllArgsConstructor
 @Value
 public class Configuration {
 
-    @With
-    Map<String, List<Float>> temperatureCalibration;
-    @With
-    Map<String, List<Float>> temperatureCalibrationMeasurements;
-    @With
-    Integer brewingMotorNumber;
-    @With
-    SensorsConfiguration sensorsConfiguration;
+    @Builder.Default
+    @With @NonNull Map<String, List<Float>> temperatureCalibration = Map.of();
+    @Builder.Default
+    @With @NonNull Map<String, List<Float>> temperatureCalibrationMeasurements = Map.of();
+    @Builder.Default
+    @With @NonNull Integer brewingMotorNumber = 1;
+    @Builder.Default
+    @With @NonNull SensorsConfiguration sensorsConfiguration = SensorsConfiguration.builder().build();
 
-    public Map<String, List<Float>> getTemperatureCalibration() {
-        return Objects.requireNonNullElseGet(temperatureCalibration, Map::of);
-    }
-
-    public Map<String, List<Float>> getTemperatureCalibrationMeasurements() {
-        return Objects.requireNonNullElseGet(temperatureCalibrationMeasurements, Map::of);
-    }
-
-    public Integer getBrewingMotorNumber() {
-        return Objects.requireNonNullElse(brewingMotorNumber, 1);
-    }
-
-    public SensorsConfiguration getSensorsConfiguration() {
-        if (sensorsConfiguration == null) {
-            return SensorsConfiguration.empty();
-        }
-        return sensorsConfiguration;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Jacksonized
     @Builder
+    @Value
     public static class SensorsConfiguration {
-
-        private List<String> useBrewingSensorIds;
-
-        private List<String> showBrewingSensorIds;
-
-        public List<String> getUseBrewingSensorIds() {
-            return Objects.requireNonNullElseGet(useBrewingSensorIds, List::of);
-        }
-
-        public List<String> getShowBrewingSensorIds() {
-            return Objects.requireNonNullElseGet(showBrewingSensorIds, List::of);
-        }
-
-        public static SensorsConfiguration empty() {
-            return SensorsConfiguration.builder()
-                    .useBrewingSensorIds(new LinkedList<>())
-                    .showBrewingSensorIds(new LinkedList<>())
-                    .build();
-        }
+        @Builder.Default
+        @With @NonNull List<String> useBrewingSensorIds = List.of();
+        @Builder.Default
+        @With @NonNull List<String> showBrewingSensorIds = List.of();
     }
 }

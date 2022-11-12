@@ -149,7 +149,7 @@ class BrewingServiceImplTest {
                 ),
 
                 Arguments.of(
-                        Configuration.builder().sensorsConfiguration(Configuration.SensorsConfiguration.empty()).build(),
+                        Configuration.builder().build(),
                         Stream.of(new FakeTemperatureSensorProvider())
                                 .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 66120)))
                                 .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50120)))
@@ -731,11 +731,11 @@ class BrewingServiceImplTest {
         private boolean configUpdated = false;
 
         public FakeConfigProvider(Configuration configuration) {
-            this.configuration = initEmptyListsAndMapsInNeeded(configuration);
+            this.configuration = configuration;
         }
 
         public FakeConfigProvider() {
-            this.configuration = initEmptyListsAndMapsInNeeded(Configuration.builder().build());
+            this.configuration = Configuration.builder().build();
         }
 
         @Override
@@ -749,17 +749,5 @@ class BrewingServiceImplTest {
             configUpdated = true;
         }
 
-        private Configuration initEmptyListsAndMapsInNeeded(Configuration configuration) {
-            if (configuration.getSensorsConfiguration() == null) {
-                configuration = configuration.withSensorsConfiguration(Configuration.SensorsConfiguration.empty());
-            }
-            if (configuration.getTemperatureCalibrationMeasurements() == null) {
-                configuration = configuration.withTemperatureCalibrationMeasurements(new HashMap<>());
-            }
-            if (configuration.getTemperatureCalibration() == null) {
-                configuration = configuration.withTemperatureCalibration(new HashMap<>());
-            }
-            return configuration;
-        }
     }
 }

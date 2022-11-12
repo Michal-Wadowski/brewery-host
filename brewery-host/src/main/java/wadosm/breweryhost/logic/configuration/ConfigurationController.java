@@ -53,7 +53,7 @@ public class ConfigurationController {
         if (showSensorDto.show) {
             showSensorIds.add(showSensorDto.sensorId);
         }
-        sensorsConfiguration.setShowBrewingSensorIds(showSensorIds);
+        sensorsConfiguration = sensorsConfiguration.withShowBrewingSensorIds(showSensorIds);
 
         configProvider.saveConfiguration(
                 configuration.withSensorsConfiguration(sensorsConfiguration)
@@ -78,7 +78,7 @@ public class ConfigurationController {
         if (useSensorDto.use) {
             showSensorIds.add(useSensorDto.sensorId);
         }
-        sensorsConfiguration.setUseBrewingSensorIds(showSensorIds);
+        sensorsConfiguration = sensorsConfiguration.withUseBrewingSensorIds(showSensorIds);
 
         configProvider.saveConfiguration(
                 configuration.withSensorsConfiguration(sensorsConfiguration)
