@@ -22,10 +22,11 @@ class MainsPowerProviderTest {
     })
     void verify_scenarios_fixed_temp_correlation(Float destinationTemperature, Float currentTemperature, Integer maxPower, int expectedPower) {
         // given
-        BrewingSettingsProvider brewingSettingsProvider = getMockedBrewingSettingsProvider();
-        brewingSettingsProvider.getBrewingSettings().setEnabled(true);
-        brewingSettingsProvider.getBrewingSettings().setDestinationTemperature(destinationTemperature);
-        brewingSettingsProvider.getBrewingSettings().setMaxPower(maxPower);
+        BrewingSettingsProviderImpl brewingSettingsProvider = getMockedBrewingSettingsProvider(BrewingSettings.builder().
+                enabled(true).
+                destinationTemperature(destinationTemperature).
+                maxPower(maxPower).
+                build());
 
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
         MainsPowerProvider powerProvider = new MainsPowerProvider(brewingSettingsProvider, breweryInterface);
@@ -51,10 +52,11 @@ class MainsPowerProviderTest {
     })
         void verify_scenarios_vary_temp_correlation(Float destinationTemperature, Float currentTemperature, Float powerTemperatureCorrelation, int expectedPower) {
         // given
-        BrewingSettingsProvider brewingSettingsProvider = getMockedBrewingSettingsProvider();
-        brewingSettingsProvider.getBrewingSettings().setEnabled(true);
-        brewingSettingsProvider.getBrewingSettings().setDestinationTemperature(destinationTemperature);
-        brewingSettingsProvider.getBrewingSettings().setPowerTemperatureCorrelation(powerTemperatureCorrelation);
+        BrewingSettingsProviderImpl brewingSettingsProvider = getMockedBrewingSettingsProvider(BrewingSettings.builder().
+                enabled(true).
+                destinationTemperature(destinationTemperature).
+                powerTemperatureCorrelation(powerTemperatureCorrelation).
+                build());
 
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
         MainsPowerProvider powerProvider = new MainsPowerProvider(brewingSettingsProvider, breweryInterface);
@@ -74,11 +76,12 @@ class MainsPowerProviderTest {
     })
     void verify_expected_power(Float destinationTemperature, Float powerTemperatureCorrelation, Integer maxPower, Float currentTemperature, Integer expectedPower) {
         // given
-        BrewingSettingsProvider brewingSettingsProvider = getMockedBrewingSettingsProvider();
-        brewingSettingsProvider.getBrewingSettings().setEnabled(true);
-        brewingSettingsProvider.getBrewingSettings().setDestinationTemperature(destinationTemperature);
-        brewingSettingsProvider.getBrewingSettings().setPowerTemperatureCorrelation(powerTemperatureCorrelation);
-        brewingSettingsProvider.getBrewingSettings().setMaxPower(maxPower);
+        BrewingSettingsProviderImpl brewingSettingsProvider = getMockedBrewingSettingsProvider(BrewingSettings.builder().
+                enabled(true).
+                destinationTemperature(destinationTemperature).
+                powerTemperatureCorrelation(powerTemperatureCorrelation).
+                maxPower(maxPower)
+                .build());
 
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
         MainsPowerProvider powerProvider = new MainsPowerProvider(brewingSettingsProvider, breweryInterface);
@@ -90,9 +93,9 @@ class MainsPowerProviderTest {
         assertThat(powerProvider.getCurrentPower()).isEqualTo(expectedPower);
     }
 
-    private static BrewingSettingsProvider getMockedBrewingSettingsProvider() {
-        BrewingSettingsProvider settingsProvider = mock(BrewingSettingsProvider.class);
-        when(settingsProvider.getBrewingSettings()).thenReturn(new BrewingSettings());
+    private static BrewingSettingsProviderImpl getMockedBrewingSettingsProvider(BrewingSettings brewingSettings) {
+        BrewingSettingsProviderImpl settingsProvider = mock(BrewingSettingsProviderImpl.class);
+        when(settingsProvider.getBrewingSettings()).thenReturn(brewingSettings);
         return settingsProvider;
     }
 }

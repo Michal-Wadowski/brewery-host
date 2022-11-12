@@ -32,33 +32,33 @@ public class BrewingServiceImpl implements BrewingService {
 
     @Override
     public void enable(boolean enable) {
-        brewingSettingsProvider.getBrewingSettings().setEnabled(enable);
+        brewingSettingsProvider.setEnabled(enable);
         processStep();
     }
 
     @Override
     public void setDestinationTemperature(Float temperature) {
         if (temperature == null || temperature >= 0 && temperature <= 100) {
-            brewingSettingsProvider.getBrewingSettings().setDestinationTemperature(temperature);
+            brewingSettingsProvider.setDestinationTemperature(temperature);
             processStep();
         }
     }
 
     @Override
     public void enableTemperatureAlarm(boolean enable) {
-        brewingSettingsProvider.getBrewingSettings().setTemperatureAlarmEnabled(enable);
+        brewingSettingsProvider.setTemperatureAlarmEnabled(enable);
         processStep();
     }
 
     @Override
     public void setMaxPower(Integer powerInPercents) {
-        brewingSettingsProvider.getBrewingSettings().setMaxPower(powerInPercents);
+        brewingSettingsProvider.setMaxPower(powerInPercents);
         processStep();
     }
 
     @Override
     public void motorEnable(boolean enable) {
-        brewingSettingsProvider.getBrewingSettings().setMotorEnabled(enable);
+        brewingSettingsProvider.setMotorEnabled(enable);
         processStep();
     }
 
@@ -90,8 +90,7 @@ public class BrewingServiceImpl implements BrewingService {
 
     @Override
     public void setPowerTemperatureCorrelation(Float percentagesPerDegree) {
-        var brewingSettings = brewingSettingsProvider.getBrewingSettings();
-        brewingSettings.setPowerTemperatureCorrelation(percentagesPerDegree);
+        brewingSettingsProvider.setPowerTemperatureCorrelation(percentagesPerDegree);
         processStep();
     }
 
@@ -217,10 +216,10 @@ public class BrewingServiceImpl implements BrewingService {
 
     private void driveMotor(Configuration configuration) {
         BrewingSettings brewingSettings = brewingSettingsProvider.getBrewingSettings();
-        if (configuration.getBrewingMotorNumber() != null) {
-            breweryInterface.motorEnable(configuration.getBrewingMotorNumber(),
-                    brewingSettings.isEnabled() && brewingSettings.isMotorEnabled());
-        }
+        breweryInterface.motorEnable(
+                configuration.getBrewingMotorNumber(),
+                brewingSettings.isEnabled() && brewingSettings.isMotorEnabled()
+        );
     }
 
 }

@@ -1,19 +1,20 @@
 package wadosm.breweryhost.logic.brewing.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
+@Value
 @Builder
 public class BrewingSettings {
-    private boolean enabled;
-    private Float destinationTemperature;
-    private Integer maxPower;
-    private Float powerTemperatureCorrelation;
-    private boolean motorEnabled;
-    private boolean temperatureAlarmEnabled;
+    @With
+    boolean enabled;
+    @With
+    Float destinationTemperature;
+    @With
+    Integer maxPower;
+    @With
+    Float powerTemperatureCorrelation;
+    @With
+    boolean motorEnabled;
+    @With
+    boolean temperatureAlarmEnabled;
 }

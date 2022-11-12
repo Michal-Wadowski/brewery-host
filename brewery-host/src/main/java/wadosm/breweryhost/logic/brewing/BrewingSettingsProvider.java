@@ -1,14 +1,19 @@
 package wadosm.breweryhost.logic.brewing;
 
-import org.springframework.stereotype.Component;
 import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
 
-@Component
-public class BrewingSettingsProvider {
+public interface BrewingSettingsProvider {
+    BrewingSettings getBrewingSettings();
 
-    private final BrewingSettings brewingSettings = new BrewingSettings();
+    void setEnabled(boolean enable);
 
-    public BrewingSettings getBrewingSettings() {
-        return brewingSettings;
-    }
+    void setDestinationTemperature(Float temperature);
+
+    void setTemperatureAlarmEnabled(boolean enable);
+
+    void setMaxPower(Integer powerInPercents);
+
+    void setMotorEnabled(boolean enable);
+
+    void setPowerTemperatureCorrelation(Float percentagesPerDegree);
 }
