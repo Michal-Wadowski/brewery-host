@@ -13,7 +13,7 @@ export class AbstractEndpoint {
 
     private handleFail(reject: any) {
         return (jqXHR: any) => {
-            console.log({jqXHR});
+            console.log('AbstractEndpoint.handleFail()', {jqXHR});
             reject(new Error(
                 "status: " + jqXHR.status + "\n" +
                 "statusText: " + jqXHR.statusText + "\n" +
