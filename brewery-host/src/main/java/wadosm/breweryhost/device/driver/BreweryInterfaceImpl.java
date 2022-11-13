@@ -129,7 +129,9 @@ public class BreweryInterfaceImpl implements BreweryInterface {
 
     @Override
     public void setAlarm(boolean alarmEnabled) {
-        log.debug("{}", alarmEnabled ? "### ALARM!!!" : null);
+        if (alarmEnabled) {
+            log.debug("### ALARM!!!");
+        }
         digiPort.digitalWrite(Pin.ALARM.pinNumber, boolToInt(alarmEnabled));
     }
 
