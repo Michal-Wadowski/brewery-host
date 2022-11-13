@@ -19,7 +19,7 @@ class AlarmProvider {
     private final TimeProvider timeProvider;
     private Instant alarmStarted;
 
-    void handleAlarm(Float currentTemperature) {
+    void handleAlarm(Double currentTemperature) {
         boolean alarmEnabled = isAlarmEnabled(currentTemperature);
         Duration alarmMaxTime = configProvider.loadConfiguration().getAlarmMaxTime();
 
@@ -54,12 +54,12 @@ class AlarmProvider {
         }
     }
 
-    private boolean isAlarmEnabled(Float currentTemperature) {
+    private boolean isAlarmEnabled(Double currentTemperature) {
         BrewingSettings brewingSettings = brewingSettingsProvider.getBrewingSettings();
         return isEnabled(brewingSettings) && temperatureExceededThreshold(brewingSettings, currentTemperature);
     }
 
-    private static boolean temperatureExceededThreshold(BrewingSettings brewingSettings, Float currentTemperature) {
+    private static boolean temperatureExceededThreshold(BrewingSettings brewingSettings, Double currentTemperature) {
         return brewingSettings.getDestinationTemperature() != null & currentTemperature != null
                 && currentTemperature >= brewingSettings.getDestinationTemperature();
     }

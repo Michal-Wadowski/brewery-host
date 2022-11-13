@@ -90,7 +90,7 @@ public class ConfigurationController {
     @Data
     static class CalibrateTemperatureDto {
         private final Integer side;
-        private final Float value;
+        private final Double value;
     }
 
     @PostMapping("/calibrateTemperature")

@@ -24,7 +24,7 @@ public class BrewingSettingsProviderImpl implements BrewingSettingsProvider {
     }
 
     @Override
-    public void setDestinationTemperature(Float temperature) {
+    public void setDestinationTemperature(Double temperature) {
         updateAndSaveSettings(brewingSettings -> brewingSettings.withDestinationTemperature(temperature));
     }
 
@@ -44,7 +44,7 @@ public class BrewingSettingsProviderImpl implements BrewingSettingsProvider {
     }
 
     @Override
-    public void setPowerTemperatureCorrelation(Float percentagesPerDegree) {
+    public void setPowerTemperatureCorrelation(Double percentagesPerDegree) {
         updateAndSaveSettings(brewingSettings -> brewingSettings.withPowerTemperatureCorrelation(percentagesPerDegree));
     }
 

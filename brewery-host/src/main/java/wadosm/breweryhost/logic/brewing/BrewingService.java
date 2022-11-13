@@ -6,13 +6,13 @@ public interface BrewingService {
 
     void enable(boolean enable);
 
-    void setDestinationTemperature(Float temperature);
+    void setDestinationTemperature(Double temperature);
 
     void enableTemperatureAlarm(boolean enable);
 
     void setMaxPower(Integer powerInPercents);
 
-    void setPowerTemperatureCorrelation(Float percentagesPerDegree);
+    void setPowerTemperatureCorrelation(Double percentagesPerDegree);
 
     void motorEnable(boolean enable);
 
@@ -22,5 +22,5 @@ public interface BrewingService {
 
     void heartbeat();
 
-    void calibrateTemperature(Integer side, Float value);
+    void calibrateTemperature(Integer side, Double value);
 }

@@ -13,34 +13,34 @@ class MainsPowerProvider {
     private final BrewingSettingsProvider brewingSettingsProvider;
     private final BreweryInterface breweryInterface;
 
-    private Float currentPower = 0f;
+    private Double currentPower = 0.0;
 
-    void updatePowerForTemperature(Float currentTemperature) {
+    void updatePowerForTemperature(Double currentTemperature) {
         BrewingSettings brewingSettings = brewingSettingsProvider.getBrewingSettings();
 
         if (brewingSettings.isEnabled() && currentTemperature != null
                 && brewingSettings.getDestinationTemperature() != null
                 && currentTemperature < brewingSettings.getDestinationTemperature()
         ) {
-            float driveMaxPower = 1.0f;
+            Double driveMaxPower = 1.0;
             if (brewingSettings.getMaxPower() != null) {
-                driveMaxPower = brewingSettings.getMaxPower() / 100.0f;
+                driveMaxPower = brewingSettings.getMaxPower() / 100.0;
             }
 
-            currentPower = 1.0f;
+            currentPower = 1.0;
             if (brewingSettings.getPowerTemperatureCorrelation() != null) {
                 currentPower = (
-                        (brewingSettings.getDestinationTemperature() - currentTemperature) * brewingSettings.getPowerTemperatureCorrelation() / 100.0f
+                        (brewingSettings.getDestinationTemperature() - currentTemperature) * brewingSettings.getPowerTemperatureCorrelation() / 100.0
                 );
             }
 
             if (currentPower > driveMaxPower) {
                 currentPower = driveMaxPower;
             } else if (currentPower < 0) {
-                currentPower = 0f;
+                currentPower = 0.0;
             }
         } else {
-            currentPower = 0f;
+            currentPower = 0.0;
         }
 
         breweryInterface.setMainsPower(1, (int) (currentPower * 0xff));

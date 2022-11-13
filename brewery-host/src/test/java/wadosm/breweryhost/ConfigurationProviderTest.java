@@ -88,14 +88,14 @@ public class ConfigurationProviderTest {
         assertThat(configuration)
                 .isNotNull()
                 .extracting("temperatureCalibration", "temperatureCalibrationMeasurements")
-                .contains(Map.of("sensor-1", List.of(1f, 2f)), Map.of("sensor-1", List.of(3f, 4f, 5f, 6f)));
+                .contains(Map.of("sensor-1", List.of(1.0, 2.0)), Map.of("sensor-1", List.of(3.0, 4.0, 5.0, 6.0)));
     }
 
     @Test
     void configSaveToFile() throws IOException {
         // given
         var configuration = configProvider.loadConfiguration().withTemperatureCalibrationMeasurements(Map.of(
-                "example", Arrays.asList(null, null, 123f, 456f)
+                "example", Arrays.asList(null, null, 123.0, 456.0)
         ));
 
         // when
@@ -107,6 +107,6 @@ public class ConfigurationProviderTest {
                 .isNotNull()
                 .extracting("temperatureCalibrationMeasurements")
                 .extracting("example")
-                .asList().contains(null, null, 123f, 456f);
+                .asList().contains(null, null, 123.0, 456.0);
     }
 }

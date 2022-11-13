@@ -12,11 +12,11 @@ public class BrewingSettings {
     @With
     boolean enabled;
     @With
-    Float destinationTemperature;
+    Double destinationTemperature;
     @With
     Integer maxPower;
     @With
-    Float powerTemperatureCorrelation;
+    Double powerTemperatureCorrelation;
     @With
     boolean motorEnabled;
     @With

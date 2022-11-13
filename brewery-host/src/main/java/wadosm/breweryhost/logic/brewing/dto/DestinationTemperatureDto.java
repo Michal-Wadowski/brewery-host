@@ -11,5 +11,5 @@ import javax.validation.constraints.Min;
 public class DestinationTemperatureDto {
     @Min(0)
     @Max(100)
-    private Float temperature;
+    private Double temperature;
 }

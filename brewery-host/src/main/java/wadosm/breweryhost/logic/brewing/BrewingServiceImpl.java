@@ -38,7 +38,7 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     @Override
-    public void setDestinationTemperature(Float temperature) {
+    public void setDestinationTemperature(Double temperature) {
         if (temperature == null || temperature >= 0 && temperature <= 100) {
             brewingSettingsProvider.setDestinationTemperature(temperature);
             processStep();
@@ -90,7 +90,7 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     @Override
-    public void setPowerTemperatureCorrelation(Float percentagesPerDegree) {
+    public void setPowerTemperatureCorrelation(Double percentagesPerDegree) {
         brewingSettingsProvider.setPowerTemperatureCorrelation(percentagesPerDegree);
         processStep();
     }
@@ -101,7 +101,7 @@ public class BrewingServiceImpl implements BrewingService {
     public void processStep() {
         Configuration configuration = configProvider.loadConfiguration();
 
-        Float usedTemperature = temperatureProvider.getUsedTemperature();
+        Double usedTemperature = temperatureProvider.getUsedTemperature();
 
         mainsPowerProvider.updatePowerForTemperature(usedTemperature);
 
@@ -120,7 +120,7 @@ public class BrewingServiceImpl implements BrewingService {
         heartBeatState = !heartBeatState;
     }
 
-    private void displayTemperature(Float currentTemperature) {
+    private void displayTemperature(Double currentTemperature) {
         if (brewingSettingsProvider.getBrewingSettings().isEnabled() && currentTemperature != null) {
             if (currentTemperature < 100) {
                 breweryInterface.displayShowNumberDecEx(0, (int) (currentTemperature * 100), 1 << 6, false, 4, 0);
@@ -132,7 +132,7 @@ public class BrewingServiceImpl implements BrewingService {
         }
     }
 
-    public void calibrateTemperature(Integer side, Float value) {
+    public void calibrateTemperature(Integer side, Double value) {
 //        Configuration configuration = configProvider.loadConfiguration();
 //
 //        configuration = updateTemperatureCalibrationMeasurements(configuration, side, value);
@@ -145,7 +145,7 @@ public class BrewingServiceImpl implements BrewingService {
     private Configuration updateTemperatureCalibration(Configuration configuration) {
         return configuration;
         // TODO
-//        List<Float> measurements =
+//        List<Double> measurements =
 //                configuration.getTemperatureCalibrationMeasurements().get(getUsedSensorId(configuration));
 //
 //        Configuration.ConfigurationBuilder configurationBuilder = configuration.toBuilder();
@@ -153,7 +153,7 @@ public class BrewingServiceImpl implements BrewingService {
 //        if (measurements.stream().filter(Objects::nonNull).count() != 4) {
 //            configurationBuilder.temperatureCalibration(Map.of());
 //        } else {
-//            Map<String, List<Float>> currCalibration = configuration.getTemperatureCalibration();
+//            Map<String, List<Double>> currCalibration = configuration.getTemperatureCalibration();
 //            if (currCalibration == null) {
 //                currCalibration = Map.of();
 //            }
@@ -166,7 +166,7 @@ public class BrewingServiceImpl implements BrewingService {
 //            var a = (t2 - t1) / (x2 - x1);
 //            var b = -a * x1 + t1;
 //
-//            List<Float> currCalibrations = Arrays.asList(a, b);
+//            List<Double> currCalibrations = Arrays.asList(a, b);
 //            // TODO
 //            currCalibration.put(getUsedSensorId(configuration), currCalibrations);
 //            configurationBuilder.temperatureCalibration(currCalibration);
@@ -176,8 +176,8 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     private Configuration updateTemperatureCalibrationMeasurements(Configuration configuration, Integer side,
-                                                                   Float value) {
-        Map<String, List<Float>> allMeasurements;
+                                                                   Double value) {
+        Map<String, List<Double>> allMeasurements;
         if (configuration.getTemperatureCalibrationMeasurements() == null) {
             allMeasurements = new HashMap<>();
         } else {
@@ -186,7 +186,7 @@ public class BrewingServiceImpl implements BrewingService {
 
         // TODO:
 //        String brewingSensorId = getUsedSensorId(configuration);
-//        List<Float> currMeasurements;
+//        List<Double> currMeasurements;
 //        if (!allMeasurements.containsKey(brewingSensorId) ||
 //                allMeasurements.get(brewingSensorId).size() != 4
 //        ) {

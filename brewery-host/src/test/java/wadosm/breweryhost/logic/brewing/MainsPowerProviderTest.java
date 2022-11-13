@@ -21,7 +21,7 @@ class MainsPowerProviderTest {
             "50.0, 25.0, 50, 127",
             "50.0, 25.0, 0, 0",
     })
-    void verify_scenarios_fixed_temp_correlation(Float destinationTemperature, Float currentTemperature, Integer maxPower, int expectedPower) {
+    void verify_scenarios_fixed_temp_correlation(Double destinationTemperature, Double currentTemperature, Integer maxPower, int expectedPower) {
         // given
         BrewingSettingsProviderImpl brewingSettingsProvider = getMockedBrewingSettingsProvider(BrewingSettings.builder().
                 enabled(true).
@@ -51,7 +51,7 @@ class MainsPowerProviderTest {
             "100.0, 0.0, 5, 255",
             "10.0, 100.0, 1, 0",
     })
-    void verify_scenarios_vary_temp_correlation(Float destinationTemperature, Float currentTemperature, Float powerTemperatureCorrelation, int expectedPower) {
+    void verify_scenarios_vary_temp_correlation(Double destinationTemperature, Double currentTemperature, Double powerTemperatureCorrelation, int expectedPower) {
         // given
         BrewingSettingsProviderImpl brewingSettingsProvider = getMockedBrewingSettingsProvider(BrewingSettings.builder().
                 enabled(true).
@@ -75,7 +75,7 @@ class MainsPowerProviderTest {
             "100, 1.0, , 50.0, 50",
             "100, 1.0, 10, 50.0, 10",
     })
-    void verify_expected_power(Float destinationTemperature, Float powerTemperatureCorrelation, Integer maxPower, Float currentTemperature, Integer expectedPower) {
+    void verify_expected_power(Double destinationTemperature, Double powerTemperatureCorrelation, Integer maxPower, Double currentTemperature, Integer expectedPower) {
         // given
         BrewingSettingsProviderImpl brewingSettingsProvider = getMockedBrewingSettingsProvider(BrewingSettings.builder()
                 .enabled(true)
@@ -99,15 +99,15 @@ class MainsPowerProviderTest {
         // given
         BrewingSettingsProviderImpl brewingSettingsProvider = getMockedBrewingSettingsProvider(BrewingSettings.builder()
                 .enabled(true)
-                .destinationTemperature(50.0f)
+                .destinationTemperature(50.0)
                 .build());
 
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
         MainsPowerProvider powerProvider = new MainsPowerProvider(brewingSettingsProvider, breweryInterface);
 
         // when
-        powerProvider.updatePowerForTemperature(0.0f);
-        powerProvider.updatePowerForTemperature(60.0f);
+        powerProvider.updatePowerForTemperature(0.0);
+        powerProvider.updatePowerForTemperature(60.0);
 
         // then
         assertThat(powerProvider.getCurrentPower()).isEqualTo(0);

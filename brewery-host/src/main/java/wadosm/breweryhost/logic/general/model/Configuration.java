@@ -18,11 +18,11 @@ public class Configuration {
 
     @Builder.Default
     @With
-    @NonNull Map<String, List<Float>> temperatureCalibration = Map.of();
+    @NonNull Map<String, List<Double>> temperatureCalibration = Map.of();
 
     @Builder.Default
     @With
-    @NonNull Map<String, List<Float>> temperatureCalibrationMeasurements = Map.of();
+    @NonNull Map<String, List<Double>> temperatureCalibrationMeasurements = Map.of();
 
     @Builder.Default
     @With

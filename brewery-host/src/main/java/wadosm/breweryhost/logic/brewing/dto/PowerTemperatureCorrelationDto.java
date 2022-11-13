@@ -11,5 +11,5 @@ import javax.validation.constraints.Min;
 public class PowerTemperatureCorrelationDto {
     @Min(0)
     @Max(100)
-    private Float powerTemperatureCorrelation;
+    private Double powerTemperatureCorrelation;
 }

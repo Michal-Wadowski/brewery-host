@@ -20,7 +20,7 @@ public class TemperatureProvider {
     private final ConfigProvider configProvider;
     private final TemperatureSensorProvider temperatureSensorProvider;
 
-    Float getUsedTemperature() {
+    Double getUsedTemperature() {
         Configuration.SensorsConfiguration sensorsConfiguration = getConfiguration().getSensorsConfiguration();
         double usedTemperature = sensorsConfiguration.getUseBrewingSensorIds().stream()
                 .map(shownSensorId -> getCalibratedSensor(shownSensorId, sensorsConfiguration))
@@ -32,7 +32,7 @@ public class TemperatureProvider {
         if (Double.isNaN(usedTemperature)) {
             return null;
         } else {
-            return (float) Math.round(usedTemperature * 100) / 100;
+            return Math.round(usedTemperature * 100) / 100.0;
         }
     }
 
@@ -40,18 +40,18 @@ public class TemperatureProvider {
         TemperatureSensor uncalibratedSensor = getUncalibrated(shownSensorId, sensorsConfiguration);
 
         if (uncalibratedSensor != null) {
-            Float uncalibratedTemperature = uncalibratedSensor.getTemperature();
-            Map<String, List<Float>> temperatureCalibration = getConfiguration().getTemperatureCalibration();
+            Double uncalibratedTemperature = uncalibratedSensor.getTemperature();
+            Map<String, List<Double>> temperatureCalibration = getConfiguration().getTemperatureCalibration();
 
             if (temperatureCalibration.containsKey(shownSensorId)) {
-                List<Float> sensorCalibration = temperatureCalibration.get(shownSensorId);
+                List<Double> sensorCalibration = temperatureCalibration.get(shownSensorId);
                 if (sensorCalibration.size() == 2) {
                     uncalibratedTemperature *= (1 + sensorCalibration.get(0));
                     uncalibratedTemperature += sensorCalibration.get(1);
                 }
             }
 
-            return uncalibratedSensor.withTemperature(Math.round(uncalibratedTemperature * 100) / 100.0f);
+            return uncalibratedSensor.withTemperature(Math.round(uncalibratedTemperature * 100) / 100.0);
         }
         return null;
     }
@@ -73,7 +73,7 @@ public class TemperatureProvider {
         boolean usedMoreThanOneSensors = useBrewingSensorIds.size() > 1;
         boolean usedButNotShown = !new HashSet<>(showBrewingSensorIds).containsAll(useBrewingSensorIds);
         if (usedButNotShown || usedMoreThanOneSensors) {
-            Float usedTemperature = getUsedTemperature();
+            Double usedTemperature = getUsedTemperature();
             if (usedTemperature != null) {
                 result.add(TemperatureSensor.builder()
                         .sensorId("#used")

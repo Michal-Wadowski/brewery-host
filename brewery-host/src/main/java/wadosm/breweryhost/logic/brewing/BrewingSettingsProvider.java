@@ -7,7 +7,7 @@ public interface BrewingSettingsProvider {
 
     void setEnabled(boolean enable);
 
-    void setDestinationTemperature(Float temperature);
+    void setDestinationTemperature(Double temperature);
 
     void setTemperatureAlarmEnabled(boolean enable);
 
@@ -15,5 +15,5 @@ public interface BrewingSettingsProvider {
 
     void setMotorEnabled(boolean enable);
 
-    void setPowerTemperatureCorrelation(Float percentagesPerDegree);
+    void setPowerTemperatureCorrelation(Double percentagesPerDegree);
 }

@@ -15,7 +15,7 @@ public class TemperatureSensor {
 
     @NotNull String sensorId;
     @With
-    @NonNull Float temperature;
+    @NonNull Double temperature;
     String name;
     @Builder.Default
     boolean used = false;
@@ -27,7 +27,7 @@ public class TemperatureSensor {
         Map<String, String> sensorNames = sensorsConfiguration.getSensorNames();
         return TemperatureSensor.builder()
                 .sensorId(rawTemperatureSensor.getSensorId())
-                .temperature(rawTemperatureSensor.getRawTemperature() / 1000.0f)
+                .temperature(rawTemperatureSensor.getRawTemperature() / 1000.0)
                 .name(sensorNames.getOrDefault(rawTemperatureSensor.getSensorId(), null))
                 .used(sensorsConfiguration.getUseBrewingSensorIds().contains(rawTemperatureSensor.getSensorId()))
                 .build();
