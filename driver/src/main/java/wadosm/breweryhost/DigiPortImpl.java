@@ -1,9 +1,5 @@
 package wadosm.breweryhost;
 
-import org.springframework.core.env.Environment;
-
-import java.util.Arrays;
-
 /*
   Don't change any signature or name, it's used by driver JNI.
  */

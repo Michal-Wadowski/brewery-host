@@ -1,6 +1,8 @@
 package wadosm.breweryhost.logic.brewing.model;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Value;
+import lombok.With;
 import lombok.extern.jackson.Jacksonized;
 
 @Value

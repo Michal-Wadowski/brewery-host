@@ -28,6 +28,7 @@ public class BrewingServiceImpl implements BrewingService {
     private final BrewingSettingsProvider brewingSettingsProvider;
     private final TemperatureProvider temperatureProvider;
     private final MainsPowerProvider mainsPowerProvider;
+    private final AlarmProvider alarmProvider;
     private boolean heartBeatState;
 
     @Override
@@ -106,7 +107,7 @@ public class BrewingServiceImpl implements BrewingService {
 
         driveMotor(configuration);
 
-        breweryInterface.setAlarm(isAlarmEnabled(usedTemperature));
+        alarmProvider.handleAlarm(usedTemperature);
 
         displayTemperature(usedTemperature);
     }
@@ -208,11 +209,6 @@ public class BrewingServiceImpl implements BrewingService {
         return configuration.withTemperatureCalibrationMeasurements(allMeasurements);
     }
 
-    private boolean isAlarmEnabled(Float currentTemperature) {
-        BrewingSettings brewingSettings = brewingSettingsProvider.getBrewingSettings();
-        return brewingSettings.isEnabled() && brewingSettings.isTemperatureAlarmEnabled() && brewingSettings.getDestinationTemperature() != null
-                && currentTemperature != null && currentTemperature >= brewingSettings.getDestinationTemperature();
-    }
 
     private void driveMotor(Configuration configuration) {
         BrewingSettings brewingSettings = brewingSettingsProvider.getBrewingSettings();

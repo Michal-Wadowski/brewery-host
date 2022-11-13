@@ -1,11 +1,11 @@
 package wadosm.breweryhost.logic.brewing;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import wadosm.breweryhost.device.driver.BreweryInterface;
 import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public
 class MainsPowerProvider {
@@ -49,6 +49,6 @@ class MainsPowerProvider {
     }
 
     public Integer getCurrentPower() {
-        return (int)(currentPower * 100);
+        return (int) (currentPower * 100);
     }
 }

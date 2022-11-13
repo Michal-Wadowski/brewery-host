@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import wadosm.breweryhost.DigiPort;
 import wadosm.breweryhost.device.driver.model.BreweryRawState;
 
 import javax.annotation.PostConstruct;
 
-@Service
+@Component
 @Log4j2
 @RequiredArgsConstructor
 public class BreweryInterfaceImpl implements BreweryInterface {
@@ -129,6 +129,7 @@ public class BreweryInterfaceImpl implements BreweryInterface {
 
     @Override
     public void setAlarm(boolean alarmEnabled) {
+        log.debug("{}", alarmEnabled ? "### ALARM!!!" : null);
         digiPort.digitalWrite(Pin.ALARM.pinNumber, boolToInt(alarmEnabled));
     }
 
