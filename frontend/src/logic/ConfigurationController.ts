@@ -76,7 +76,7 @@ export class ConfigurationController extends AbstractController {
         $tbody.empty();
         temperatureSensors.forEach( (sensor) => {
             let $row = $('<tr>');
-            $row.append('<td>' + sensor.sensorId + '</td>');
+            $row.append('<td>' + (sensor.name ? (sensor.name + " / " + sensor.sensorId) : sensor.sensorId) + '</td>');
             $row.append('<td>' + sensor.temperature + '</td>');
 
             let $showCheckbox = $('<input class="form-check-input" type="checkbox">');
@@ -134,7 +134,7 @@ export class ConfigurationController extends AbstractController {
 
         let sum = _.reduce(filteredSensors, (sum, sensor) => sum + sensor.temperature, 0);
         if (filteredSensors.length > 0) {
-            return sum / filteredSensors.length;
+            return Math.round(sum / filteredSensors.length * 1000) / 1000;
         } else {
             return null;
         }

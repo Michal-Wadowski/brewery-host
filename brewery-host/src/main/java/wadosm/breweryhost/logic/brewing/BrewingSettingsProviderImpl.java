@@ -10,7 +10,7 @@ import java.util.function.Function;
 @Component
 @RequiredArgsConstructor
 public class BrewingSettingsProviderImpl implements BrewingSettingsProvider {
-    
+
     private final ConfigProvider configProvider;
 
     @Override

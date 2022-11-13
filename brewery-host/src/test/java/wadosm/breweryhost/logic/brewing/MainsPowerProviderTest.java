@@ -50,7 +50,7 @@ class MainsPowerProviderTest {
             "100.0, 0.0, 5, 255",
             "10.0, 100.0, 1, 0",
     })
-        void verify_scenarios_vary_temp_correlation(Float destinationTemperature, Float currentTemperature, Float powerTemperatureCorrelation, int expectedPower) {
+    void verify_scenarios_vary_temp_correlation(Float destinationTemperature, Float currentTemperature, Float powerTemperatureCorrelation, int expectedPower) {
         // given
         BrewingSettingsProviderImpl brewingSettingsProvider = getMockedBrewingSettingsProvider(BrewingSettings.builder().
                 enabled(true).

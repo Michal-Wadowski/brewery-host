@@ -105,6 +105,11 @@ export class BrewingController extends AbstractController {
             temperatureSensors.forEach( (sensor) => {
                 let $item = $('<div class="form-floating col-md-4 mb-3"/>');
                 let $input = $('<input class="form-control" disabled="disabled">');
+
+                if (sensor.used) {
+                    $input.css({border: "3px green solid"});
+                }
+
                 let sensorInputId = 'currentTemperature-' + sensor.sensorId;
                 $input.attr('id', sensorInputId);
                 $input.val(sensor.temperature);
@@ -112,10 +117,10 @@ export class BrewingController extends AbstractController {
                 let $label = $('<label/>');
                 $label.attr('for', sensorInputId);
 
-                if (sensor.sensorId != '#use') {
-                    $label.text(sensor.sensorId);
+                if (sensor.sensorId != '#used') {
+                    $label.text(sensor.name ? sensor.name : sensor.sensorId);
                 } else {
-                    $label.text("Wyliczona");
+                    $label.text("Średnia");
                     $item.addClass('used');
                 }
                 $item.append($label);

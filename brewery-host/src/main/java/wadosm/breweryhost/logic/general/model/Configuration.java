@@ -50,5 +50,8 @@ public class Configuration {
         @Builder.Default
         @With
         @NonNull List<String> showBrewingSensorIds = List.of();
+        @With
+        @Builder.Default
+        @NonNull Map<String, String> sensorNames = Map.of();
     }
 }

@@ -1,25 +1,35 @@
 package wadosm.breweryhost.device.temperature.model;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.With;
+import wadosm.breweryhost.logic.general.model.Configuration;
 
-@AllArgsConstructor
-@Getter
-@ToString
+import javax.validation.constraints.NotNull;
+import java.util.Map;
+
 @Builder
-@EqualsAndHashCode
+@Value
 public class TemperatureSensor {
 
-    private String sensorId;
+    @NotNull String sensorId;
+    @With
+    @NonNull Float temperature;
+    String name;
+    @Builder.Default
+    boolean used = false;
 
-    private Float temperature;
-
-    public static TemperatureSensor fromRaw(RawTemperatureSensor rawTemperatureSensor) {
+    public static TemperatureSensor fromRaw(RawTemperatureSensor rawTemperatureSensor, Configuration.SensorsConfiguration sensorsConfiguration) {
         if (rawTemperatureSensor == null) {
             return null;
         }
+        Map<String, String> sensorNames = sensorsConfiguration.getSensorNames();
         return TemperatureSensor.builder()
                 .sensorId(rawTemperatureSensor.getSensorId())
                 .temperature(rawTemperatureSensor.getRawTemperature() / 1000.0f)
+                .name(sensorNames.getOrDefault(rawTemperatureSensor.getSensorId(), null))
+                .used(sensorsConfiguration.getUseBrewingSensorIds().contains(rawTemperatureSensor.getSensorId()))
                 .build();
     }
 }

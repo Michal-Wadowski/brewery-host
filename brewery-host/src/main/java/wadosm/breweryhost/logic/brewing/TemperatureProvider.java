@@ -16,47 +16,47 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class TemperatureProvider {
 
-    private final ConfigProvider configuration;
+    private final ConfigProvider configProvider;
     private final TemperatureSensorProvider temperatureSensorProvider;
 
     Float getUsedTemperature() {
-        double usedTemperature = getConfiguration().getSensorsConfiguration().getUseBrewingSensorIds().stream()
-                .map(this::getCalibratedTemperature)
+        Configuration.SensorsConfiguration sensorsConfiguration = getConfiguration().getSensorsConfiguration();
+        double usedTemperature = sensorsConfiguration.getUseBrewingSensorIds().stream()
+                .map(shownSensorId -> getCalibratedSensor(shownSensorId, sensorsConfiguration))
                 .filter(Objects::nonNull)
-                .mapToDouble(Float::doubleValue)
+                .mapToDouble(TemperatureSensor::getTemperature)
                 .average()
                 .orElse(Double.NaN);
 
         if (Double.isNaN(usedTemperature)) {
             return null;
         } else {
-            return (float) usedTemperature;
+            return (float) Math.round(usedTemperature * 100) / 100;
         }
     }
 
-    private Float getCalibratedTemperature(String shownSensorId) {
-        Float temperature = getUncalibratedTemperature(shownSensorId);
-        Float calibratedTemperature = null;
+    private TemperatureSensor getCalibratedSensor(String shownSensorId, Configuration.SensorsConfiguration sensorsConfiguration) {
+        TemperatureSensor uncalibratedSensor = getUncalibrated(shownSensorId, sensorsConfiguration);
 
-        if (temperature != null) {
+        if (uncalibratedSensor != null) {
+            Float uncalibratedTemperature = uncalibratedSensor.getTemperature();
             Map<String, List<Float>> temperatureCalibration = getConfiguration().getTemperatureCalibration();
 
-            // TODO: #2
-            if (temperatureCalibration != null && temperatureCalibration.containsKey(shownSensorId)) {
+            if (temperatureCalibration.containsKey(shownSensorId)) {
                 List<Float> sensorCalibration = temperatureCalibration.get(shownSensorId);
                 if (sensorCalibration.size() == 2) {
-                    temperature *= (1 + sensorCalibration.get(0));
-                    temperature += sensorCalibration.get(1);
+                    uncalibratedTemperature *= (1 + sensorCalibration.get(0));
+                    uncalibratedTemperature += sensorCalibration.get(1);
                 }
             }
 
-            calibratedTemperature = Math.round(temperature * 100) / 100.0f;
+            return uncalibratedSensor.withTemperature(Math.round(uncalibratedTemperature * 100) / 100.0f);
         }
-        return calibratedTemperature;
+        return null;
     }
 
     private Configuration getConfiguration() {
-        return configuration.loadConfiguration();
+        return configProvider.loadConfiguration();
     }
 
     List<TemperatureSensor> getAllTemperatures() {
@@ -64,28 +64,19 @@ public class TemperatureProvider {
         List<String> showBrewingSensorIds = sensorsConfiguration.getShowBrewingSensorIds();
         List<String> useBrewingSensorIds = sensorsConfiguration.getUseBrewingSensorIds();
 
-        List<TemperatureSensor> result =
-                showBrewingSensorIds.stream().map(sensorId -> {
-                            Float temperature = getCalibratedTemperature(sensorId);
-                            if (temperature == null) {
-                                return null;
-                            }
-                            return TemperatureSensor.builder()
-                                    .sensorId(sensorId)
-                                    .temperature(temperature)
-                                    .build();
-                        })
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+        List<TemperatureSensor> result = showBrewingSensorIds.stream()
+                .map(sensorId -> getCalibratedSensor(sensorId, sensorsConfiguration))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
         boolean usedSameAsShown = useBrewingSensorIds.equals(showBrewingSensorIds);
-        boolean shownSingleSensor = showBrewingSensorIds.size() == 1;
+        boolean showingSingleSensor = useBrewingSensorIds.size() == 1;
 
-        if (!usedSameAsShown || !shownSingleSensor) {
+        if (!usedSameAsShown || !showingSingleSensor) {
             Float usedTemperature = getUsedTemperature();
             if (usedTemperature != null) {
                 result.add(TemperatureSensor.builder()
-                        .sensorId("#use")
+                        .sensorId("#used")
                         .temperature(usedTemperature)
                         .build()
                 );
@@ -95,16 +86,10 @@ public class TemperatureProvider {
         return result;
     }
 
-    private Float getUncalibratedTemperature(String sensorId) {
-        // TODO: Update here after tests about use multiple sensors
-        TemperatureSensor temperatureSensor = TemperatureSensor.fromRaw(
-                temperatureSensorProvider.getRawTemperatureSensor(sensorId)
+    private TemperatureSensor getUncalibrated(String sensorId, Configuration.SensorsConfiguration sensorsConfiguration) {
+        return TemperatureSensor.fromRaw(
+                temperatureSensorProvider.getRawTemperatureSensor(sensorId),
+                sensorsConfiguration
         );
-
-        if (temperatureSensor != null) {
-            return temperatureSensor.getTemperature();
-        } else {
-            return null;
-        }
     }
 }

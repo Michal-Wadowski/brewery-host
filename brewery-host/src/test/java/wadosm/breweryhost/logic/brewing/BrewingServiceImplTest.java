@@ -32,21 +32,21 @@ class BrewingServiceImplTest {
     private static Stream<Arguments> should_get_calibrated_temperature_with_calibration() {
         return Stream.of(
                 Arguments.of(null, 50500,
-                        List.of(new TemperatureSensor("aabbcc", 50.5f))),
+                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(50.5f).build())),
                 Arguments.of(List.of(0.0f, 0.0f), 50500,
-                        List.of(new TemperatureSensor("aabbcc", 50.5f))),
+                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(50.5f).build())),
                 Arguments.of(List.of(0.0f, 10.0f), 50500,
-                        List.of(new TemperatureSensor("aabbcc", 60.5f))),
+                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(60.5f).build())),
                 Arguments.of(List.of(0.1f, 0.0f), 0,
-                        List.of(new TemperatureSensor("aabbcc", 0.0f))),
+                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(0.0f).build())),
                 Arguments.of(List.of(0.2f, 0.0f), 50500,
-                        List.of(new TemperatureSensor("aabbcc", 60.6f))),
+                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(60.6f).build())),
                 Arguments.of(List.of(0.2f, 10.0f), 50500,
-                        List.of(new TemperatureSensor("aabbcc", 70.6f))),
+                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(70.6f).build())),
                 Arguments.of(List.of(0.0f, 10.0f), 0,
-                        List.of(new TemperatureSensor("aabbcc", 10.0f))),
+                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(10.0f).build())),
                 Arguments.of(List.of(-0.1f, -10.0f), 50500,
-                        List.of(new TemperatureSensor("aabbcc", 35.45f)))
+                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(35.45f).build()))
         );
     }
 
@@ -116,7 +116,7 @@ class BrewingServiceImplTest {
                                 .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("ddeeff", 66120)))
                                 .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50120)))
                                 .findFirst().get(),
-                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(50.12f).build())
+                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(50.12f).used(true).build())
                 ),
 
                 Arguments.of(
@@ -131,9 +131,9 @@ class BrewingServiceImplTest {
                                 .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50100)))
                                 .findFirst().get(),
                         List.of(
-                                TemperatureSensor.builder().sensorId("aabbcc").temperature(50.1f).build(),
-                                TemperatureSensor.builder().sensorId("ddeeff").temperature(66.1f).build(),
-                                TemperatureSensor.builder().sensorId("#use").temperature(58.1f).build()
+                                TemperatureSensor.builder().sensorId("aabbcc").temperature(50.1f).used(true).build(),
+                                TemperatureSensor.builder().sensorId("ddeeff").temperature(66.1f).used(true).build(),
+                                TemperatureSensor.builder().sensorId("#used").temperature(58.1f).build()
                         )
                 ),
 
@@ -170,7 +170,7 @@ class BrewingServiceImplTest {
                                 .findFirst().get(),
                         List.of(
                                 TemperatureSensor.builder().sensorId("ddeeff").temperature(66.12f).build(),
-                                TemperatureSensor.builder().sensorId("#use").temperature(50.12f).build()
+                                TemperatureSensor.builder().sensorId("#used").temperature(50.12f).build()
                         )
                 ),
 
@@ -186,9 +186,9 @@ class BrewingServiceImplTest {
                                 .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50120)))
                                 .findFirst().get(),
                         List.of(
-                                TemperatureSensor.builder().sensorId("aabbcc").temperature(50.12f).build(),
+                                TemperatureSensor.builder().sensorId("aabbcc").temperature(50.12f).used(true).build(),
                                 TemperatureSensor.builder().sensorId("ddeeff").temperature(66.12f).build(),
-                                TemperatureSensor.builder().sensorId("#use").temperature(50.12f).build()
+                                TemperatureSensor.builder().sensorId("#used").temperature(50.12f).build()
                         )
                 ),
 
@@ -203,7 +203,7 @@ class BrewingServiceImplTest {
                                 .peek(x -> x.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50120)))
                                 .findFirst().get(),
                         List.of(
-                                TemperatureSensor.builder().sensorId("#use").temperature(50.12f).build()
+                                TemperatureSensor.builder().sensorId("#used").temperature(50.12f).build()
                         )
                 )
         );
@@ -628,7 +628,43 @@ class BrewingServiceImplTest {
 
         // then
         assertThat(brewingSnapshotState.getReadings().getCurrentTemperature()).isEqualTo(
-                List.of(new TemperatureSensor("aabbcc", 12.35f))
+                List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(12.35f).used(true).build())
+        );
+    }
+
+    @Test
+    void should_use_thermometer_name() {
+        // given
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
+        TemperatureSensorProvider temperatureSensorProvider = mock(TemperatureSensorProvider.class);
+        ConfigProvider configProvider = mock(ConfigProvider.class);
+
+        when(temperatureSensorProvider.getRawTemperatureSensor("aabbcc"))
+                .thenReturn(new RawTemperatureSensor("aabbcc", 12350));
+        when(temperatureSensorProvider.getRawTemperatureSensor("ddeeff"))
+                .thenReturn(new RawTemperatureSensor("ddeeff", 11110));
+
+        when(configProvider.loadConfiguration()).thenReturn(
+                Configuration.builder()
+                        .sensorsConfiguration(Configuration.SensorsConfiguration.builder()
+                                .showBrewingSensorIds(List.of("aabbcc", "ddeeff"))
+                                .useBrewingSensorIds(List.of("aabbcc"))
+                                .sensorNames(Map.of("aabbcc", "foo", "ddeeff", "bar"))
+                                .build())
+                        .build()
+        );
+
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
+                configProvider, new BrewingSettingsProviderImpl(new FakeConfigProvider()), new TemperatureProvider(configProvider, temperatureSensorProvider), mock(MainsPowerProvider.class), mock(AlarmProvider.class)
+        );
+
+        // when
+        BrewingSnapshotState brewingSnapshotState = brewingService.getBrewingSnapshotState();
+
+        // then
+        assertThat(brewingSnapshotState.getReadings().getCurrentTemperature()).contains(
+                TemperatureSensor.builder().sensorId("aabbcc").temperature(12.35f).name("foo").used(true).build(),
+                TemperatureSensor.builder().sensorId("ddeeff").temperature(11.11f).name("bar").used(false).build()
         );
     }
 
