@@ -7,6 +7,7 @@ import wadosm.breweryhost.device.temperature.model.TemperatureSensor;
 import wadosm.breweryhost.logic.general.ConfigProvider;
 import wadosm.breweryhost.logic.general.model.Configuration;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -69,10 +70,9 @@ public class TemperatureProvider {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        boolean usedSameAsShown = useBrewingSensorIds.equals(showBrewingSensorIds);
-        boolean showingSingleSensor = useBrewingSensorIds.size() == 1;
-
-        if (!usedSameAsShown || !showingSingleSensor) {
+        boolean usedMoreThanOneSensors = useBrewingSensorIds.size() > 1;
+        boolean usedButNotShown = !new HashSet<>(showBrewingSensorIds).containsAll(useBrewingSensorIds);
+        if (usedButNotShown || usedMoreThanOneSensors) {
             Float usedTemperature = getUsedTemperature();
             if (usedTemperature != null) {
                 result.add(TemperatureSensor.builder()

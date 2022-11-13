@@ -39,13 +39,12 @@ class MainsPowerProvider {
             } else if (currentPower < 0) {
                 currentPower = 0f;
             }
-
-            breweryInterface.setMainsPower(1, (int) (currentPower * 0xff));
-            breweryInterface.setMainsPower(2, (int) (currentPower * 0xff));
         } else {
-            breweryInterface.setMainsPower(1, 0);
-            breweryInterface.setMainsPower(2, 0);
+            currentPower = 0f;
         }
+
+        breweryInterface.setMainsPower(1, (int) (currentPower * 0xff));
+        breweryInterface.setMainsPower(2, (int) (currentPower * 0xff));
     }
 
     public Integer getCurrentPower() {

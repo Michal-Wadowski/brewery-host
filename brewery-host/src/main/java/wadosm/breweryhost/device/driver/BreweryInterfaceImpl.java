@@ -152,6 +152,8 @@ public class BreweryInterfaceImpl implements BreweryInterface {
 
     @Override
     public void setMainsPower(int mainsNumber, int power) {
+        log.debug("### Mains power({}): {}", mainsNumber, power);
+
         Pin pin = null;
         if (mainsNumber == 1) {
             pin = Pin.MAINS_1;

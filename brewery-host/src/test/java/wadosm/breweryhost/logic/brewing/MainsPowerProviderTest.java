@@ -1,5 +1,6 @@
 package wadosm.breweryhost.logic.brewing;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import wadosm.breweryhost.device.driver.BreweryInterface;
@@ -76,11 +77,11 @@ class MainsPowerProviderTest {
     })
     void verify_expected_power(Float destinationTemperature, Float powerTemperatureCorrelation, Integer maxPower, Float currentTemperature, Integer expectedPower) {
         // given
-        BrewingSettingsProviderImpl brewingSettingsProvider = getMockedBrewingSettingsProvider(BrewingSettings.builder().
-                enabled(true).
-                destinationTemperature(destinationTemperature).
-                powerTemperatureCorrelation(powerTemperatureCorrelation).
-                maxPower(maxPower)
+        BrewingSettingsProviderImpl brewingSettingsProvider = getMockedBrewingSettingsProvider(BrewingSettings.builder()
+                .enabled(true)
+                .destinationTemperature(destinationTemperature)
+                .powerTemperatureCorrelation(powerTemperatureCorrelation)
+                .maxPower(maxPower)
                 .build());
 
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
@@ -91,6 +92,25 @@ class MainsPowerProviderTest {
 
         // then
         assertThat(powerProvider.getCurrentPower()).isEqualTo(expectedPower);
+    }
+
+    @Test
+    void should_disable_power_after_update_below_threshold() {
+        // given
+        BrewingSettingsProviderImpl brewingSettingsProvider = getMockedBrewingSettingsProvider(BrewingSettings.builder()
+                .enabled(true)
+                .destinationTemperature(50.0f)
+                .build());
+
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
+        MainsPowerProvider powerProvider = new MainsPowerProvider(brewingSettingsProvider, breweryInterface);
+
+        // when
+        powerProvider.updatePowerForTemperature(0.0f);
+        powerProvider.updatePowerForTemperature(60.0f);
+
+        // then
+        assertThat(powerProvider.getCurrentPower()).isEqualTo(0);
     }
 
     private static BrewingSettingsProviderImpl getMockedBrewingSettingsProvider(BrewingSettings brewingSettings) {

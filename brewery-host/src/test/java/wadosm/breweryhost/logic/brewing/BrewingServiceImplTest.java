@@ -187,8 +187,7 @@ class BrewingServiceImplTest {
                                 .findFirst().get(),
                         List.of(
                                 TemperatureSensor.builder().sensorId("aabbcc").temperature(50.12f).used(true).build(),
-                                TemperatureSensor.builder().sensorId("ddeeff").temperature(66.12f).build(),
-                                TemperatureSensor.builder().sensorId("#used").temperature(50.12f).build()
+                                TemperatureSensor.builder().sensorId("ddeeff").temperature(66.12f).build()
                         )
                 ),
 
