@@ -6,7 +6,6 @@ import {Screen} from '../components/Screen';
 import {NumberInput} from "../components/NumberInput";
 import {Checkbox} from "../components/Checkbox";
 
-import {EndpointFactory} from '../api/EndpointFactory'
 import {BreweryEndpoint} from '../api/brewery/BreweryEndpoint'
 import {BrewingState} from '../api/brewery/dto/BrewingState'
 import {TemperatureSensor} from '../api/configuration/dto/TemperatureSensor'
@@ -24,7 +23,7 @@ export class BrewingController extends AbstractController {
 
     constructor() {
         super()
-        this.breweryEndpoint = EndpointFactory.createBreweryEndpoint();
+        this.breweryEndpoint = new BreweryEndpoint();
 
         this.screen = new Screen("Browar", "brewing");
 
@@ -72,27 +71,26 @@ export class BrewingController extends AbstractController {
 
     override start(): void {
         setInterval(() => {
-            this.handleError(this.breweryEndpoint.getBrewingState()).then((brewingState: BrewingState) => {
-                if( brewingState == null) {
+            this.handleError(this.breweryEndpoint.getBrewingState()).then((brewingSnapshotState: BrewingState) => {
+                if( brewingSnapshotState == null) {
                     return;
                 }
-                console.log(brewingState);
 
-                this.showCurrentTemperature(brewingState.currentTemperature)
+                this.showCurrentTemperature(brewingSnapshotState.readings.currentTemperature)
 
-                this.heatingPower.setValue(brewingState.heatingPower);
+                this.heatingPower.setValue(brewingSnapshotState.readings.heatingPower);
 
-                this.enabled.setValue(brewingState.enabled);
+                this.enabled.setValue(brewingSnapshotState.settings.enabled);
 
-                this.temperatureAlarm.setValue(brewingState.temperatureAlarm);
+                this.temperatureAlarm.setValue(brewingSnapshotState.settings.temperatureAlarmEnabled);
 
-                this.motorEnabled.setValue(brewingState.motorEnabled);
+                this.motorEnabled.setValue(brewingSnapshotState.settings.motorEnabled);
 
-                this.destinationTemperature.setValue(brewingState.destinationTemperature);
+                this.destinationTemperature.setValue(brewingSnapshotState.settings.destinationTemperature);
 
-                this.maxPower.setValue(brewingState.maxPower);
+                this.maxPower.setValue(brewingSnapshotState.settings.maxPower);
 
-                this.powerTemperatureCorrelation.setValue(brewingState.powerTemperatureCorrelation);
+                this.powerTemperatureCorrelation.setValue(brewingSnapshotState.settings.powerTemperatureCorrelation);
             });
 
         }, 1000);

@@ -94,14 +94,12 @@ public class ConfigurationProviderTest {
     @Test
     void configSaveToFile() throws IOException {
         // given
-        Configuration.ConfigurationBuilder configurationBuilder = configProvider.loadConfiguration().toBuilder();
-
-        configurationBuilder.temperatureCalibrationMeasurements(Map.of(
+        var configuration = configProvider.loadConfiguration().withTemperatureCalibrationMeasurements(Map.of(
                 "example", Arrays.asList(null, null, 123f, 456f)
         ));
 
         // when
-        configProvider.saveConfiguration(configurationBuilder.build());
+        configProvider.saveConfiguration(configuration);
 
         // then
         Configuration storedConfig = mapper.readValue(new File(calibrationFile), Configuration.class);

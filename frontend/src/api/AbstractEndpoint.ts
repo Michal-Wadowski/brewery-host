@@ -13,7 +13,7 @@ export class AbstractEndpoint {
 
     private handleFail(reject: any) {
         return (jqXHR: any) => {
-            console.log({jqXHR});
+            console.log('AbstractEndpoint.handleFail()', {jqXHR});
             reject(new Error(
                 "status: " + jqXHR.status + "\n" +
                 "statusText: " + jqXHR.statusText + "\n" +
@@ -28,7 +28,7 @@ export class AbstractEndpoint {
 
     protected getRequest<T>(url: string): Promise<T> {
         return new Promise<T>( (resolve, reject) => {
-            $.get(url, (rawResult) => {
+            $.get('/api' + url, (rawResult) => {
                 this.handleResult(resolve, rawResult);
             }).fail(this.handleFail(reject));
         });
@@ -36,7 +36,7 @@ export class AbstractEndpoint {
 
     protected postRequest<T>(url: string, data: any): Promise<T> {
         return new Promise<T>( (resolve, reject) => {
-            $.post(url, JSON.stringify(data), (rawResult) => {
+            $.post('/api' + url, JSON.stringify(data), (rawResult) => {
                 this.handleResult(resolve, rawResult);
             }).fail(this.handleFail(reject));
         });

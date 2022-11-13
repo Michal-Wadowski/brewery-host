@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.*;
 import wadosm.breweryhost.logic.brewing.dto.*;
-import wadosm.breweryhost.logic.brewing.model.BrewingState;
+import wadosm.breweryhost.logic.brewing.model.BrewingSnapshotState;
 
 import javax.validation.Valid;
 
@@ -20,8 +20,8 @@ public class BrewingController {
     }
 
     @GetMapping("/getBrewingState")
-    public BrewingState getBrewingState() {
-        return brewingService.getBrewingState();
+    public BrewingSnapshotState getBrewingState() {
+        return brewingService.getBrewingSnapshotState();
     }
 
     @PostMapping("/enable")

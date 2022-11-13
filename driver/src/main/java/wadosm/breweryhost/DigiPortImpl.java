@@ -1,5 +1,9 @@
 package wadosm.breweryhost;
 
+import org.springframework.core.env.Environment;
+
+import java.util.Arrays;
+
 /*
   Don't change any signature or name, it's used by driver JNI.
  */
@@ -52,4 +56,7 @@ public class DigiPortImpl implements DigiPort {
 
     @Override
     public native void showNumberHexEx(int channel, int num, int dots, boolean leading_zero, int length, int pos);
+
+    @Override
+    public native void debugEnable(boolean enable);
 }

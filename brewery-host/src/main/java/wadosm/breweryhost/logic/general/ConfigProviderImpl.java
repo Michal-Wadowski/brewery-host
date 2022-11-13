@@ -9,7 +9,7 @@ import wadosm.breweryhost.logic.general.model.Configuration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.function.Function;
 
 @Component
 @Log4j2
@@ -45,5 +45,10 @@ public class ConfigProviderImpl implements ConfigProvider {
         } catch (IOException e) {
             log.warn("Cant write to file {}", configurationFile);
         }
+    }
+
+    @Override
+    public void updateAndSaveConfiguration(Function<Configuration, Configuration> updateConfiguration) {
+        saveConfiguration(updateConfiguration.apply(loadConfiguration()));
     }
 }

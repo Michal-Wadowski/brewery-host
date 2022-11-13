@@ -9,7 +9,7 @@ export abstract class AbstractController {
             this.screen.hideError();
             return value;
         }).catch(e => {
-            console.log(e);
+            console.log('AbstractController.handleError()', {e});
             this.screen.showError('Błąd HTTP', e.message);
             return null;
         });

@@ -1,6 +1,6 @@
 package wadosm.breweryhost.logic.brewing;
 
-import wadosm.breweryhost.logic.brewing.model.BrewingState;
+import wadosm.breweryhost.logic.brewing.model.BrewingSnapshotState;
 
 public interface BrewingService {
 
@@ -16,7 +16,7 @@ public interface BrewingService {
 
     void motorEnable(boolean enable);
 
-    BrewingState getBrewingState();
+    BrewingSnapshotState getBrewingSnapshotState();
 
     void processStep();
 

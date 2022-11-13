@@ -1,12 +1,8 @@
 import {TemperatureSensor} from '../../configuration/dto/TemperatureSensor'
+import {BrewingReadings} from './BrewingReadings'
+import {BrewingSettings} from './BrewingSettings'
 
 export class BrewingState {
-    enabled: boolean;
-    currentTemperature: Array<TemperatureSensor>;
-    destinationTemperature: number;
-    maxPower: number;
-    powerTemperatureCorrelation: number;
-    motorEnabled: boolean;
-    temperatureAlarm: boolean;
-    heatingPower: number;
+    readings: BrewingReadings;
+    settings: BrewingSettings;
 }

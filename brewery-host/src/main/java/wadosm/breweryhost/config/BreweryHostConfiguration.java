@@ -2,6 +2,7 @@ package wadosm.breweryhost.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import wadosm.breweryhost.DigiPort;
 import wadosm.breweryhost.DigiPortImpl;
@@ -17,8 +18,17 @@ public class BreweryHostConfiguration {
     }
 
     @Bean
+    @Profile("!debug-driver")
     public DigiPort digiPort(DriverLoader driverLoader) {
         return new DigiPortImpl(driverLoader);
+    }
+
+    @Bean
+    @Profile("debug-driver")
+    public DigiPort digiPortDebug(DriverLoader driverLoader) {
+        DigiPortImpl digiPort = new DigiPortImpl(driverLoader);
+        digiPort.debugEnable(true);
+        return digiPort;
     }
 
 }

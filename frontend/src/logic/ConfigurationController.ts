@@ -6,7 +6,6 @@ import {Screen} from '../components/Screen';
 import {NumberInput} from "../components/NumberInput";
 import {Checkbox} from "../components/Checkbox";
 
-import {EndpointFactory} from '../api/EndpointFactory'
 import {ConfigurationEndpoint} from '../api/configuration/ConfigurationEndpoint'
 import {TemperatureSensor} from '../api/configuration/dto/TemperatureSensor'
 import {SensorsConfiguration} from '../api/configuration/dto/SensorsConfiguration'
@@ -22,8 +21,8 @@ export class ConfigurationController extends AbstractController {
     constructor() {
         super()
 
-        this.configurationEndpoint = EndpointFactory.createConfigurationEndpoint();
-        this.powerEndpoint = EndpointFactory.createPowerEndpoint();
+        this.configurationEndpoint = new ConfigurationEndpoint();
+        this.powerEndpoint = new PowerEndpoint();
 
         this.screen = new Screen("Konfiguracja browaru", "configuration");
 
@@ -42,6 +41,18 @@ export class ConfigurationController extends AbstractController {
         $("#power-app-restart").click(() => {
             this.handleError(this.powerEndpoint.restartBrewery()).then();
         });
+
+        $('#manual-config-button').click(() => {
+            this.handleError(this.configurationEndpoint.getManualConfig()).then((config) => {
+                $('#manual-config-content').val(JSON.stringify(config, null, 4));
+            });
+        });
+
+        $('#manual-config-save').click(() => {
+            const content = JSON.parse($('#manual-config-content').val() as string);
+            console.log({content})
+            this.handleError(this.configurationEndpoint.setManualConfig(content)).then();
+        });
     }
 
     override start(): void {
@@ -50,7 +61,6 @@ export class ConfigurationController extends AbstractController {
                 this.configurationEndpoint.getTemperatureSensors(),
                 this.configurationEndpoint.getSensorsConfiguration()
             ])).then((result) => {
-                console.log(result);
                 if (result != null) {
                     this.updateTemperatureSensors(result[0], result[1]);
                 }
