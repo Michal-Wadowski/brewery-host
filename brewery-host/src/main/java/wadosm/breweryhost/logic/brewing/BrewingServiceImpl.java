@@ -13,10 +13,6 @@ import wadosm.breweryhost.logic.brewing.model.BrewingSnapshotState;
 import wadosm.breweryhost.logic.general.ConfigProvider;
 import wadosm.breweryhost.logic.general.model.Configuration;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 @Service
 @Log4j2
 @EnableAsync
@@ -101,7 +97,7 @@ public class BrewingServiceImpl implements BrewingService {
     public void processStep() {
         Configuration configuration = configProvider.loadConfiguration();
 
-        Double usedTemperature = temperatureProvider.getUsedTemperature();
+        Double usedTemperature = temperatureProvider.getSelectedTemperaturesAverage();
 
         mainsPowerProvider.updatePowerForTemperature(usedTemperature);
 
@@ -122,6 +118,7 @@ public class BrewingServiceImpl implements BrewingService {
 
     private void displayTemperature(Double currentTemperature) {
         if (brewingSettingsProvider.getBrewingSettings().isEnabled() && currentTemperature != null) {
+            log.debug("### currentTemperature: {}", currentTemperature);
             if (currentTemperature < 100) {
                 breweryInterface.displayShowNumberDecEx(0, (int) (currentTemperature * 100), 1 << 6, false, 4, 0);
             } else {
@@ -131,84 +128,6 @@ public class BrewingServiceImpl implements BrewingService {
             breweryInterface.displayClear(0);
         }
     }
-
-    public void calibrateTemperature(Integer side, Double value) {
-//        Configuration configuration = configProvider.loadConfiguration();
-//
-//        configuration = updateTemperatureCalibrationMeasurements(configuration, side, value);
-//
-//        configuration = updateTemperatureCalibration(configuration);
-//
-//        configProvider.saveConfiguration(configuration);
-    }
-
-    private Configuration updateTemperatureCalibration(Configuration configuration) {
-        return configuration;
-        // TODO
-//        List<Double> measurements =
-//                configuration.getTemperatureCalibrationMeasurements().get(getUsedSensorId(configuration));
-//
-//        Configuration.ConfigurationBuilder configurationBuilder = configuration.toBuilder();
-//
-//        if (measurements.stream().filter(Objects::nonNull).count() != 4) {
-//            configurationBuilder.temperatureCalibration(Map.of());
-//        } else {
-//            Map<String, List<Double>> currCalibration = configuration.getTemperatureCalibration();
-//            if (currCalibration == null) {
-//                currCalibration = Map.of();
-//            }
-//            currCalibration = new HashMap<>(currCalibration);
-//
-//            var x1 = measurements.get(0);
-//            var x2 = measurements.get(2);
-//            var t1 = measurements.get(1);
-//            var t2 = measurements.get(3);
-//            var a = (t2 - t1) / (x2 - x1);
-//            var b = -a * x1 + t1;
-//
-//            List<Double> currCalibrations = Arrays.asList(a, b);
-//            // TODO
-//            currCalibration.put(getUsedSensorId(configuration), currCalibrations);
-//            configurationBuilder.temperatureCalibration(currCalibration);
-//        }
-//
-//        return configurationBuilder.build();
-    }
-
-    private Configuration updateTemperatureCalibrationMeasurements(Configuration configuration, Integer side,
-                                                                   Double value) {
-        Map<String, List<Double>> allMeasurements;
-        if (configuration.getTemperatureCalibrationMeasurements() == null) {
-            allMeasurements = new HashMap<>();
-        } else {
-            allMeasurements = new HashMap<>(configuration.getTemperatureCalibrationMeasurements());
-        }
-
-        // TODO:
-//        String brewingSensorId = getUsedSensorId(configuration);
-//        List<Double> currMeasurements;
-//        if (!allMeasurements.containsKey(brewingSensorId) ||
-//                allMeasurements.get(brewingSensorId).size() != 4
-//        ) {
-//            currMeasurements = Arrays.asList(null, null, null, null);
-//        } else {
-//            currMeasurements = allMeasurements.get(brewingSensorId);
-//        }
-//
-//        String usedSensorId = getUsedSensorId(configuration);
-//        if (side == 0) {
-//            currMeasurements.set(0, getUncalibratedTemperature(usedSensorId));
-//            currMeasurements.set(1, value);
-//        } else if (side == 1) {
-//            currMeasurements.set(2, getUncalibratedTemperature(usedSensorId));
-//            currMeasurements.set(3, value);
-//        }
-
-//        allMeasurements.put(brewingSensorId, currMeasurements);
-
-        return configuration.withTemperatureCalibrationMeasurements(allMeasurements);
-    }
-
 
     private void driveMotor(Configuration configuration) {
         BrewingSettings brewingSettings = brewingSettingsProvider.getBrewingSettings();

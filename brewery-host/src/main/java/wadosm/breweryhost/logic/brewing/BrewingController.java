@@ -1,6 +1,5 @@
 package wadosm.breweryhost.logic.brewing;
 
-import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.*;
 import wadosm.breweryhost.logic.brewing.dto.*;
@@ -53,16 +52,5 @@ public class BrewingController {
     @PostMapping("/setPowerTemperatureCorrelation")
     public void setPowerTemperatureCorrelation(@Valid @RequestBody PowerTemperatureCorrelationDto correlation) {
         brewingService.setPowerTemperatureCorrelation(correlation.getPowerTemperatureCorrelation());
-    }
-
-    @Data
-    static class CalibrateTemperatureDto {
-        private final Integer side;
-        private final Double value;
-    }
-
-    @PostMapping("/calibrateTemperature")
-    public void calibrateTemperature(@RequestBody CalibrateTemperatureDto calibrateTemperatureDto) {
-        brewingService.calibrateTemperature(calibrateTemperatureDto.getSide(), calibrateTemperatureDto.getValue());
     }
 }

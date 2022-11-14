@@ -22,5 +22,4 @@ public interface BrewingService {
 
     void heartbeat();
 
-    void calibrateTemperature(Integer side, Double value);
 }

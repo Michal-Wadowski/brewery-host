@@ -1,8 +1,6 @@
 package wadosm.breweryhost.logic.brewing;
 
 import lombok.Getter;
-import org.assertj.core.api.MapAssert;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -17,7 +15,6 @@ import wadosm.breweryhost.logic.brewing.model.BrewingSnapshotState;
 import wadosm.breweryhost.logic.general.ConfigProvider;
 import wadosm.breweryhost.logic.general.model.Configuration;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,80 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 class BrewingServiceImplTest {
-
-    private static Stream<Arguments> should_get_calibrated_temperature_with_calibration() {
-        return Stream.of(
-                Arguments.of(null, 50500,
-                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(50.5).build())),
-                Arguments.of(List.of(0.0, 0.0), 50500,
-                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(50.5).build())),
-                Arguments.of(List.of(0.0, 10.0), 50500,
-                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(60.5).build())),
-                Arguments.of(List.of(0.1, 0.0), 0,
-                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(0.0).build())),
-                Arguments.of(List.of(0.2, 0.0), 50500,
-                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(60.6).build())),
-                Arguments.of(List.of(0.2, 10.0), 50500,
-                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(70.6).build())),
-                Arguments.of(List.of(0.0, 10.0), 0,
-                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(10.0).build())),
-                Arguments.of(List.of(-0.1, -10.0), 50500,
-                        List.of(TemperatureSensor.builder().sensorId("aabbcc").temperature(35.45).build()))
-        );
-    }
-
-    private static Stream<Arguments> temperatureCalibrationMeasurements() {
-        return Stream.of(
-                Arguments.of(
-                        Map.of("aabbcc", Arrays.asList(null, null, -1.0, -2.0)),
-                        0,
-                        List.of(10.0, 20.0, -1.0, -2.0)
-                ),
-
-                Arguments.of(
-                        Map.of("aabbcc", Arrays.asList(-1.0, -2.0, null, null)),
-                        1,
-                        List.of(-1.0, -2.0, 10.0, 20.0)
-                ),
-
-                Arguments.of(
-                        null,
-                        0,
-                        Arrays.asList(10.0, 20.0, null, null)
-                ),
-
-                Arguments.of(
-                        null,
-                        1,
-                        Arrays.asList(null, null, 10.0, 20.0)
-                )
-        );
-    }
-
-    private static Stream<Arguments> calibrateTemperature() {
-        return Stream.of(
-                Arguments.of(
-                        null,
-                        null,
-                        0,
-                        null
-                ),
-
-                Arguments.of(
-                        Map.of("aabbcc", Arrays.asList(null, null, null, null)),
-                        Map.of("aabbcc", Arrays.asList(-1.0, -2.0)),
-                        0,
-                        null
-                ),
-
-                Arguments.of(
-                        Map.of("aabbcc", Arrays.asList(10, 20, null, null)),
-                        Map.of("aabbcc", Arrays.asList(-1.0, -2.0)),
-                        1,
-                        Arrays.asList(0.5, 15.0)
-                )
-        );
-    }
 
     public static Stream<Arguments> should_handle_configuration_variants() {
         return Stream.of(
@@ -322,27 +245,21 @@ class BrewingServiceImplTest {
 
     @ParameterizedTest
     @MethodSource
-    void should_get_calibrated_temperature_with_calibration(List<Double> currCalib, Integer sensorValue,
-                                                            List<TemperatureSensor> expectedTemperatureSensors) {
+    void should_handle_configuration_variants(Configuration configuration,
+                                              TemperatureSensorProvider sensorProvider,
+                                              List<TemperatureSensor> expectedTemperatureSensors) {
         // given
-        BreweryInterface breweryInterface = mock(BreweryInterface.class);
-        FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
-        FakeConfigProvider configProvider = new FakeConfigProvider();
+        ConfigProvider configProvider = new FakeConfigProvider();
+        configProvider.saveConfiguration(configuration);
 
-        Configuration.ConfigurationBuilder configurationBuilder = Configuration.builder()
-                .sensorsConfiguration(Configuration.SensorsConfiguration.builder()
-                        .showBrewingSensorIds(List.of("aabbcc"))
-                        .build());
-
-        if (currCalib != null) {
-            configurationBuilder.temperatureCalibration(Map.of("aabbcc", currCalib));
-        }
-
-        configProvider.saveConfiguration(configurationBuilder.build());
-
-        BrewingServiceImpl brewingService = getBrewingService(breweryInterface, temperatureProvider, configProvider);
-
-        temperatureProvider.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", sensorValue));
+        BrewingServiceImpl brewingService = new BrewingServiceImpl(
+                mock(BreweryInterface.class),
+                configProvider,
+                new BrewingSettingsProviderImpl(new FakeConfigProvider()),
+                getTemperatureProvider(sensorProvider, configProvider),
+                mock(MainsPowerProvider.class),
+                mock(AlarmProvider.class)
+        );
 
         // when
         BrewingSnapshotState brewingSnapshotState = brewingService.getBrewingSnapshotState();
@@ -352,26 +269,8 @@ class BrewingServiceImplTest {
                 isEqualTo(expectedTemperatureSensors);
     }
 
-    @ParameterizedTest
-    @MethodSource
-    void should_handle_configuration_variants(Configuration configuration,
-                                              TemperatureSensorProvider sensorProvider,
-                                              List<TemperatureSensor> expectedTemperatureSensors) {
-        // given
-        BreweryInterface breweryInterface = mock(BreweryInterface.class);
-        FakeConfigProvider configProvider = new FakeConfigProvider();
-        configProvider.saveConfiguration(configuration);
-
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(
-                breweryInterface, configProvider, new BrewingSettingsProviderImpl(new FakeConfigProvider()), new TemperatureProvider(configProvider, sensorProvider), mock(MainsPowerProvider.class), mock(AlarmProvider.class)
-        );
-
-        // when
-        BrewingSnapshotState brewingSnapshotState = brewingService.getBrewingSnapshotState();
-
-        // then
-        assertThat(brewingSnapshotState.getReadings().getCurrentTemperature()).
-                isEqualTo(expectedTemperatureSensors);
+    private static TemperatureProvider getTemperatureProvider(TemperatureSensorProvider sensorProvider, ConfigProvider configProvider) {
+        return new TemperatureProvider(configProvider, sensorProvider, new CalibrationProvider(configProvider));
     }
 
     @ParameterizedTest
@@ -388,7 +287,7 @@ class BrewingServiceImplTest {
         BrewingSettingsProviderImpl brewingSettingsProvider = new BrewingSettingsProviderImpl(new FakeConfigProvider());
         BrewingServiceImpl brewingService = new BrewingServiceImpl(
                 breweryInterface, configProvider, brewingSettingsProvider,
-                new TemperatureProvider(configProvider, sensorProvider),
+                getTemperatureProvider(sensorProvider, configProvider),
                 new MainsPowerProvider(brewingSettingsProvider, breweryInterface),
                 mock(AlarmProvider.class)
         );
@@ -404,106 +303,6 @@ class BrewingServiceImplTest {
         } else {
             verify(breweryInterface, never()).setMainsPower(eq(1), eq(255));
         }
-    }
-
-    @Disabled
-    @ParameterizedTest
-    @MethodSource
-    void temperatureCalibrationMeasurements(Map<String, List<Double>> initialConfig, Integer side,
-                                            List<Double> expectedMeasurements) {
-        // given
-        BreweryInterface breweryInterface = mock(BreweryInterface.class);
-        FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
-        FakeConfigProvider configProvider = new FakeConfigProvider(
-                Configuration.builder()
-                        .sensorsConfiguration(Configuration.SensorsConfiguration.builder()
-                                .useBrewingSensorIds(List.of("aabbcc"))
-                                .build())
-                        .temperatureCalibrationMeasurements(initialConfig)
-                        .build()
-        );
-
-        BrewingServiceImpl brewingService = getBrewingService(breweryInterface, temperatureProvider, configProvider);
-
-        temperatureProvider.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 10000));
-
-        // when
-        brewingService.calibrateTemperature(side, 20.0);
-
-        // then
-        assertThat(configProvider.loadConfiguration().getTemperatureCalibrationMeasurements())
-                .isNotNull()
-                .containsKey("aabbcc")
-                .extracting("aabbcc").asList()
-                .hasSize(4)
-                .containsSequence(expectedMeasurements);
-    }
-
-    @Disabled
-    @ParameterizedTest
-    @MethodSource
-    void calibrateTemperature(Map<String, List<Double>> initialConfig, Map<String, List<Double>> initialCalibration,
-                              Integer side, List<Double> expectedCalibration) {
-        // given
-        BreweryInterface breweryInterface = mock(BreweryInterface.class);
-        FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
-        FakeConfigProvider configProvider = new FakeConfigProvider(
-                Configuration.builder()
-                        .sensorsConfiguration(Configuration.SensorsConfiguration.builder()
-                                .useBrewingSensorIds(List.of("aabbcc"))
-                                .build())
-                        .temperatureCalibrationMeasurements(initialConfig)
-                        .temperatureCalibration(initialCalibration)
-                        .build()
-        );
-        BrewingServiceImpl brewingService = getBrewingService(breweryInterface, temperatureProvider, configProvider);
-
-        temperatureProvider.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50000));
-
-        // when
-        brewingService.calibrateTemperature(side, 40.0);
-
-        // then
-        MapAssert<String, List<Double>> assertion =
-                assertThat(configProvider.loadConfiguration().getTemperatureCalibration())
-                        .isNotNull();
-
-        if (expectedCalibration == null) {
-            assertion.doesNotContainKey("aabbcc");
-        } else {
-            assertion.containsKey("aabbcc")
-                    .extracting("aabbcc").asList()
-                    .hasSize(2)
-                    .containsSequence(expectedCalibration);
-        }
-    }
-
-    @Disabled
-    @Test
-    void shouldUpdateCalibrationFileWhileCalibrating() {
-        // given
-        BreweryInterface breweryInterface = mock(BreweryInterface.class);
-        FakeTemperatureSensorProvider temperatureProvider = new FakeTemperatureSensorProvider();
-        FakeConfigProvider configProvider = new FakeConfigProvider(
-                Configuration.builder()
-                        .sensorsConfiguration(Configuration.SensorsConfiguration.builder()
-                                .useBrewingSensorIds(List.of("aabbcc"))
-                                .build())
-                        .build()
-        );
-
-        BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
-                configProvider, new BrewingSettingsProviderImpl(configProvider), new TemperatureProvider(configProvider, temperatureProvider), mock(MainsPowerProvider.class),
-                mock(AlarmProvider.class)
-        );
-
-        temperatureProvider.setCurrTemperatureSensor(new RawTemperatureSensor("aabbcc", 50000));
-
-        // when
-        brewingService.calibrateTemperature(0, 40.0);
-
-        // then
-        assertThat(configProvider.isConfigUpdated()).isTrue();
     }
 
     @Test
@@ -619,7 +418,11 @@ class BrewingServiceImplTest {
         );
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
-                configProvider, new BrewingSettingsProviderImpl(new FakeConfigProvider()), new TemperatureProvider(configProvider, temperatureSensorProvider), mock(MainsPowerProvider.class), mock(AlarmProvider.class)
+                configProvider,
+                new BrewingSettingsProviderImpl(new FakeConfigProvider()),
+                getTemperatureProvider(temperatureSensorProvider, configProvider),
+                mock(MainsPowerProvider.class),
+                mock(AlarmProvider.class)
         );
 
         // when
@@ -654,7 +457,11 @@ class BrewingServiceImplTest {
         );
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
-                configProvider, new BrewingSettingsProviderImpl(new FakeConfigProvider()), new TemperatureProvider(configProvider, temperatureSensorProvider), mock(MainsPowerProvider.class), mock(AlarmProvider.class)
+                configProvider,
+                new BrewingSettingsProviderImpl(new FakeConfigProvider()),
+                getTemperatureProvider(temperatureSensorProvider, configProvider),
+                mock(MainsPowerProvider.class),
+                mock(AlarmProvider.class)
         );
 
         // when
@@ -675,7 +482,11 @@ class BrewingServiceImplTest {
         when(configProvider.loadConfiguration()).thenReturn(Configuration.builder().build());
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
-                configProvider, new BrewingSettingsProviderImpl(new FakeConfigProvider()), new TemperatureProvider(configProvider, sensorProvider), mock(MainsPowerProvider.class), mock(AlarmProvider.class)
+                configProvider,
+                new BrewingSettingsProviderImpl(new FakeConfigProvider()),
+                getTemperatureProvider(sensorProvider, configProvider),
+                mock(MainsPowerProvider.class),
+                mock(AlarmProvider.class)
         );
 
         brewingService.setPowerTemperatureCorrelation(123.45);
@@ -693,7 +504,7 @@ class BrewingServiceImplTest {
         ConfigProvider configProvider = new FakeConfigProvider();
 
         TemperatureProvider temperatureProvider = mock(TemperatureProvider.class);
-        when(temperatureProvider.getUsedTemperature()).thenReturn(50.0);
+        when(temperatureProvider.getSelectedTemperaturesAverage()).thenReturn(50.0);
 
         BrewingSettingsProvider brewingSettingsProvider = new BrewingSettingsProviderImpl(new FakeConfigProvider());
         brewingSettingsProvider.setEnabled(true);
@@ -716,7 +527,7 @@ class BrewingServiceImplTest {
     private static BrewingServiceImpl getBrewingService(BreweryInterface breweryInterface, FakeTemperatureSensorProvider temperatureProvider, FakeConfigProvider configProvider) {
         return new BrewingServiceImpl(
                 breweryInterface, configProvider, new BrewingSettingsProviderImpl(new FakeConfigProvider()),
-                new TemperatureProvider(configProvider, temperatureProvider),
+                getTemperatureProvider(temperatureProvider, configProvider),
                 mock(MainsPowerProvider.class), mock(AlarmProvider.class)
         );
     }

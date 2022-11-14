@@ -5,7 +5,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.*;
 import wadosm.breweryhost.device.temperature.TemperatureSensorProvider;
 import wadosm.breweryhost.device.temperature.model.TemperatureSensor;
-import wadosm.breweryhost.logic.brewing.BrewingService;
 import wadosm.breweryhost.logic.general.ConfigProvider;
 import wadosm.breweryhost.logic.general.model.Configuration;
 
@@ -18,13 +17,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/configuration")
 public class ConfigurationController {
 
-    private final BrewingService brewingService;
-
     private final TemperatureSensorProvider temperatureSensorProvider;
     private final ConfigProvider configProvider;
 
-    public ConfigurationController(BrewingService brewingService, TemperatureSensorProvider temperatureSensorProvider, ConfigProvider configProvider) {
-        this.brewingService = brewingService;
+    public ConfigurationController(TemperatureSensorProvider temperatureSensorProvider, ConfigProvider configProvider) {
         this.temperatureSensorProvider = temperatureSensorProvider;
         this.configProvider = configProvider;
     }
@@ -85,17 +81,6 @@ public class ConfigurationController {
                         .withUseBrewingSensorIds(showSensorIds)
                 )
         );
-    }
-
-    @Data
-    static class CalibrateTemperatureDto {
-        private final Integer side;
-        private final Double value;
-    }
-
-    @PostMapping("/calibrateTemperature")
-    public void calibrateTemperature(@RequestBody CalibrateTemperatureDto calibrateTemperatureDto) {
-        brewingService.calibrateTemperature(calibrateTemperatureDto.getSide(), calibrateTemperatureDto.getValue());
     }
 
     @GetMapping("/getTemperatureSensors")

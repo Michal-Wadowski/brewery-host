@@ -18,14 +18,6 @@ public class Configuration {
 
     @Builder.Default
     @With
-    @NonNull Map<String, List<Double>> temperatureCalibration = Map.of();
-
-    @Builder.Default
-    @With
-    @NonNull Map<String, List<Double>> temperatureCalibrationMeasurements = Map.of();
-
-    @Builder.Default
-    @With
     @NonNull Integer brewingMotorNumber = 1;
 
     @Builder.Default
@@ -53,5 +45,18 @@ public class Configuration {
         @With
         @Builder.Default
         @NonNull Map<String, String> sensorNames = Map.of();
+        @Builder.Default
+        @With
+        @NonNull Map<String, SensorCalibration> calibrationMeasurements = Map.of();
+
+        @Jacksonized
+        @Builder
+        @Value
+        public static class SensorCalibration {
+            Double lowMeasured;
+            Double lowDesired;
+            Double highMeasured;
+            Double highDesired;
+        }
     }
 }

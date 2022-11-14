@@ -16,9 +16,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -67,15 +65,13 @@ public class ConfigurationProviderTest {
         assertThat(configuration.getSensorsConfiguration()).isNotNull();
         assertThat(configuration.getSensorsConfiguration().getShowBrewingSensorIds()).isNotNull();
         assertThat(configuration.getSensorsConfiguration().getUseBrewingSensorIds()).isNotNull();
-        assertThat(configuration.getTemperatureCalibration()).isNotNull();
-        assertThat(configuration.getTemperatureCalibrationMeasurements()).isNotNull();
+        assertThat(configuration.getSensorsConfiguration().getCalibrationMeasurements()).isNotNull();
     }
 
     @Test
     void configLoadsFromFile() throws IOException {
         // given
-        String exampleConfig = "{\"temperatureCalibration\":{\"sensor-1\":[1,2]}," +
-                "\"temperatureCalibrationMeasurements\":{\"sensor-1\":[3,4,5,6]}}";
+        String exampleConfig = "{\"brewingMotorNumber\":123, \"alarmMaxTime\":\"PT5S\"}";
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(calibrationFile));
         writer.append(exampleConfig);
@@ -87,16 +83,14 @@ public class ConfigurationProviderTest {
         // then
         assertThat(configuration)
                 .isNotNull()
-                .extracting("temperatureCalibration", "temperatureCalibrationMeasurements")
-                .contains(Map.of("sensor-1", List.of(1.0, 2.0)), Map.of("sensor-1", List.of(3.0, 4.0, 5.0, 6.0)));
+                .extracting("brewingMotorNumber", "alarmMaxTime")
+                .contains(123, Duration.ofSeconds(5));
     }
 
     @Test
     void configSaveToFile() throws IOException {
         // given
-        var configuration = configProvider.loadConfiguration().withTemperatureCalibrationMeasurements(Map.of(
-                "example", Arrays.asList(null, null, 123.0, 456.0)
-        ));
+        var configuration = configProvider.loadConfiguration().withBrewingMotorNumber(123).withAlarmMaxTime(Duration.ofSeconds(5));
 
         // when
         configProvider.saveConfiguration(configuration);
@@ -105,8 +99,7 @@ public class ConfigurationProviderTest {
         Configuration storedConfig = mapper.readValue(new File(calibrationFile), Configuration.class);
         assertThat(storedConfig)
                 .isNotNull()
-                .extracting("temperatureCalibrationMeasurements")
-                .extracting("example")
-                .asList().contains(null, null, 123.0, 456.0);
+                .extracting("brewingMotorNumber", "alarmMaxTime")
+                .contains(123, Duration.ofSeconds(5));
     }
 }

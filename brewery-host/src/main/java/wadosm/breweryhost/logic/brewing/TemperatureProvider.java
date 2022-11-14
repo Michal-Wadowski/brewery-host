@@ -9,7 +9,6 @@ import wadosm.breweryhost.logic.general.model.Configuration;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -19,9 +18,11 @@ public class TemperatureProvider {
 
     private final ConfigProvider configProvider;
     private final TemperatureSensorProvider temperatureSensorProvider;
+    private final CalibrationProvider calibrationProvider;
 
-    Double getUsedTemperature() {
-        Configuration.SensorsConfiguration sensorsConfiguration = getConfiguration().getSensorsConfiguration();
+    Double getSelectedTemperaturesAverage() {
+        Configuration configuration = getConfiguration();
+        Configuration.SensorsConfiguration sensorsConfiguration = configuration.getSensorsConfiguration();
         double usedTemperature = sensorsConfiguration.getUseBrewingSensorIds().stream()
                 .map(shownSensorId -> getCalibratedSensor(shownSensorId, sensorsConfiguration))
                 .filter(Objects::nonNull)
@@ -37,23 +38,7 @@ public class TemperatureProvider {
     }
 
     private TemperatureSensor getCalibratedSensor(String shownSensorId, Configuration.SensorsConfiguration sensorsConfiguration) {
-        TemperatureSensor uncalibratedSensor = getUncalibrated(shownSensorId, sensorsConfiguration);
-
-        if (uncalibratedSensor != null) {
-            Double uncalibratedTemperature = uncalibratedSensor.getTemperature();
-            Map<String, List<Double>> temperatureCalibration = getConfiguration().getTemperatureCalibration();
-
-            if (temperatureCalibration.containsKey(shownSensorId)) {
-                List<Double> sensorCalibration = temperatureCalibration.get(shownSensorId);
-                if (sensorCalibration.size() == 2) {
-                    uncalibratedTemperature *= (1 + sensorCalibration.get(0));
-                    uncalibratedTemperature += sensorCalibration.get(1);
-                }
-            }
-
-            return uncalibratedSensor.withTemperature(Math.round(uncalibratedTemperature * 100) / 100.0);
-        }
-        return null;
+        return calibrationProvider.correctTemperature(getUncalibrated(shownSensorId, sensorsConfiguration));
     }
 
     private Configuration getConfiguration() {
@@ -73,7 +58,7 @@ public class TemperatureProvider {
         boolean usedMoreThanOneSensors = useBrewingSensorIds.size() > 1;
         boolean usedButNotShown = !new HashSet<>(showBrewingSensorIds).containsAll(useBrewingSensorIds);
         if (usedButNotShown || usedMoreThanOneSensors) {
-            Double usedTemperature = getUsedTemperature();
+            Double usedTemperature = getSelectedTemperaturesAverage();
             if (usedTemperature != null) {
                 result.add(TemperatureSensor.builder()
                         .sensorId("#used")
