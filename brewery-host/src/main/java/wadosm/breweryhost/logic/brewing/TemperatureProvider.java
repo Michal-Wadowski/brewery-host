@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import wadosm.breweryhost.device.temperature.TemperatureSensorProvider;
 import wadosm.breweryhost.device.temperature.model.TemperatureSensor;
+import wadosm.breweryhost.logic.brewing.model.SensorsConfiguration;
 import wadosm.breweryhost.logic.general.ConfigProvider;
 import wadosm.breweryhost.logic.general.model.Configuration;
 
@@ -20,9 +21,9 @@ public class TemperatureProvider {
     private final TemperatureSensorProvider temperatureSensorProvider;
     private final CalibrationProvider calibrationProvider;
 
-    Double getSelectedTemperaturesAverage() {
+    Double getSelectedAverageTemperatures() {
         Configuration configuration = getConfiguration();
-        Configuration.SensorsConfiguration sensorsConfiguration = configuration.getSensorsConfiguration();
+        SensorsConfiguration sensorsConfiguration = configuration.getSensorsConfiguration();
         double usedTemperature = sensorsConfiguration.getUseBrewingSensorIds().stream()
                 .map(shownSensorId -> getCalibratedSensor(shownSensorId, sensorsConfiguration))
                 .filter(Objects::nonNull)
@@ -37,7 +38,7 @@ public class TemperatureProvider {
         }
     }
 
-    private TemperatureSensor getCalibratedSensor(String shownSensorId, Configuration.SensorsConfiguration sensorsConfiguration) {
+    private TemperatureSensor getCalibratedSensor(String shownSensorId, SensorsConfiguration sensorsConfiguration) {
         return calibrationProvider.correctTemperature(getUncalibrated(shownSensorId, sensorsConfiguration));
     }
 
@@ -46,7 +47,7 @@ public class TemperatureProvider {
     }
 
     List<TemperatureSensor> getAllTemperatures() {
-        Configuration.SensorsConfiguration sensorsConfiguration = getConfiguration().getSensorsConfiguration();
+        SensorsConfiguration sensorsConfiguration = getConfiguration().getSensorsConfiguration();
         List<String> showBrewingSensorIds = sensorsConfiguration.getShowBrewingSensorIds();
         List<String> useBrewingSensorIds = sensorsConfiguration.getUseBrewingSensorIds();
 
@@ -58,7 +59,7 @@ public class TemperatureProvider {
         boolean usedMoreThanOneSensors = useBrewingSensorIds.size() > 1;
         boolean usedButNotShown = !new HashSet<>(showBrewingSensorIds).containsAll(useBrewingSensorIds);
         if (usedButNotShown || usedMoreThanOneSensors) {
-            Double usedTemperature = getSelectedTemperaturesAverage();
+            Double usedTemperature = getSelectedAverageTemperatures();
             if (usedTemperature != null) {
                 result.add(TemperatureSensor.builder()
                         .sensorId("#used")
@@ -71,7 +72,7 @@ public class TemperatureProvider {
         return result;
     }
 
-    private TemperatureSensor getUncalibrated(String sensorId, Configuration.SensorsConfiguration sensorsConfiguration) {
+    private TemperatureSensor getUncalibrated(String sensorId, SensorsConfiguration sensorsConfiguration) {
         return TemperatureSensor.fromRaw(
                 temperatureSensorProvider.getRawTemperatureSensor(sensorId),
                 sensorsConfiguration

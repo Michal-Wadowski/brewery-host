@@ -5,11 +5,11 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 import lombok.extern.jackson.Jacksonized;
+import wadosm.breweryhost.logic.brewing.model.BrewingSchedule;
 import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
+import wadosm.breweryhost.logic.brewing.model.SensorsConfiguration;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
 
 @Jacksonized
 @Builder
@@ -22,6 +22,10 @@ public class Configuration {
 
     @Builder.Default
     @With
+    Duration alarmMaxTime = null;
+
+    @Builder.Default
+    @With
     @NonNull SensorsConfiguration sensorsConfiguration = SensorsConfiguration.builder().build();
 
     @Builder.Default
@@ -30,33 +34,6 @@ public class Configuration {
 
     @Builder.Default
     @With
-    Duration alarmMaxTime = null;
+    @NonNull BrewingSchedule brewingSchedule = BrewingSchedule.builder().build();
 
-    @Jacksonized
-    @Builder
-    @Value
-    public static class SensorsConfiguration {
-        @Builder.Default
-        @With
-        @NonNull List<String> useBrewingSensorIds = List.of();
-        @Builder.Default
-        @With
-        @NonNull List<String> showBrewingSensorIds = List.of();
-        @With
-        @Builder.Default
-        @NonNull Map<String, String> sensorNames = Map.of();
-        @Builder.Default
-        @With
-        @NonNull Map<String, SensorCalibration> calibrationMeasurements = Map.of();
-
-        @Jacksonized
-        @Builder
-        @Value
-        public static class SensorCalibration {
-            Double lowMeasured;
-            Double lowDesired;
-            Double highMeasured;
-            Double highDesired;
-        }
-    }
 }

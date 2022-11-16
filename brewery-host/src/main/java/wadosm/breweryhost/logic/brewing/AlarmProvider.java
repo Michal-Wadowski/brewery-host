@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import wadosm.breweryhost.device.driver.BreweryInterface;
 import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
 import wadosm.breweryhost.logic.general.ConfigProvider;
+import wadosm.breweryhost.logic.general.model.Configuration;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -14,37 +15,50 @@ import java.time.Instant;
 class AlarmProvider {
 
     private final BreweryInterface breweryInterface;
-    private final BrewingSettingsProvider brewingSettingsProvider;
     private final ConfigProvider configProvider;
     private final TimeProvider timeProvider;
     private Instant alarmStarted;
 
+    private Boolean alarmWasEnabledBefore = false;
+
     void handleAlarm(Double currentTemperature) {
-        boolean alarmEnabled = isAlarmEnabled(currentTemperature);
-        Duration alarmMaxTime = configProvider.loadConfiguration().getAlarmMaxTime();
+        Configuration configuration = configProvider.loadConfiguration();
 
-        setAlarmStartedTime(alarmEnabled, alarmMaxTime);
+        boolean alarmTriggered = temperatureExceededThreshold(configuration, currentTemperature);
 
-        breweryInterface.setAlarm(isAlarmEnabled(alarmEnabled, alarmMaxTime));
+        setAlarmStartedTime(configuration, alarmTriggered);
+
+        if (isAlarmBecameDisabled(configuration)) {
+            breweryInterface.setAlarm(false);
+        } else if (isTemperatureAlarmEnabled(configuration)) {
+            breweryInterface.setAlarm(isAlarmPending(configuration, alarmTriggered));
+        }
     }
 
-    private boolean isAlarmEnabled(boolean alarmEnabled, Duration alarmMaxTime) {
-        if (alarmEnabled) {
-            if (alarmMaxTime != null) {
+    private boolean isAlarmBecameDisabled(Configuration configuration) {
+        boolean temperatureAlarmEnabled = isTemperatureAlarmEnabled(configuration);
+        boolean becameDisabled = alarmWasEnabledBefore && !temperatureAlarmEnabled;
+        alarmWasEnabledBefore = temperatureAlarmEnabled;
+        return becameDisabled;
+    }
+
+    private boolean isAlarmPending(Configuration configuration, boolean alarmTriggered) {
+        if (alarmTriggered) {
+            if (configuration != null) {
                 if (alarmStarted != null) {
-                    if (Duration.between(alarmStarted, timeProvider.getCurrentTime()).compareTo(alarmMaxTime) > 0) {
-                        alarmEnabled = false;
+                    if (Duration.between(alarmStarted, timeProvider.getCurrentTime()).compareTo(configuration.getAlarmMaxTime()) > 0) {
+                        alarmTriggered = false;
                     }
 
                 }
             }
         }
-        return alarmEnabled;
+        return alarmTriggered;
     }
 
-    private void setAlarmStartedTime(boolean alarmEnabled, Duration alarmMaxTime) {
-        if (alarmEnabled) {
-            if (alarmMaxTime != null) {
+    private void setAlarmStartedTime(Configuration configuration, boolean alarmTriggered) {
+        if (alarmTriggered && isTemperatureAlarmEnabled(configuration)) {
+            if (configuration.getAlarmMaxTime() != null) {
                 if (alarmStarted == null) {
                     alarmStarted = timeProvider.getCurrentTime();
                 }
@@ -54,18 +68,15 @@ class AlarmProvider {
         }
     }
 
-    private boolean isAlarmEnabled(Double currentTemperature) {
-        BrewingSettings brewingSettings = brewingSettingsProvider.getBrewingSettings();
-        return isEnabled(brewingSettings) && temperatureExceededThreshold(brewingSettings, currentTemperature);
+    private static boolean isTemperatureAlarmEnabled(Configuration configuration) {
+        BrewingSettings brewingSettings = configuration.getBrewingSettings();
+        return brewingSettings.isTemperatureAlarmEnabled() && brewingSettings.isEnabled();
     }
 
-    private static boolean temperatureExceededThreshold(BrewingSettings brewingSettings, Double currentTemperature) {
+    private static boolean temperatureExceededThreshold(Configuration configuration, Double currentTemperature) {
+        BrewingSettings brewingSettings = configuration.getBrewingSettings();
         return brewingSettings.getDestinationTemperature() != null & currentTemperature != null
                 && currentTemperature >= brewingSettings.getDestinationTemperature();
-    }
-
-    private static boolean isEnabled(BrewingSettings brewingSettings) {
-        return brewingSettings.isEnabled() && brewingSettings.isTemperatureAlarmEnabled();
     }
 
 }

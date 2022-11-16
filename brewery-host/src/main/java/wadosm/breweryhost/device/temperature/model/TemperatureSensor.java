@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
-import wadosm.breweryhost.logic.general.model.Configuration;
+import wadosm.breweryhost.logic.brewing.model.SensorsConfiguration;
 
 import javax.validation.constraints.NotNull;
 import java.util.Map;
@@ -20,7 +20,7 @@ public class TemperatureSensor {
     @Builder.Default
     boolean used = false;
 
-    public static TemperatureSensor fromRaw(RawTemperatureSensor rawTemperatureSensor, Configuration.SensorsConfiguration sensorsConfiguration) {
+    public static TemperatureSensor fromRaw(RawTemperatureSensor rawTemperatureSensor, SensorsConfiguration sensorsConfiguration) {
         if (rawTemperatureSensor == null) {
             return null;
         }

@@ -4,6 +4,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import wadosm.breweryhost.device.temperature.model.TemperatureSensor;
+import wadosm.breweryhost.logic.brewing.model.SensorsConfiguration;
 import wadosm.breweryhost.logic.general.ConfigProvider;
 import wadosm.breweryhost.logic.general.model.Configuration;
 
@@ -21,14 +22,14 @@ class CalibrationProviderTest {
                 Configuration.builder().build(),
 
                 Configuration.builder().sensorsConfiguration(
-                        Configuration.SensorsConfiguration.builder()
-                                .calibrationMeasurements(Map.of("sensorId", Configuration.SensorsConfiguration.SensorCalibration.builder().build()))
+                        SensorsConfiguration.builder()
+                                .calibrationMeasurements(Map.of("sensorId", SensorsConfiguration.SensorCalibration.builder().build()))
                                 .build()
                 ).build(),
 
                 Configuration.builder().sensorsConfiguration(
-                        Configuration.SensorsConfiguration.builder()
-                                .calibrationMeasurements(Map.of("sensorId", Configuration.SensorsConfiguration.SensorCalibration.builder()
+                        SensorsConfiguration.builder()
+                                .calibrationMeasurements(Map.of("sensorId", SensorsConfiguration.SensorCalibration.builder()
                                         .lowMeasured(11.0)
                                         .lowDesired(10.0)
                                         .build()
@@ -37,8 +38,8 @@ class CalibrationProviderTest {
                 ).build(),
 
                 Configuration.builder().sensorsConfiguration(
-                        Configuration.SensorsConfiguration.builder()
-                                .calibrationMeasurements(Map.of("sensorId", Configuration.SensorsConfiguration.SensorCalibration.builder()
+                        SensorsConfiguration.builder()
+                                .calibrationMeasurements(Map.of("sensorId", SensorsConfiguration.SensorCalibration.builder()
                                         .lowMeasured(11.0)
                                         .lowDesired(10.0)
                                         .highDesired(20.0)
@@ -48,8 +49,8 @@ class CalibrationProviderTest {
                 ).build(),
 
                 Configuration.builder().sensorsConfiguration(
-                        Configuration.SensorsConfiguration.builder()
-                                .calibrationMeasurements(Map.of("other-sensorId", Configuration.SensorsConfiguration.SensorCalibration.builder()
+                        SensorsConfiguration.builder()
+                                .calibrationMeasurements(Map.of("other-sensorId", SensorsConfiguration.SensorCalibration.builder()
                                         .lowMeasured(11.0)
                                         .lowDesired(10.0)
                                         .highMeasured(19.0)
@@ -86,8 +87,8 @@ class CalibrationProviderTest {
 
     static Stream<Arguments> should_calibrate_temperature() {
         Configuration identityConfiguration = Configuration.builder().sensorsConfiguration(
-                Configuration.SensorsConfiguration.builder()
-                        .calibrationMeasurements(Map.of("sensorId", Configuration.SensorsConfiguration.SensorCalibration.builder()
+                SensorsConfiguration.builder()
+                        .calibrationMeasurements(Map.of("sensorId", SensorsConfiguration.SensorCalibration.builder()
                                 .lowMeasured(10.0)
                                 .lowDesired(10.0)
                                 .highMeasured(20.0)
@@ -97,8 +98,8 @@ class CalibrationProviderTest {
                         .build()
         ).build();
         Configuration sampleConfiguration = Configuration.builder().sensorsConfiguration(
-                Configuration.SensorsConfiguration.builder()
-                        .calibrationMeasurements(Map.of("sensorId", Configuration.SensorsConfiguration.SensorCalibration.builder()
+                SensorsConfiguration.builder()
+                        .calibrationMeasurements(Map.of("sensorId", SensorsConfiguration.SensorCalibration.builder()
                                 .lowMeasured(10.0)
                                 .lowDesired(20.0)
                                 .highMeasured(50.0)
