@@ -12,6 +12,7 @@ import wadosm.breweryhost.device.temperature.TemperatureSensorProvider;
 import wadosm.breweryhost.device.temperature.model.RawTemperatureSensor;
 import wadosm.breweryhost.device.temperature.model.TemperatureSensor;
 import wadosm.breweryhost.logic.brewing.model.BrewingSnapshotState;
+import wadosm.breweryhost.logic.brewing.model.SensorsConfiguration;
 import wadosm.breweryhost.logic.general.ConfigProvider;
 import wadosm.breweryhost.logic.general.model.Configuration;
 
@@ -30,7 +31,7 @@ class BrewingServiceImplTest {
         return Stream.of(
                 Arguments.of(
                         Configuration.builder().sensorsConfiguration(
-                                Configuration.SensorsConfiguration.builder()
+                                SensorsConfiguration.builder()
                                         .useBrewingSensorIds(List.of("aabbcc"))
                                         .showBrewingSensorIds(List.of("aabbcc"))
                                         .build()
@@ -44,7 +45,7 @@ class BrewingServiceImplTest {
 
                 Arguments.of(
                         Configuration.builder().sensorsConfiguration(
-                                Configuration.SensorsConfiguration.builder()
+                                SensorsConfiguration.builder()
                                         .useBrewingSensorIds(List.of("aabbcc", "ddeeff"))
                                         .showBrewingSensorIds(List.of("aabbcc", "ddeeff"))
                                         .build()
@@ -62,7 +63,7 @@ class BrewingServiceImplTest {
 
                 Arguments.of(
                         Configuration.builder().sensorsConfiguration(
-                                Configuration.SensorsConfiguration.builder()
+                                SensorsConfiguration.builder()
                                         .useBrewingSensorIds(List.of("aabbcc"))
                                         .showBrewingSensorIds(List.of("aabbcc"))
                                         .build()
@@ -82,7 +83,7 @@ class BrewingServiceImplTest {
 
                 Arguments.of(
                         Configuration.builder().sensorsConfiguration(
-                                Configuration.SensorsConfiguration.builder()
+                                SensorsConfiguration.builder()
                                         .useBrewingSensorIds(List.of("aabbcc"))
                                         .showBrewingSensorIds(List.of("ddeeff"))
                                         .build()
@@ -99,7 +100,7 @@ class BrewingServiceImplTest {
 
                 Arguments.of(
                         Configuration.builder().sensorsConfiguration(
-                                Configuration.SensorsConfiguration.builder()
+                                SensorsConfiguration.builder()
                                         .useBrewingSensorIds(List.of("aabbcc"))
                                         .showBrewingSensorIds(List.of("aabbcc", "ddeeff"))
                                         .build()
@@ -116,7 +117,7 @@ class BrewingServiceImplTest {
 
                 Arguments.of(
                         Configuration.builder().sensorsConfiguration(
-                                Configuration.SensorsConfiguration.builder()
+                                SensorsConfiguration.builder()
                                         .useBrewingSensorIds(List.of("aabbcc"))
                                         .build()
                         ).build(),
@@ -135,7 +136,7 @@ class BrewingServiceImplTest {
         return Stream.of(
                 Arguments.of(
                         Configuration.builder().sensorsConfiguration(
-                                Configuration.SensorsConfiguration.builder()
+                                SensorsConfiguration.builder()
                                         .useBrewingSensorIds(List.of("aabbcc"))
                                         .build()
                         ).build(),
@@ -151,7 +152,7 @@ class BrewingServiceImplTest {
 
                 Arguments.of(
                         Configuration.builder().sensorsConfiguration(
-                                Configuration.SensorsConfiguration.builder()
+                                SensorsConfiguration.builder()
                                         .useBrewingSensorIds(List.of("aabbcc"))
                                         .build()
                         ).build(),
@@ -167,7 +168,7 @@ class BrewingServiceImplTest {
 
                 Arguments.of(
                         Configuration.builder().sensorsConfiguration(
-                                Configuration.SensorsConfiguration.builder()
+                                SensorsConfiguration.builder()
                                         .useBrewingSensorIds(List.of("aabbcc"))
                                         .build()
                         ).build(),
@@ -180,7 +181,7 @@ class BrewingServiceImplTest {
 
                 Arguments.of(
                         Configuration.builder().sensorsConfiguration(
-                                Configuration.SensorsConfiguration.builder()
+                                SensorsConfiguration.builder()
                                         .build()
                         ).build(),
 
@@ -195,7 +196,7 @@ class BrewingServiceImplTest {
 
                 Arguments.of(
                         Configuration.builder().sensorsConfiguration(
-                                Configuration.SensorsConfiguration.builder()
+                                SensorsConfiguration.builder()
                                         .useBrewingSensorIds(List.of("ddeeff"))
                                         .build()
                         ).build(),
@@ -211,7 +212,7 @@ class BrewingServiceImplTest {
 
                 Arguments.of(
                         Configuration.builder().sensorsConfiguration(
-                                Configuration.SensorsConfiguration.builder()
+                                SensorsConfiguration.builder()
                                         .useBrewingSensorIds(List.of("aabbcc", "ddeeff"))
                                         .build()
                         ).build(),
@@ -227,7 +228,7 @@ class BrewingServiceImplTest {
 
                 Arguments.of(
                         Configuration.builder().sensorsConfiguration(
-                                Configuration.SensorsConfiguration.builder()
+                                SensorsConfiguration.builder()
                                         .useBrewingSensorIds(List.of("aabbcc", "ddeeff"))
                                         .build()
                         ).build(),
@@ -410,7 +411,7 @@ class BrewingServiceImplTest {
 
         when(configProvider.loadConfiguration()).thenReturn(
                 Configuration.builder()
-                        .sensorsConfiguration(Configuration.SensorsConfiguration.builder()
+                        .sensorsConfiguration(SensorsConfiguration.builder()
                                 .showBrewingSensorIds(List.of("aabbcc"))
                                 .useBrewingSensorIds(List.of("aabbcc"))
                                 .build())
@@ -448,7 +449,7 @@ class BrewingServiceImplTest {
 
         when(configProvider.loadConfiguration()).thenReturn(
                 Configuration.builder()
-                        .sensorsConfiguration(Configuration.SensorsConfiguration.builder()
+                        .sensorsConfiguration(SensorsConfiguration.builder()
                                 .showBrewingSensorIds(List.of("aabbcc", "ddeeff"))
                                 .useBrewingSensorIds(List.of("aabbcc"))
                                 .sensorNames(Map.of("aabbcc", "foo", "ddeeff", "bar"))
@@ -504,7 +505,7 @@ class BrewingServiceImplTest {
         ConfigProvider configProvider = new FakeConfigProvider();
 
         TemperatureProvider temperatureProvider = mock(TemperatureProvider.class);
-        when(temperatureProvider.getSelectedTemperaturesAverage()).thenReturn(50.0);
+        when(temperatureProvider.getSelectedAverageTemperatures()).thenReturn(50.0);
 
         BrewingSettingsProvider brewingSettingsProvider = new BrewingSettingsProviderImpl(new FakeConfigProvider());
         brewingSettingsProvider.setEnabled(true);

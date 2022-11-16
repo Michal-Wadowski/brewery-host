@@ -97,15 +97,15 @@ public class BrewingServiceImpl implements BrewingService {
     public void processStep() {
         Configuration configuration = configProvider.loadConfiguration();
 
-        Double usedTemperature = temperatureProvider.getSelectedTemperaturesAverage();
+        Double selectedAvgTemperature = temperatureProvider.getSelectedAverageTemperatures();
 
-        mainsPowerProvider.updatePowerForTemperature(usedTemperature);
+        mainsPowerProvider.updatePowerForTemperature(selectedAvgTemperature);
 
         driveMotor(configuration);
 
-        alarmProvider.handleAlarm(usedTemperature);
+        alarmProvider.handleAlarm(selectedAvgTemperature);
 
-        displayTemperature(usedTemperature);
+        displayTemperature(selectedAvgTemperature);
     }
 
     @Override

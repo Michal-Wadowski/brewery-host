@@ -3,8 +3,8 @@ package wadosm.breweryhost.logic.brewing;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import wadosm.breweryhost.device.temperature.model.TemperatureSensor;
+import wadosm.breweryhost.logic.brewing.model.SensorsConfiguration;
 import wadosm.breweryhost.logic.general.ConfigProvider;
-import wadosm.breweryhost.logic.general.model.Configuration;
 
 @Service
 @AllArgsConstructor
@@ -36,7 +36,7 @@ class CalibrationProvider {
         return Math.round(calibrated * 100) / 100.0;
     }
 
-    private static boolean isCalibrationComplete(Configuration.SensorsConfiguration.SensorCalibration sensorCalibration) {
+    private static boolean isCalibrationComplete(SensorsConfiguration.SensorCalibration sensorCalibration) {
         return sensorCalibration.getHighDesired() != null
                 && sensorCalibration.getLowDesired() != null
                 && sensorCalibration.getHighMeasured() != null
