@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import wadosm.breweryhost.device.driver.BreweryInterface;
 import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
 import wadosm.breweryhost.logic.general.ConfigProvider;
+import wadosm.breweryhost.logic.general.model.Configuration;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -14,14 +15,14 @@ import java.time.Instant;
 class AlarmProvider {
 
     private final BreweryInterface breweryInterface;
-    private final BrewingSettingsProvider brewingSettingsProvider;
     private final ConfigProvider configProvider;
     private final TimeProvider timeProvider;
     private Instant alarmStarted;
 
     void handleAlarm(Double currentTemperature) {
-        boolean alarmEnabled = isAlarmEnabled(currentTemperature);
-        Duration alarmMaxTime = configProvider.loadConfiguration().getAlarmMaxTime();
+        Configuration configuration = configProvider.loadConfiguration();
+        boolean alarmEnabled = isAlarmEnabled(currentTemperature, configuration.getBrewingSettings());
+        Duration alarmMaxTime = configuration.getAlarmMaxTime();
 
         setAlarmStartedTime(alarmEnabled, alarmMaxTime);
 
@@ -54,8 +55,7 @@ class AlarmProvider {
         }
     }
 
-    private boolean isAlarmEnabled(Double currentTemperature) {
-        BrewingSettings brewingSettings = brewingSettingsProvider.getBrewingSettings();
+    private boolean isAlarmEnabled(Double currentTemperature, BrewingSettings brewingSettings) {
         return isEnabled(brewingSettings) && temperatureExceededThreshold(brewingSettings, currentTemperature);
     }
 

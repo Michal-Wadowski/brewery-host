@@ -61,10 +61,7 @@ class AlarmProviderTest {
         // given
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
 
-        BrewingSettingsProvider settingsProvider = mock(BrewingSettingsProvider.class);
-        when(settingsProvider.getBrewingSettings()).thenReturn(BrewingSettings.builder().build());
-
-        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, settingsProvider, mockConfigProvider(), mock(TimeProvider.class));
+        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, mockConfigProvider(BrewingSettings.builder().build()), mock(TimeProvider.class));
 
         // when
         alarmProvider.handleAlarm(currentTemperature);
@@ -78,15 +75,13 @@ class AlarmProviderTest {
         // given
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
 
-        BrewingSettingsProvider settingsProvider = mock(BrewingSettingsProvider.class);
-        when(settingsProvider.getBrewingSettings()).thenReturn(BrewingSettings.builder()
+        BrewingSettings brewingSettings = BrewingSettings.builder()
                 .enabled(true)
                 .temperatureAlarmEnabled(true)
                 .destinationTemperature(50.0)
-                .build()
-        );
+                .build();
 
-        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, settingsProvider, mockConfigProvider(), mock(TimeProvider.class));
+        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, mockConfigProvider(brewingSettings), mock(TimeProvider.class));
 
         // when
         alarmProvider.handleAlarm(51.0);
@@ -95,33 +90,26 @@ class AlarmProviderTest {
         verify(breweryInterface).setAlarm(true);
     }
 
-    private static ConfigProvider mockConfigProvider() {
-        ConfigProvider configurationProvider = mock(ConfigProvider.class);
-        when(configurationProvider.loadConfiguration()).thenReturn(Configuration.builder().build());
-        return configurationProvider;
-    }
-
     @Test
     void alarm_off_after_specified_period() {
         // given
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
 
-        BrewingSettingsProvider settingsProvider = mock(BrewingSettingsProvider.class);
-        when(settingsProvider.getBrewingSettings()).thenReturn(BrewingSettings.builder()
+        BrewingSettings brewingSettings = BrewingSettings.builder()
                 .enabled(true)
                 .temperatureAlarmEnabled(true)
                 .destinationTemperature(50.0)
-                .build()
-        );
+                .build();
 
         ConfigProvider configurationProvider = mock(ConfigProvider.class);
         when(configurationProvider.loadConfiguration()).thenReturn(Configuration.builder()
                 .alarmMaxTime(Duration.ofSeconds(2))
+                .brewingSettings(brewingSettings)
                 .build()
         );
 
         TimeProvider timeProvider = mock(TimeProvider.class);
-        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, settingsProvider, configurationProvider, timeProvider);
+        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, configurationProvider, timeProvider);
 
         // when
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
@@ -144,26 +132,71 @@ class AlarmProviderTest {
     }
 
     @Test
+    void should_count_time_after_alarmEnabled() {
+        // given
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
+
+        ConfigProvider configurationProvider = mock(ConfigProvider.class);
+        when(configurationProvider.loadConfiguration()).thenReturn(Configuration.builder()
+                .alarmMaxTime(Duration.ofSeconds(2))
+                .brewingSettings(BrewingSettings.builder()
+                        .enabled(true)
+                        .temperatureAlarmEnabled(false)
+                        .destinationTemperature(50.0)
+                        .build())
+                .build()
+        );
+
+        TimeProvider timeProvider = mock(TimeProvider.class);
+        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, configurationProvider, timeProvider);
+
+        // when
+        when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
+        alarmProvider.handleAlarm(51.0);
+
+        when(configurationProvider.loadConfiguration()).thenReturn(Configuration.builder()
+                .alarmMaxTime(Duration.ofSeconds(2))
+                .brewingSettings(BrewingSettings.builder()
+                        .enabled(true)
+                        .temperatureAlarmEnabled(true)
+                        .destinationTemperature(50.0)
+                        .build())
+                .build()
+        );
+
+        when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(5000));
+        alarmProvider.handleAlarm(51.0);
+
+        when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(7500));
+        alarmProvider.handleAlarm(51.0);
+
+        // then
+        ArgumentCaptor<Boolean> alarmSequence = ArgumentCaptor.forClass(Boolean.class);
+        verify(breweryInterface, atLeastOnce()).setAlarm(alarmSequence.capture());
+
+        assertThat(alarmSequence.getAllValues()).containsSequence(true, false);
+    }
+
+    @Test
     void timeout_reset_after_alarm_off() {
         // given
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
 
-        BrewingSettingsProvider settingsProvider = mock(BrewingSettingsProvider.class);
-        when(settingsProvider.getBrewingSettings()).thenReturn(BrewingSettings.builder()
+        BrewingSettings brewingSettings = BrewingSettings.builder()
                 .enabled(true)
                 .temperatureAlarmEnabled(true)
                 .destinationTemperature(50.0)
-                .build()
-        );
+                .build();
 
         ConfigProvider configurationProvider = mock(ConfigProvider.class);
         when(configurationProvider.loadConfiguration()).thenReturn(Configuration.builder()
+                .brewingSettings(brewingSettings)
                 .alarmMaxTime(Duration.ofSeconds(2))
                 .build()
         );
 
         TimeProvider timeProvider = mock(TimeProvider.class);
-        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, settingsProvider, configurationProvider, timeProvider);
+        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, configurationProvider, timeProvider);
 
         // when
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
@@ -186,5 +219,13 @@ class AlarmProviderTest {
         verify(breweryInterface, atLeastOnce()).setAlarm(alarmSequence.capture());
 
         assertThat(alarmSequence.getAllValues()).containsSequence(true, false, true, true, false);
+    }
+
+    private static ConfigProvider mockConfigProvider(BrewingSettings brewingSettings) {
+        ConfigProvider configurationProvider = mock(ConfigProvider.class);
+        when(configurationProvider.loadConfiguration()).thenReturn(Configuration.builder()
+                .brewingSettings(brewingSettings)
+                .build());
+        return configurationProvider;
     }
 }
