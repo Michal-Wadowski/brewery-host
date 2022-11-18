@@ -1,6 +1,5 @@
 package wadosm.breweryhost.logic.brewing;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -16,7 +15,6 @@ import wadosm.breweryhost.logic.general.model.Configuration;
 @Service
 @Log4j2
 @EnableAsync
-@RequiredArgsConstructor
 public class BrewingServiceImpl implements BrewingService {
 
     private final BreweryInterface breweryInterface;
@@ -24,8 +22,47 @@ public class BrewingServiceImpl implements BrewingService {
     private final BrewingSettingsProvider brewingSettingsProvider;
     private final TemperatureProvider temperatureProvider;
     private final MainsPowerProvider mainsPowerProvider;
-    private final AlarmProvider alarmProvider;
+    private final TimeProvider timeProvider;
+    private AlarmProvider alarmProvider;
     private boolean heartBeatState;
+
+    public BrewingServiceImpl(BreweryInterface breweryInterface,
+                              ConfigProvider configProvider,
+                              BrewingSettingsProvider brewingSettingsProvider,
+                              TemperatureProvider temperatureProvider,
+                              MainsPowerProvider mainsPowerProvider,
+                              TimeProvider timeProvider
+    ) {
+        this.breweryInterface = breweryInterface;
+        this.configProvider = configProvider;
+        this.brewingSettingsProvider = brewingSettingsProvider;
+        this.temperatureProvider = temperatureProvider;
+        this.mainsPowerProvider = mainsPowerProvider;
+        this.timeProvider = timeProvider;
+
+        setAlarmMode(AlarmMode.THRESHOLD_TRIGGERED);
+    }
+
+    @Override
+    public void setAlarmMode(AlarmMode alarmMode) {
+        switch (alarmMode) {
+            case THRESHOLD_TRIGGERED:
+                alarmProvider = getThresholdTriggeredAlarmProvider(breweryInterface, configProvider, timeProvider);
+                break;
+
+            case ALWAYS_RUNNING:
+                alarmProvider = getAlwaysRunningAlarmProvider(breweryInterface, configProvider, timeProvider);
+                break;
+        }
+    }
+
+    private static AlarmProvider getThresholdTriggeredAlarmProvider(BreweryInterface breweryInterface, ConfigProvider configProvider, TimeProvider timeProvider) {
+        return new AlarmProvider(breweryInterface, configProvider, timeProvider, new TemperatureThresholdTriggerImpl(configProvider));
+    }
+
+    private static AlarmProvider getAlwaysRunningAlarmProvider(BreweryInterface breweryInterface, ConfigProvider configProvider, TimeProvider timeProvider) {
+        return new AlarmProvider(breweryInterface, configProvider, timeProvider, new TemperatureThresholdTriggerImpl(configProvider));
+    }
 
     @Override
     public void enable(boolean enable) {
@@ -108,7 +145,6 @@ public class BrewingServiceImpl implements BrewingService {
         displayTemperature(selectedAvgTemperature);
     }
 
-    @Override
     @Async
     @Scheduled(fixedRateString = "${brewing.heartbeat}")
     public void heartbeat() {

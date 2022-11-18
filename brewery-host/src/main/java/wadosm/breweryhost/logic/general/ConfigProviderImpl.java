@@ -25,6 +25,7 @@ public class ConfigProviderImpl implements ConfigProvider {
         this.mapper = mapper;
     }
 
+    // TODO Add caching or ensure performance
     @Override
     public Configuration loadConfiguration() {
         Configuration configuration;
@@ -38,6 +39,7 @@ public class ConfigProviderImpl implements ConfigProvider {
         return configuration;
     }
 
+    // TODO Add caching or ensure performance
     @Override
     public void saveConfiguration(Configuration configuration) {
         try {

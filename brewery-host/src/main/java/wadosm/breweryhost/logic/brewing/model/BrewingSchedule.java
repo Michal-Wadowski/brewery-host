@@ -17,21 +17,16 @@ public class BrewingSchedule {
     @NonNull List<ScheduleStep> scheduleSteps = List.of();
 
     @Value
-    private static class ScheduleStep {
-
+    @Builder
+    public static class ScheduleStep {
         Duration startAfter;
-
         Duration duration;
-
         Double temperature;
-
         Boolean motor;
-
         Integer maxPower;
-
         Double powerTemperatureCorrelation;
-
         Boolean alarm;
 
+        // TODO: Add title, notes, disable flag
     }
 }

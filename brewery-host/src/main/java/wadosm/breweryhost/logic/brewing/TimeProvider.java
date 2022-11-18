@@ -6,9 +6,7 @@ import java.time.Instant;
 
 @Component
 public class TimeProvider {
-
     public Instant getCurrentTime() {
         return Instant.now();
     }
-
 }

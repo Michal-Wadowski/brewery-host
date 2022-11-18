@@ -1,7 +1,6 @@
 package wadosm.breweryhost.logic.brewing;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import wadosm.breweryhost.device.driver.BreweryInterface;
 import wadosm.breweryhost.logic.brewing.model.BrewingSettings;
 import wadosm.breweryhost.logic.general.ConfigProvider;
@@ -10,13 +9,13 @@ import wadosm.breweryhost.logic.general.model.Configuration;
 import java.time.Duration;
 import java.time.Instant;
 
-@Component
 @RequiredArgsConstructor
 class AlarmProvider {
 
     private final BreweryInterface breweryInterface;
     private final ConfigProvider configProvider;
     private final TimeProvider timeProvider;
+    private final TemperatureThresholdTrigger trigger;
     private Instant alarmStarted;
 
     void handleAlarm(Double currentTemperature) {
@@ -56,12 +55,7 @@ class AlarmProvider {
     }
 
     private boolean isAlarmEnabled(Double currentTemperature, BrewingSettings brewingSettings) {
-        return isEnabled(brewingSettings) && temperatureExceededThreshold(brewingSettings, currentTemperature);
-    }
-
-    private static boolean temperatureExceededThreshold(BrewingSettings brewingSettings, Double currentTemperature) {
-        return brewingSettings.getDestinationTemperature() != null & currentTemperature != null
-                && currentTemperature >= brewingSettings.getDestinationTemperature();
+        return isEnabled(brewingSettings) && trigger.isTriggered(currentTemperature);
     }
 
     private static boolean isEnabled(BrewingSettings brewingSettings) {

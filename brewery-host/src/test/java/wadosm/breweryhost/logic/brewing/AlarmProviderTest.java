@@ -61,7 +61,8 @@ class AlarmProviderTest {
         // given
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
 
-        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, mockConfigProvider(BrewingSettings.builder().build()), mock(TimeProvider.class));
+        ConfigProvider configProvider = mockConfigProvider(BrewingSettings.builder().build());
+        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, configProvider, mock(TimeProvider.class), new TemperatureThresholdTriggerImpl(configProvider));
 
         // when
         alarmProvider.handleAlarm(currentTemperature);
@@ -81,7 +82,8 @@ class AlarmProviderTest {
                 .destinationTemperature(50.0)
                 .build();
 
-        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, mockConfigProvider(brewingSettings), mock(TimeProvider.class));
+        ConfigProvider configProvider = mockConfigProvider(brewingSettings);
+        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, configProvider, mock(TimeProvider.class), new TemperatureThresholdTriggerImpl(configProvider));
 
         // when
         alarmProvider.handleAlarm(51.0);
@@ -101,15 +103,15 @@ class AlarmProviderTest {
                 .destinationTemperature(50.0)
                 .build();
 
-        ConfigProvider configurationProvider = mock(ConfigProvider.class);
-        when(configurationProvider.loadConfiguration()).thenReturn(Configuration.builder()
+        ConfigProvider configProvider = mock(ConfigProvider.class);
+        when(configProvider.loadConfiguration()).thenReturn(Configuration.builder()
                 .alarmMaxTime(Duration.ofSeconds(2))
                 .brewingSettings(brewingSettings)
                 .build()
         );
 
         TimeProvider timeProvider = mock(TimeProvider.class);
-        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, configurationProvider, timeProvider);
+        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, configProvider, timeProvider, new TemperatureThresholdTriggerImpl(configProvider));
 
         // when
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
@@ -132,12 +134,46 @@ class AlarmProviderTest {
     }
 
     @Test
-    void should_count_time_after_alarmEnabled() {
+    void alarm_off_after_specified_period_with_dummy_trigger() {
         // given
         BreweryInterface breweryInterface = mock(BreweryInterface.class);
 
-        ConfigProvider configurationProvider = mock(ConfigProvider.class);
-        when(configurationProvider.loadConfiguration()).thenReturn(Configuration.builder()
+        BrewingSettings brewingSettings = BrewingSettings.builder()
+                .enabled(true)
+                .temperatureAlarmEnabled(true)
+                .build();
+
+        ConfigProvider configProvider = mock(ConfigProvider.class);
+        when(configProvider.loadConfiguration()).thenReturn(Configuration.builder()
+                .alarmMaxTime(Duration.ofSeconds(2))
+                .brewingSettings(brewingSettings)
+                .build()
+        );
+
+        TimeProvider timeProvider = mock(TimeProvider.class);
+        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, configProvider, timeProvider, new DummyTriggerImpl());
+
+        // when
+        when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
+        alarmProvider.handleAlarm(null);
+
+        when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(3500));
+        alarmProvider.handleAlarm(null);
+
+        // then
+        ArgumentCaptor<Boolean> alarmSequence = ArgumentCaptor.forClass(Boolean.class);
+        verify(breweryInterface, atLeastOnce()).setAlarm(alarmSequence.capture());
+
+        assertThat(alarmSequence.getAllValues()).containsSequence(true, false);
+    }
+
+    @Test
+    void should_count_down_time_after_alarmEnabled() {
+        // given
+        BreweryInterface breweryInterface = mock(BreweryInterface.class);
+
+        ConfigProvider configProvider = mock(ConfigProvider.class);
+        when(configProvider.loadConfiguration()).thenReturn(Configuration.builder()
                 .alarmMaxTime(Duration.ofSeconds(2))
                 .brewingSettings(BrewingSettings.builder()
                         .enabled(true)
@@ -148,13 +184,13 @@ class AlarmProviderTest {
         );
 
         TimeProvider timeProvider = mock(TimeProvider.class);
-        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, configurationProvider, timeProvider);
+        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, configProvider, timeProvider, new TemperatureThresholdTriggerImpl(configProvider));
 
         // when
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
         alarmProvider.handleAlarm(51.0);
 
-        when(configurationProvider.loadConfiguration()).thenReturn(Configuration.builder()
+        when(configProvider.loadConfiguration()).thenReturn(Configuration.builder()
                 .alarmMaxTime(Duration.ofSeconds(2))
                 .brewingSettings(BrewingSettings.builder()
                         .enabled(true)
@@ -188,15 +224,15 @@ class AlarmProviderTest {
                 .destinationTemperature(50.0)
                 .build();
 
-        ConfigProvider configurationProvider = mock(ConfigProvider.class);
-        when(configurationProvider.loadConfiguration()).thenReturn(Configuration.builder()
+        ConfigProvider configProvider = mock(ConfigProvider.class);
+        when(configProvider.loadConfiguration()).thenReturn(Configuration.builder()
                 .brewingSettings(brewingSettings)
                 .alarmMaxTime(Duration.ofSeconds(2))
                 .build()
         );
 
         TimeProvider timeProvider = mock(TimeProvider.class);
-        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, configurationProvider, timeProvider);
+        AlarmProvider alarmProvider = new AlarmProvider(breweryInterface, configProvider, timeProvider, new TemperatureThresholdTriggerImpl(configProvider));
 
         // when
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));

@@ -259,7 +259,7 @@ class BrewingServiceImplTest {
                 new BrewingSettingsProviderImpl(new FakeConfigProvider()),
                 getTemperatureProvider(sensorProvider, configProvider),
                 mock(MainsPowerProvider.class),
-                mock(AlarmProvider.class)
+                mock(TimeProvider.class)
         );
 
         // when
@@ -290,7 +290,7 @@ class BrewingServiceImplTest {
                 breweryInterface, configProvider, brewingSettingsProvider,
                 getTemperatureProvider(sensorProvider, configProvider),
                 new MainsPowerProvider(brewingSettingsProvider, breweryInterface),
-                mock(AlarmProvider.class)
+                mock(TimeProvider.class)
         );
 
         brewingService.setDestinationTemperature(destinationTemperature);
@@ -423,7 +423,7 @@ class BrewingServiceImplTest {
                 new BrewingSettingsProviderImpl(new FakeConfigProvider()),
                 getTemperatureProvider(temperatureSensorProvider, configProvider),
                 mock(MainsPowerProvider.class),
-                mock(AlarmProvider.class)
+                mock(TimeProvider.class)
         );
 
         // when
@@ -462,7 +462,7 @@ class BrewingServiceImplTest {
                 new BrewingSettingsProviderImpl(new FakeConfigProvider()),
                 getTemperatureProvider(temperatureSensorProvider, configProvider),
                 mock(MainsPowerProvider.class),
-                mock(AlarmProvider.class)
+                mock(TimeProvider.class)
         );
 
         // when
@@ -487,7 +487,7 @@ class BrewingServiceImplTest {
                 new BrewingSettingsProviderImpl(new FakeConfigProvider()),
                 getTemperatureProvider(sensorProvider, configProvider),
                 mock(MainsPowerProvider.class),
-                mock(AlarmProvider.class)
+                mock(TimeProvider.class)
         );
 
         brewingService.setPowerTemperatureCorrelation(123.45);
@@ -514,7 +514,7 @@ class BrewingServiceImplTest {
         MainsPowerProvider mainsPowerProvider = new MainsPowerProvider(brewingSettingsProvider, breweryInterface);
 
         BrewingServiceImpl brewingService = new BrewingServiceImpl(breweryInterface,
-                configProvider, brewingSettingsProvider, temperatureProvider, mainsPowerProvider, mock(AlarmProvider.class)
+                configProvider, brewingSettingsProvider, temperatureProvider, mainsPowerProvider, mock(TimeProvider.class)
         );
 
         // when
@@ -529,7 +529,7 @@ class BrewingServiceImplTest {
         return new BrewingServiceImpl(
                 breweryInterface, configProvider, new BrewingSettingsProviderImpl(new FakeConfigProvider()),
                 getTemperatureProvider(temperatureProvider, configProvider),
-                mock(MainsPowerProvider.class), mock(AlarmProvider.class)
+                mock(MainsPowerProvider.class), mock(TimeProvider.class)
         );
     }
 

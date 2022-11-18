@@ -4,6 +4,8 @@ import wadosm.breweryhost.logic.brewing.model.BrewingSnapshotState;
 
 public interface BrewingService {
 
+    void setAlarmMode(AlarmMode alarmMode);
+
     void enable(boolean enable);
 
     void setDestinationTemperature(Double temperature);
@@ -19,7 +21,5 @@ public interface BrewingService {
     BrewingSnapshotState getBrewingSnapshotState();
 
     void processStep();
-
-    void heartbeat();
 
 }
