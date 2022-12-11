@@ -2,29 +2,33 @@
 
 The hobby project intended to automate process of brewing.
 
-This is java application controller part. The other projects are located at: [brewery-driver](https://github.com/Michal-Wadowski/brewery-driver) and [brewery-android-client](https://github.com/Michal-Wadowski/brewery-android-client)
+This is java application and controller javascript frontend part. The other projects are located at: [brewery-driver](https://github.com/Michal-Wadowski/brewery-driver)
 
-# Development
+## Development
 
-To build project:
+### Start backend
+Right click on `src/main/java/wadosm/breweryhost/BreweryHostApplication.java` and Modify Run Configuration.
+In program arguments add `--spring.profiles.active=local`
+
+### Start frontend
+
+```shell
+cd frontend
+npm i
+npm start
+```
+
+The HTTP requests to `/api/*` will be redirected from to backend port `8080`
+without changing the path.
+
+## Build package
 
 ```shell
 ./mvnw clean package
 ```
 
-## Backend
-
-Please run backend with profile **local**: `--spring.profiles.active=local`
-To debug driver information please use **debug-driver** profile.
-
-## Frontend
-
-Frontend needs running backend to work. To start frontend environment:
+## Run application
 
 ```shell
-cd frontend
-npm install
-npm start
+java -jar backend/target/backend-*.jar
 ```
-
-Server runs on port 8000. HTTP requests are internally proxied to 8080 (backend). 
