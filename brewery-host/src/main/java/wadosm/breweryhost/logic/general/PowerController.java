@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import wadosm.breweryhost.device.system.SystemServices;
 
 @RestController
-@RequestMapping("/power")
+@RequestMapping("/api/power")
 @Log4j2
 public class PowerController {
 

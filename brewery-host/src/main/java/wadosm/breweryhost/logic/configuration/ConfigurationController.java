@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Log4j2
 @RestController
-@RequestMapping("/configuration")
+@RequestMapping("/api/configuration")
 public class ConfigurationController {
 
     private final TemperatureSensorProvider temperatureSensorProvider;

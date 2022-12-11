@@ -9,7 +9,7 @@ import javax.validation.Valid;
 
 @Log4j2
 @RestController
-@RequestMapping("/brewing")
+@RequestMapping("/api/brewing")
 public class BrewingController {
 
     private final BrewingService brewingService;

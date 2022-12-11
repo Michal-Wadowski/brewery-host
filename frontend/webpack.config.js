@@ -37,17 +37,14 @@ module.exports = {
       'Cache-Control': 'no-store',
     },
     proxy: {
-          '/api': {
-             target: {
-                host: "localhost",
-                protocol: 'http:',
-                port: 8080
-             },
-             pathRewrite: {
-                '^/api': ''
-             }
-          }
-          }
+      '/api': {
+         target: {
+            host: "localhost",
+            protocol: 'http:',
+            port: 8080
+         },
+      }
+    }
   },
   optimization: {
     runtimeChunk: 'single',

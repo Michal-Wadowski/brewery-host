@@ -1,0 +1,20 @@
+podTemplate(containers: [
+    containerTemplate(name: 'build', image: 'localhost:32000/build:java-17', command: 'sleep', args: '99d')
+  ], volumes: [
+    persistentVolumeClaim(mountPath: '/root/.m2/repository', claimName: 'maven-cache', readOnly: false)
+  ]) {
+
+  node(POD_LABEL) {
+    stage('Build project') {
+      git branch: 'main', credentialsId: '39c265c4-e80a-467d-bb0a-413825ac5cef', url: 'git@github.com:Michal-Wadowski/brewery-host.git'
+
+      container('build') {
+        sh 'chown -R root:root .'
+        sh './mvnw -B clean package'
+
+        archiveArtifacts artifacts: 'brewery-host/target/brewery-host-*.jar', fingerprint: true
+      }
+    }
+
+  }
+}
