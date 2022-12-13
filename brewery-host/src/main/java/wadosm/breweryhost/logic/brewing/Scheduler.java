@@ -3,10 +3,10 @@ package wadosm.breweryhost.logic.brewing;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import wadosm.breweryhost.logic.brewing.model.BrewingSchedule;
+import wadosm.breweryhost.logic.general.ConfigProvider;
 
 import java.time.Instant;
 
-// TODO: Store scheduler status in configuration in case device restart
 @Component
 @RequiredArgsConstructor
 public class Scheduler {
@@ -14,20 +14,20 @@ public class Scheduler {
     private final BrewingService brewingService;
     private final TimeProvider timeProvider;
 
-    private Integer currStepIndex;
+    private final ConfigProvider configProvider;
     private Instant startWhen;
     private Instant endWhen;
 
     private boolean enabled = false;
     private Boolean started;
 
-    public void processStep(BrewingSchedule brewingSchedule) {
+    public void processStep() {
         if (!enabled) {
             return;
         }
 
-        if (currStepIndex == null || currStepIndex < 0) {
-            currStepIndex = 0;
+        if (getCurrStepIndex() == null || getCurrStepIndex() < 0) {
+            setCurrStepIndex(0);
         }
 
         Instant currentTime = timeProvider.getCurrentTime();
@@ -35,15 +35,16 @@ public class Scheduler {
         if (started != null && endWhen != null) {
             if (currentTime.isAfter(endWhen) || currentTime.equals(endWhen)) {
                 started = null;
-                currStepIndex++;
                 startWhen = null;
                 endWhen = null;
+
+                setCurrStepIndex(getCurrStepIndex() + 1);
             }
         }
 
-        if (currStepIndex < brewingSchedule.getScheduleSteps().size()) {
+        if (getCurrStepIndex() < getBrewingSchedule().getScheduleSteps().size()) {
 
-            BrewingSchedule.ScheduleStep currStep = brewingSchedule.getScheduleSteps().get(currStepIndex);
+            BrewingSchedule.ScheduleStep currStep = getBrewingSchedule().getScheduleSteps().get(getCurrStepIndex());
 
             if (currStep.getStartAfter() != null && startWhen == null) {
                 startWhen = currentTime.plus(currStep.getStartAfter());
@@ -96,6 +97,23 @@ public class Scheduler {
                 }
             }
         }
+    }
+
+    private void setCurrStepIndex(int currStepIndex) {
+        configProvider.updateAndSaveConfiguration(configuration -> configuration
+                .withBrewingSchedule(configuration
+                        .getBrewingSchedule()
+                        .withCurrStepIndex(currStepIndex)
+                )
+        );
+    }
+
+    private Integer getCurrStepIndex() {
+        return getBrewingSchedule().getCurrStepIndex();
+    }
+
+    private BrewingSchedule getBrewingSchedule() {
+        return configProvider.loadConfiguration().getBrewingSchedule();
     }
 
     public void enable(boolean enable) {

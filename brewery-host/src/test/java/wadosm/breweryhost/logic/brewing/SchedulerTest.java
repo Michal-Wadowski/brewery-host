@@ -3,10 +3,13 @@ package wadosm.breweryhost.logic.brewing;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import wadosm.breweryhost.logic.brewing.model.BrewingSchedule;
+import wadosm.breweryhost.logic.general.ConfigProvider;
+import wadosm.breweryhost.logic.general.model.Configuration;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -19,9 +22,10 @@ class SchedulerTest {
     void reset_alarm_after_scheduler_disable() {
         // given
         BrewingService brewingService = mock(BrewingService.class);
+        BrewingSchedule brewingSchedule = BrewingSchedule.builder().build();
+        TimeProvider timeProvider = mock(TimeProvider.class);
 
-        Scheduler scheduler = new Scheduler(brewingService, new TimeProvider());
-
+        Scheduler scheduler = getScheduler(brewingService, brewingSchedule, timeProvider);
 
         // when
         scheduler.enable(false);
@@ -40,19 +44,19 @@ class SchedulerTest {
         // given
         BrewingService brewingService = mock(BrewingService.class);
         BrewingSchedule brewingSchedule = getAlarmSchedule();
-
         TimeProvider timeProvider = mock(TimeProvider.class);
-        Scheduler scheduler = new Scheduler(brewingService, timeProvider);
+
+        Scheduler scheduler = getScheduler(brewingService, brewingSchedule, timeProvider);
 
         // when
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1900));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(2100));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // then
         verify(brewingService, never()).setDestinationTemperature(any());
@@ -70,19 +74,19 @@ class SchedulerTest {
         BrewingSchedule brewingSchedule = getAlarmSchedule();
 
         TimeProvider timeProvider = mock(TimeProvider.class);
-        Scheduler scheduler = new Scheduler(brewingService, timeProvider);
+        Scheduler scheduler = getScheduler(brewingService, brewingSchedule, timeProvider);
 
         // when 1
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         scheduler.enable(true);
 
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(2000));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(2900));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // then 1
         verify(brewingService, never()).setAlarmMode(any());
@@ -90,7 +94,7 @@ class SchedulerTest {
 
         // when 2
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(3100));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // then 2
         verify(brewingService, times(1)).setAlarmMode(MANUAL);
@@ -110,16 +114,16 @@ class SchedulerTest {
         )).build();
 
         TimeProvider timeProvider = mock(TimeProvider.class);
-        Scheduler scheduler = new Scheduler(brewingService, timeProvider);
+        Scheduler scheduler = getScheduler(brewingService, brewingSchedule, timeProvider);
 
         // when 1
         scheduler.enable(true);
 
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1900));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // then 1
         verify(brewingService, never()).setAlarmMode(any());
@@ -127,7 +131,7 @@ class SchedulerTest {
 
         // when 2
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(2100));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // then 2
         verify(brewingService, times(1)).setAlarmMode(THRESHOLD_TRIGGERED);
@@ -147,13 +151,13 @@ class SchedulerTest {
         )).build();
 
         TimeProvider timeProvider = mock(TimeProvider.class);
-        Scheduler scheduler = new Scheduler(brewingService, timeProvider);
+        Scheduler scheduler = getScheduler(brewingService, brewingSchedule, timeProvider);
 
         // when 1
         scheduler.enable(true);
 
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // then 2
         verify(brewingService, times(1)).setAlarmMode(THRESHOLD_TRIGGERED);
@@ -172,13 +176,13 @@ class SchedulerTest {
         )).build();
 
         TimeProvider timeProvider = mock(TimeProvider.class);
-        Scheduler scheduler = new Scheduler(brewingService, timeProvider);
+        Scheduler scheduler = getScheduler(brewingService, brewingSchedule, timeProvider);
 
         // when 1
         scheduler.enable(true);
 
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // then 2
         verify(brewingService, never()).setAlarmMode(any());
@@ -211,28 +215,28 @@ class SchedulerTest {
         )).build();
 
         TimeProvider timeProvider = mock(TimeProvider.class);
-        Scheduler scheduler = new Scheduler(brewingService, timeProvider);
+        Scheduler scheduler = getScheduler(brewingService, brewingSchedule, timeProvider);
 
         // when 1
         scheduler.enable(true);
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // when 2
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(2001));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // when 3
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(4002));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // when 4
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(5003));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // when 5
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(6003));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // then
         ArgumentCaptor<AlarmMode> alarmModeSequence = ArgumentCaptor.forClass(AlarmMode.class);
@@ -260,13 +264,13 @@ class SchedulerTest {
         )).build();
 
         TimeProvider timeProvider = mock(TimeProvider.class);
-        Scheduler scheduler = new Scheduler(brewingService, timeProvider);
+        Scheduler scheduler = getScheduler(brewingService, brewingSchedule, timeProvider);
 
         // when 1
         scheduler.enable(true);
 
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // then 2
         verify(brewingService, times(1)).motorEnable(true);
@@ -283,13 +287,13 @@ class SchedulerTest {
         )).build();
 
         TimeProvider timeProvider = mock(TimeProvider.class);
-        Scheduler scheduler = new Scheduler(brewingService, timeProvider);
+        Scheduler scheduler = getScheduler(brewingService, brewingSchedule, timeProvider);
 
         // when 1
         scheduler.enable(true);
 
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // then 2
         verify(brewingService, times(1)).setMaxPower(70);
@@ -306,16 +310,40 @@ class SchedulerTest {
         )).build();
 
         TimeProvider timeProvider = mock(TimeProvider.class);
-        Scheduler scheduler = new Scheduler(brewingService, timeProvider);
+        Scheduler scheduler = getScheduler(brewingService, brewingSchedule, timeProvider);
 
         // when 1
         scheduler.enable(true);
 
         when(timeProvider.getCurrentTime()).thenReturn(Instant.ofEpochMilli(1000));
-        scheduler.processStep(brewingSchedule);
+        scheduler.processStep();
 
         // then 2
         verify(brewingService, times(1)).setPowerTemperatureCorrelation(1.5);
+    }
+
+    private static Scheduler getScheduler(BrewingService brewingService, BrewingSchedule brewingSchedule, TimeProvider timeProvider) {
+        ConfigProvider configProvider = new ConfigProvider() {
+
+            private Configuration configuration = Configuration.builder().brewingSchedule(brewingSchedule).build();
+
+            @Override
+            public Configuration loadConfiguration() {
+                return configuration;
+            }
+
+            @Override
+            public void saveConfiguration(Configuration configuration) {
+                this.configuration = configuration;
+            }
+
+            @Override
+            public void updateAndSaveConfiguration(Function<Configuration, Configuration> updateConfiguration) {
+                this.configuration = updateConfiguration.apply(configuration);
+            }
+        };
+
+        return new Scheduler(brewingService, timeProvider, configProvider);
     }
 
     private static BrewingSchedule getAlarmSchedule() {

@@ -3,6 +3,7 @@ package wadosm.breweryhost.logic.brewing.model;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.Duration;
@@ -15,6 +16,9 @@ public class BrewingSchedule {
 
     @Builder.Default
     @NonNull List<ScheduleStep> scheduleSteps = List.of();
+
+    @With
+    Integer currStepIndex;
 
     @Value
     @Builder
