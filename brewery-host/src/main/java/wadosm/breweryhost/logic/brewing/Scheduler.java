@@ -1,6 +1,9 @@
 package wadosm.breweryhost.logic.brewing;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import wadosm.breweryhost.logic.brewing.model.BrewingSchedule;
 import wadosm.breweryhost.logic.general.ConfigProvider;
@@ -9,18 +12,21 @@ import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
+@EnableAsync
 public class Scheduler {
 
     private final BrewingService brewingService;
     private final TimeProvider timeProvider;
 
     private final ConfigProvider configProvider;
+    private boolean enabled = false;
     private Instant startWhen;
     private Instant endWhen;
 
-    private boolean enabled = false;
     private Boolean started;
 
+    @Async
+    @Scheduled(fixedRateString = "${brewing.checkingPeriod}")
     public void processStep() {
         if (!enabled) {
             return;
@@ -34,11 +40,7 @@ public class Scheduler {
 
         if (started != null && endWhen != null) {
             if (currentTime.isAfter(endWhen) || currentTime.equals(endWhen)) {
-                started = null;
-                startWhen = null;
-                endWhen = null;
-
-                setCurrStepIndex(getCurrStepIndex() + 1);
+                changeCurrStep(getCurrStepIndex() + 1);
             }
         }
 
@@ -99,6 +101,14 @@ public class Scheduler {
         }
     }
 
+    public void changeCurrStep(int currStepIndex) {
+        started = null;
+        startWhen = null;
+        endWhen = null;
+
+        setCurrStepIndex(currStepIndex);
+    }
+
     private void setCurrStepIndex(int currStepIndex) {
         configProvider.updateAndSaveConfiguration(configuration -> configuration
                 .withBrewingSchedule(configuration
@@ -117,9 +127,14 @@ public class Scheduler {
     }
 
     public void enable(boolean enable) {
-        enabled = enable;
-        if (!enable) {
-            brewingService.setAlarmMode(AlarmMode.THRESHOLD_TRIGGERED);
+        if (enabled != enable) {
+            enabled = enable;
+            startWhen = null;
+            endWhen = null;
+            started = null;
+            if (!enable) {
+                brewingService.setAlarmMode(AlarmMode.THRESHOLD_TRIGGERED);
+            }
         }
     }
 }

@@ -18,6 +18,26 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <executions>
                     <execution>
+                        <id>Install NPM dependencies</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>install</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <executions>
+                    <execution>
                         <id>Build frontend</id>
                         <phase>generate-sources</phase>
                         <goals>
@@ -57,10 +77,9 @@
                                 <resource>
                                     <directory>dist</directory>
                                     <includes>
-                                        <include>bundle.js</include>
                                         <include>favicon.png</include>
-                                        <include>index.html</include>
-                                        <include>configuration.html</include>
+                                        <include>*.js</include>
+                                        <include>*.html</include>
                                     </includes>
                                 </resource>
                             </resources>
