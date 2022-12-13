@@ -50,7 +50,7 @@ public class BrewingServiceImpl implements BrewingService {
                 alarmProvider = getThresholdTriggeredAlarmProvider(breweryInterface, configProvider, timeProvider);
                 break;
 
-            case ALWAYS_RUNNING:
+            case MANUAL:
                 alarmProvider = getAlwaysRunningAlarmProvider(breweryInterface, configProvider, timeProvider);
                 break;
         }
@@ -79,7 +79,7 @@ public class BrewingServiceImpl implements BrewingService {
     }
 
     @Override
-    public void enableTemperatureAlarm(boolean enable) {
+    public void enableAlarm(boolean enable) {
         brewingSettingsProvider.setTemperatureAlarmEnabled(enable);
         processStep();
     }

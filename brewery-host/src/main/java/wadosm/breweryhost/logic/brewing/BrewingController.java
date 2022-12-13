@@ -30,7 +30,7 @@ public class BrewingController {
 
     @PostMapping("/enableTemperatureAlarm")
     public void enableTemperatureAlarm(@Valid @RequestBody EnableTemperatureAlarmDto enable) {
-        brewingService.enableTemperatureAlarm(enable.getEnable());
+        brewingService.enableAlarm(enable.getEnable());
     }
 
     @PostMapping("/motorEnable")

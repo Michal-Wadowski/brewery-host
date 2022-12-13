@@ -10,7 +10,7 @@ public interface BrewingService {
 
     void setDestinationTemperature(Double temperature);
 
-    void enableTemperatureAlarm(boolean enable);
+    void enableAlarm(boolean enable);
 
     void setMaxPower(Integer powerInPercents);
 
