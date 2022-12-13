@@ -22,4 +22,6 @@ public interface BrewingService {
 
     void processStep();
 
+    void heartbeat();
+
 }

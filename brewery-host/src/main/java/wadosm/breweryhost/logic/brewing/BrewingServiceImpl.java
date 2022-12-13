@@ -131,6 +131,7 @@ public class BrewingServiceImpl implements BrewingService {
 
     @Async
     @Scheduled(fixedRateString = "${brewing.checkingPeriod}")
+    @Override
     public void processStep() {
         Configuration configuration = configProvider.loadConfiguration();
 
@@ -147,6 +148,7 @@ public class BrewingServiceImpl implements BrewingService {
 
     @Async
     @Scheduled(fixedRateString = "${brewing.heartbeat}")
+    @Override
     public void heartbeat() {
         breweryInterface.heartbeat(heartBeatState);
         heartBeatState = !heartBeatState;
